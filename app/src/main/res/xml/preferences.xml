@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Valores keep station, near velocidade, dive -->
+
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_speed_default"
+        android:key="@string/pref_speed_key"
+        android:singleLine="true"
+        android:title="@string/speed" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_duration_default"
+        android:key="@string/pref_duration_key"
+        android:singleLine="true"
+        android:title="@string/duration" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_radius_default"
+        android:key="@string/pref_radius_key"
+        android:singleLine="true"
+        android:title="@string/radius" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_depth_default"
+        android:key="@string/pref_depth_key"
+        android:singleLine="true"
+        android:title="@string/depth" />
+
+
+
+
+</PreferenceScreen>
