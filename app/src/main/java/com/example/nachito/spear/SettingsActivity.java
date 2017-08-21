@@ -14,14 +14,10 @@ import org.androidannotations.annotations.PreferenceScreen;
 /**
  * Created by ines on 5/3/17.
  */
-@SuppressWarnings("deprecation")
- @EActivity
+
 public class SettingsActivity extends AppCompatActivity {
 
-    int speed;
-    int duration;
-    int radius;
-    int depth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

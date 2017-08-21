@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
@@ -30,7 +31,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.view.menu.ExpandedMenuView;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -38,7 +39,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
@@ -49,11 +50,11 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
@@ -78,13 +79,14 @@ import pt.lsts.imc.net.Consume;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.WGS84Utilities;
 import static android.os.Build.VERSION_CODES.M;
+import static com.example.nachito.spear.R.id.bottomsheet;
 import static com.example.nachito.spear.R.id.imageView;
 
 
 @EActivity
 
 public class MainActivity extends AppCompatActivity
-        implements  MapViewConstants, MapEventsReceiver, OnLocationChangedListener,SharedPreferences.OnSharedPreferenceChangeListener,  View.OnClickListener,   LocationListener {
+        implements  MapViewConstants, OnLocationChangedListener,SharedPreferences.OnSharedPreferenceChangeListener,  View.OnClickListener,   LocationListener {
 
     Context context = this;
     @ViewById(R.id.dive)
@@ -104,11 +106,11 @@ public class MainActivity extends AppCompatActivity
     @ViewById(R.id.imageView2)
     ImageView nowifi;
     TeleOperation teleop2;
+
     List<String> vehicleList;
     List<String> planList;
     String selected;
     List<VehicleState> states;
-    private SlidingUpPanelLayout mLayout;
     @ViewById(R.id.map)
     MapView map;
     MyLocationNewOverlay mLocationOverlay;
@@ -138,7 +140,11 @@ public class MainActivity extends AppCompatActivity
     double depth;
     Bitmap target;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
-
+    GeoPoint posicaoVeiculo;
+   Button done;
+@ViewById(R.id.bottomsheet)
+    LinearLayout bottom;
+Line line;
 
 
     @Override
@@ -167,7 +173,6 @@ public class MainActivity extends AppCompatActivity
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
         init();
-        mLayout.setOverlayed(true);
         Accelerate accelerate = (Accelerate) findViewById(R.id.accelerate);
         accelerate.setVisibility(View.INVISIBLE);
         Decelerate decelerate = (Decelerate) findViewById(R.id.decelerate);
@@ -211,6 +216,10 @@ public class MainActivity extends AppCompatActivity
         mapController.setZoom(15);
         //(Done) Centrar na localizacao do android
         mapController.setCenter(new GeoPoint(location));
+        done = (Button) findViewById(R.id.done);
+        done.setVisibility(View.INVISIBLE);
+
+
     }
 
     public void updatePosition(GeoPoint aPoint) {
@@ -309,7 +318,7 @@ public class MainActivity extends AppCompatActivity
 
     @UiThread
     public void init() {
-        mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
+
         teleop.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
@@ -348,7 +357,6 @@ public class MainActivity extends AppCompatActivity
                                     stopTeleop.setOnStop(teleop2);
                                     timer.start();
                                     joystick.setVisibility(View.VISIBLE);
-                                    mLayout.setTouchEnabled(false);
                                     PlanControl pc = new PlanControl();
                                     Teleoperation teleoperationMsg = new Teleoperation();
                                     teleoperationMsg.setCustom("src=" + imc.getLocalId());
@@ -488,13 +496,13 @@ public class MainActivity extends AppCompatActivity
             }
             if (teleop2 != null) {
                 teleop2.finish();
+
                 PlanControl pc = new PlanControl();
                 pc.setType(PlanControl.TYPE.REQUEST);
                 pc.setOp(PlanControl.OP.STOP);
                 pc.setRequestId(1);
                 pc.setFlags(0);
                 pc.setPlanId("stopTeleOp");
-                imc.sendMessage(pc);
 
                 getFragmentManager().popBackStack();
                 dive.setVisibility(View.VISIBLE);
@@ -511,8 +519,8 @@ public class MainActivity extends AppCompatActivity
                 stopTeleop.setVisibility(View.INVISIBLE);
                 Joystick joystick = (Joystick) findViewById(R.id.joystick);
                 joystick.setVisibility(View.INVISIBLE);
-
             }
+
             this.doubleBackToExitPressedOnce = true;
             Toast.makeText(this, "Press BACK again to exit", Toast.LENGTH_SHORT).show();
             new Handler().postDelayed(new Runnable() {
@@ -543,21 +551,23 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             try {
-                startActivity(new Intent(this, SettingsActivity_.class));
+                startActivity(new Intent(this, SettingsActivity.class));
             } catch (Exception e) {
                 e.printStackTrace();
             }
             return true;
-        } else if (id == R.id.action_map) {
-            if (!stuck) {
-                mLayout.setPanelHeight(120);
-                stuck = true;
-            } else {
-                mLayout.setPanelHeight(700);
-                stuck = false;
-            }
+        }
+
+        else if(id==R.id.edit){
+
+           line= new Line();
+            bottom.setVisibility(View.INVISIBLE);
+
+
+
 
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -583,19 +593,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-            @Override
-            public boolean singleTapConfirmedHelper(GeoPoint p) {
-
-                return false;
-            }
-
-            @Override
-            public boolean longPressHelper(GeoPoint p) {
-                Go(p);
-                Toast.makeText(getBaseContext(), p.getLatitude() + " - " + p.getLongitude(), Toast.LENGTH_LONG).show();
-
-                return false;
-            }
 
 
 
@@ -609,6 +606,7 @@ public class MainActivity extends AppCompatActivity
             for (EstimatedState state : estates.values()) {
                 paintState(state);
             }
+
         }
     }
 
@@ -617,9 +615,10 @@ public class MainActivity extends AppCompatActivity
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
         //(DONE) por todas as posiçoes
-        double[] lld2 = WGS84Utilities.toLatLonDepth(state);
+        double[] lld = WGS84Utilities.toLatLonDepth(state);
         final ArrayList<OverlayItem> items2 = new ArrayList<OverlayItem>();
-        OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld2[0], lld2[1]));
+
+        OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
         marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
         items2.add(marker2);
 
@@ -628,7 +627,11 @@ public class MainActivity extends AppCompatActivity
         ori2 = ori2 - 180;
 
         Bitmap source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_blue);
+
         if (vname.equals(imc.getSelectedvehicle())) {
+            posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
+            latVeiculo = Math.toRadians(lld[0]);
+            lonVeiculo = Math.toRadians(lld[1]);
             source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_green);
             DecimalFormat df2 = new DecimalFormat("#.##");
             final String vel = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
@@ -640,11 +643,16 @@ public class MainActivity extends AppCompatActivity
 
                 }
             });
+
         }
+
+
         target = RotateMyBitmap(source2, ori2);
         Drawable marker_ = new BitmapDrawable(getResources(), target);
         ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
         map.getOverlays().add(markersOverlay2);
+
+
     }
 
 
@@ -688,6 +696,9 @@ public  void dive() {
     }
 
     public  void near() {
+        if(latitude == 0 & longitude == 0){
+            return;
+        }
         Goto go = new Goto();
         go.setLat(latitude);
         go.setLon(longitude);
@@ -813,6 +824,7 @@ if(v.getId()==R.id.startplan) {
     for (int i = 0; i < imc.allPlans().size(); i++) {
         planList.addAll(imc.allPlans());
         menu.add(i, i, i, planList.get(i));
+        menu.setHeaderTitle("Plan List");
 
     }
 
@@ -840,36 +852,43 @@ if(v.getId()==R.id.startplan) {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-if(item.getGroupId()==R.id.startplan){
-        PlanControl pc = new PlanControl();
-        pc.setType(PlanControl.TYPE.REQUEST);
-        pc.setOp(PlanControl.OP.START);
-        pc.setFlags(0);
-        pc.setRequestId(0);
-        pc.setPlanId(item.toString());
-        imc.sendMessage(pc);}
-    else {
-    selected = item.toString();
-    String[] getName2 = selected.split(":");
-    String selectedName2 = getName2[0];
-    imc.setSelectedvehicle(selectedName2.trim());
-    servicebar.setText(selectedName2);
-}
+        if(!(item.toString().contains(":"))) {
+            PlanControl pc = new PlanControl();
+            pc.setType(PlanControl.TYPE.REQUEST);
+            pc.setOp(PlanControl.OP.START);
+            pc.setFlags(0);
+            pc.setRequestId(0);
+            pc.setPlanId(item.toString());
+            imc.sendMessage(pc);
+        }else {
+            selected = item.toString();
+            String[] getName2 = selected.split(":");
+            String selectedName2 = getName2[0];
+            imc.setSelectedvehicle(selectedName2.trim());
+            servicebar.setText(selectedName2);
+        }
+    //TODO se em teleoperacao mudar para command
+    if (teleop2 != null) {
+        teleop2.finish();
+    }
+
         return super.onContextItemSelected(item);
     }
+
+    @Periodic(500)
     @Override
     public void onLocationChanged(Location location) {
         final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
         latitude = Math.toRadians(location.getLatitude());
         longitude = Math.toRadians(location.getLongitude());
         GeoPoint posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
+
+
         OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", posicao);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker);
-        map.getOverlays().clear();
         Drawable newMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.arrow_red, null);
-        assert newMarker != null;
-        ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<OverlayItem>(items, newMarker, null, context);
+        ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, newMarker, null, context);
         map.getOverlays().add(markersOverlay);
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
@@ -894,12 +913,8 @@ if(item.getGroupId()==R.id.startplan){
 
 
 }
-//TODO GO
-//TODO marker onclick mas chamar o Go()
-//(DONE)pref
-//(DONE) arrow muda de posicao com a orientaçao do veiculo
+
 //TODO 2 joysticks
-//DONE popup veiculos a selecionar
 //todo map offline
 //todo cores
 //TODO se desligar veiculo selecionado tem de ficar em branco

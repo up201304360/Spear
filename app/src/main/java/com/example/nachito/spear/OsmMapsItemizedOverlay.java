@@ -23,12 +23,7 @@ class OsmMapsItemizedOverlay extends ItemizedIconOverlay<OverlayItem> {
         super(pList, pDefaultMarker, pOnItemGestureListener, pContext);
     }
 
-       /* public OsmMapsItemizedOverlay(ArrayList<OverlayItem> pList,
-                                      ItemizedIconOverlay.OnItemGestureListener<OverlayItem> pOnItemGestureListener, ResourceProxy pResourceProxy)
-        {
-            super(pList, pOnItemGestureListener, pResourceProxy);
-            mItemList = pList;
-        }*/
+
 
     public void addOverlay(OverlayItem aOverlayItem) {
         mItemList.add(aOverlayItem);
