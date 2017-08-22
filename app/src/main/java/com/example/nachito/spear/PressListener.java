@@ -8,6 +8,6 @@ import org.osmdroid.views.MapView;
  */
 
 public interface PressListener {
-    void onLongPress(GeoPoint p, MapView map);
+    void onLongPress(double x, double y);
 }
 

@@ -1,28 +1,17 @@
 package com.example.nachito.spear;
 
 
-import android.app.Activity;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.UiThread;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.Toast;
 
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.widget.Button;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
-import org.osmdroid.config.Configuration;
-import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.Polyline;
@@ -35,42 +24,49 @@ import java.util.ArrayList;
 /**
  * Created by ines on 8/14/17.
  */
-
 public class Line extends MainActivity implements  PressListener{
     ArrayList<GeoPoint> markerPoints = new ArrayList<>();
-    Marker nodeMarker;
     float mGroundOverlayBearing = 0.0f;
-ArrayList<ArrayList<GeoPoint>> points;
+    ArrayList<ArrayList<GeoPoint>> points;
     Polyline polyline;
-    Button done;
+    InfoWindow infoWindow;
+    private static Context context;
+    Drawable nodeIcon;
+     Marker nodeMarker;
 
 
+    public static void setContext(Context mcontext) {
+        if (context == null)
+            context = mcontext;
+    }
 
     @Override
-    public void onLongPress(GeoPoint p, @NonNull MapView map) {
+    public void onLongPress(double x, double y) {
 
+        nodeIcon =context.getResources().getDrawable(R.drawable.marker_node);
+        Projection proj = map.getProjection();
+        final GeoPoint p = (GeoPoint) proj.fromPixels((int)x,(int)y);
 
         markerPoints.add(p);
         System.out.println(markerPoints);
-
 
         GroundOverlay myGroundOverlay = new GroundOverlay();
         myGroundOverlay.setPosition(p);
         myGroundOverlay.setDimensions(2000.0f);
         myGroundOverlay.setBearing(mGroundOverlayBearing);
         mGroundOverlayBearing += 20.0f;
-        this.map.getOverlays().add(myGroundOverlay);
-        this.map.invalidate();
+        map.getOverlays().add(myGroundOverlay);
+        map.getOverlayManager().add(myGroundOverlay);
+        map.invalidate();
 
-
-        Drawable nodeIcon = getResources().getDrawable(R.drawable.marker_node);
-        nodeMarker = new Marker(this.map);
+        nodeMarker = new Marker(map);
         nodeMarker.setPosition(p);
         nodeMarker.setIcon(nodeIcon);
         nodeMarker.isDraggable();
         nodeMarker.setDraggable(true);
         nodeMarker.setTitle("lat/lon:" + p);
-        this.map.getOverlays().add(nodeMarker);
+        map.getOverlays().add(nodeMarker);
+        map.invalidate();
 
         done.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -90,6 +86,26 @@ ArrayList<ArrayList<GeoPoint>> points;
 
 
                 }
+            }
+        });
+        nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker, MapView mapView) {
+                infoWindow = marker.getInfoWindow();
+                if (infoWindow.isOpen()) {
+                    infoWindow.close();
+                    marker.remove(map);
+                    markerPoints.remove(p);
+
+                    if(polyline!=null)
+                        polyline.setPoints(markerPoints);
+                    map.invalidate();
+                } else {
+                    marker.showInfoWindow();
+                    marker.getPosition();
+                }
+                return false;
+
             }
         });
 
@@ -116,7 +132,6 @@ ArrayList<ArrayList<GeoPoint>> points;
         map.invalidate();
 
     }
-
 
 
 }

@@ -7,6 +7,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -21,6 +22,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.design.widget.BottomSheetBehavior;
@@ -85,10 +87,10 @@ import static com.example.nachito.spear.R.id.imageView;
 
 @EActivity
 
-public class MainActivity extends AppCompatActivity
+public  class MainActivity extends AppCompatActivity
         implements  MapViewConstants, OnLocationChangedListener,SharedPreferences.OnSharedPreferenceChangeListener,  View.OnClickListener,   LocationListener {
 
-    Context context = this;
+    private Context context;
     @ViewById(R.id.dive)
     Button dive;
     @ViewById(R.id.near)
@@ -112,7 +114,7 @@ public class MainActivity extends AppCompatActivity
     String selected;
     List<VehicleState> states;
     @ViewById(R.id.map)
-    MapView map;
+    static MapView map;
     MyLocationNewOverlay mLocationOverlay;
     @ViewById(R.id.teleop)
     Button teleop;
@@ -140,17 +142,18 @@ public class MainActivity extends AppCompatActivity
     Bitmap target;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     GeoPoint posicaoVeiculo;
-   Button done;
 @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
 Line line;
-    Press trans;
-    Marker nodeMarker;
-
+Press trans;
+    static  Button done;
+ Drawable nodeIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        context=this;
+        Line.setContext(getApplicationContext());
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
@@ -165,6 +168,9 @@ Line line;
         mCompassOverlay.enableCompass();
         map.getOverlays().add(this.mCompassOverlay);
         velocity.bringToFront();
+
+        nodeIcon =getResources().getDrawable(R.drawable.marker_node);
+
         setupSharedPreferences();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -564,6 +570,7 @@ Line line;
 
             done.setVisibility(View.VISIBLE);
             bottom.setVisibility(View.INVISIBLE);
+            mCompassOverlay.disableCompass();
             line= new Line();
             trans.setonPress(line);
 
