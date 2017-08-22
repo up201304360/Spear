@@ -54,6 +54,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
@@ -133,7 +134,6 @@ public class MainActivity extends AppCompatActivity
     boolean doubleBackToExitPressedOnce = false;
     @ViewById(R.id.velocity)
     TextView velocity;
-    boolean stuck = false;
     double speed;
     int duration;
     double radius;
@@ -145,6 +145,8 @@ public class MainActivity extends AppCompatActivity
 @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
 Line line;
+    Press trans;
+    Marker nodeMarker;
 
 
     @Override
@@ -182,6 +184,7 @@ Line line;
         nowifi.setVisibility(View.INVISIBLE);
         StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
         stopTeleop.setVisibility(View.INVISIBLE);
+        trans=(Press)findViewById(R.id.transparente);
         imc.register(this);
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
@@ -560,9 +563,10 @@ Line line;
 
         else if(id==R.id.edit){
 
-           line= new Line();
+            done.setVisibility(View.VISIBLE);
             bottom.setVisibility(View.INVISIBLE);
-
+            line= new Line();
+            trans.setonPress(line);
 
 
 

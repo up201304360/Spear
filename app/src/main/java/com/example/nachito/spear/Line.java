@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -35,8 +36,7 @@ import java.util.ArrayList;
  * Created by ines on 8/14/17.
  */
 
-public class Line extends MainActivity implements  MapEventsReceiver{
-    MapView map;
+public class Line extends MainActivity implements  PressListener{
     ArrayList<GeoPoint> markerPoints = new ArrayList<>();
     Marker nodeMarker;
     float mGroundOverlayBearing = 0.0f;
@@ -47,32 +47,31 @@ ArrayList<ArrayList<GeoPoint>> points;
 
 
     @Override
-    public boolean singleTapConfirmedHelper(GeoPoint p) {
-        return false;
-    }
+    public void onLongPress(GeoPoint p, @NonNull MapView map) {
 
-    @Override
-    public boolean longPressHelper(final GeoPoint p) {
 
         markerPoints.add(p);
         System.out.println(markerPoints);
+
+
         GroundOverlay myGroundOverlay = new GroundOverlay();
         myGroundOverlay.setPosition(p);
         myGroundOverlay.setDimensions(2000.0f);
         myGroundOverlay.setBearing(mGroundOverlayBearing);
         mGroundOverlayBearing += 20.0f;
-        map.getOverlays().add(myGroundOverlay);
-        map.invalidate();
+        this.map.getOverlays().add(myGroundOverlay);
+        this.map.invalidate();
 
 
         Drawable nodeIcon = getResources().getDrawable(R.drawable.marker_node);
-        nodeMarker = new Marker(map);
+        nodeMarker = new Marker(this.map);
         nodeMarker.setPosition(p);
         nodeMarker.setIcon(nodeIcon);
         nodeMarker.isDraggable();
         nodeMarker.setDraggable(true);
         nodeMarker.setTitle("lat/lon:" + p);
-        map.getOverlays().add(nodeMarker);
+        this.map.getOverlays().add(nodeMarker);
+
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,7 +93,7 @@ ArrayList<ArrayList<GeoPoint>> points;
             }
         });
 
-        return true;
+
     }
 
 
@@ -117,6 +116,7 @@ ArrayList<ArrayList<GeoPoint>> points;
         map.invalidate();
 
     }
+
 
 
 }
