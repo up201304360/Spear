@@ -43,7 +43,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;

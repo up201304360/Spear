@@ -39,7 +39,6 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.3.1'
     compile 'com.android.support:support-v4:25.3.1'
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:design:24.1.1'
     apply plugin: 'com.android.application'
     apply plugin: 'android-apt'
     apt 'org.androidannotations:androidannotations:4.2.0'
@@ -80,6 +79,7 @@ apt {
         androidManifestFile variant.outputs[0].processResources.manifestFile
     }
 }
+
 
 
 

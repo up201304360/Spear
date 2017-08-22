@@ -63,7 +63,7 @@ public class Press extends View {
 
 
 
-            listener.onLongPress(p, map);
+        //    listener.onLongPress(p, map);
             }
 
 
