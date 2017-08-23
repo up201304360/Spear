@@ -52,10 +52,8 @@ public class Press extends View  {
     public boolean onTouchEvent(MotionEvent v) {
         if (listener != null) {
 
-            double x =  (v.getX()* 1E6);
-                double y = (v.getY()* 1E6);
-
-                System.out.println("x: " + x + " y: " + y);
+            double x = v.getX()  ;
+            double y = (v.getY());
 
 
 

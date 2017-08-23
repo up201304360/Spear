@@ -59,8 +59,10 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
+import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
+import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
@@ -145,15 +147,18 @@ public  class MainActivity extends AppCompatActivity
 @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
 Line line;
-Press trans;
-    static  Button done;
- Drawable nodeIcon;
+static Press trans;
+  static  Marker nodeMarker;
+  static  Button done;
+    @org.androidannotations.annotations.res.DrawableRes(R.drawable.marker_node)
+   static Drawable nodeIcon;
+    Bitmap source2;
+Area area;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context=this;
-        Line.setContext(getApplicationContext());
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
@@ -168,9 +173,7 @@ Press trans;
         mCompassOverlay.enableCompass();
         map.getOverlays().add(this.mCompassOverlay);
         velocity.bringToFront();
-
-        nodeIcon =getResources().getDrawable(R.drawable.marker_node);
-
+        map.isLongClickable();
         setupSharedPreferences();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -190,6 +193,8 @@ Press trans;
         StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
         stopTeleop.setVisibility(View.INVISIBLE);
         trans=(Press)findViewById(R.id.transparente);
+        trans.setVisibility(View.INVISIBLE);
+
         imc.register(this);
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
@@ -217,11 +222,11 @@ Press trans;
         if (location == null) {
             location = new Location(LocationManager.GPS_PROVIDER);
         }
-        this.map.getOverlays().add(this.mLocationOverlay);
+        map.getOverlays().add(this.mLocationOverlay);
         mLocationOverlay.enableMyLocation();
         map.invalidate();
         mapController = map.getController();
-        mapController.setZoom(15);
+        mapController.setZoom(3);
         //(Done) Centrar na localizacao do android
         mapController.setCenter(new GeoPoint(location));
         done = (Button) findViewById(R.id.done);
@@ -229,6 +234,8 @@ Press trans;
 
 
     }
+
+
 
     public void updatePosition(GeoPoint aPoint) {
         if (mItemizedOverlay == null) {
@@ -498,10 +505,7 @@ Press trans;
     @Override
     public void onBackPressed() {
 
-            if (doubleBackToExitPressedOnce) {
-                super.onBackPressed();
-                return;
-            }
+
             if (teleop2 != null) {
                 teleop2.finish();
 
@@ -527,19 +531,32 @@ Press trans;
                 stopTeleop.setVisibility(View.INVISIBLE);
                 Joystick joystick = (Joystick) findViewById(R.id.joystick);
                 joystick.setVisibility(View.INVISIBLE);
-            }
+            }else if(line!=null) {
+                line.finish();
 
-            this.doubleBackToExitPressedOnce = true;
-            Toast.makeText(this, "Press BACK again to exit", Toast.LENGTH_SHORT).show();
-            new Handler().postDelayed(new Runnable() {
+                trans.setVisibility(View.INVISIBLE);
+                bottom.setVisibility(View.VISIBLE);
+                done.setVisibility(View.INVISIBLE);
 
-                @Override
-                public void run() {
-                    doubleBackToExitPressedOnce = false;
-                }
-            }, 500);
+            }else if(area!=null) {
+                area.finish();
+                trans.setVisibility(View.INVISIBLE);
+                bottom.setVisibility(View.VISIBLE);
+                done.setVisibility(View.INVISIBLE);
 
+            }else
+                finish();
     }
+
+
+
+
+
+
+
+
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -567,17 +584,40 @@ Press trans;
         }
 
         else if(id==R.id.edit){
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            AlertDialog.Builder builder = alertDialogBuilder
+                    .setMessage("Area or Line?")
+                    .setCancelable(true)
+                    .setPositiveButton("Line", new DialogInterface.OnClickListener() {
 
-            done.setVisibility(View.VISIBLE);
-            bottom.setVisibility(View.INVISIBLE);
-            mCompassOverlay.disableCompass();
-            line= new Line();
-            trans.setonPress(line);
+                        public void onClick(DialogInterface dialog, int which) {
+                            done.setVisibility(View.VISIBLE);
+                            bottom.setVisibility(View.INVISIBLE);
+                            line = new Line();
+                            mCompassOverlay.disableCompass();
+
+                            trans.setonPress(line);
+                            trans.setVisibility(View.VISIBLE);
 
 
+                        }
+                    })
+                    .setNegativeButton("Area", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            done.setVisibility(View.VISIBLE);
+                            bottom.setVisibility(View.INVISIBLE);
+                            area = new Area();
+                            mCompassOverlay.disableCompass();
 
+                            trans.setonPress(area);
+                            trans.setVisibility(View.VISIBLE);
+                        }
+                    });
+            // create alert dialog
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            // show it
+            alertDialog.show();
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -607,18 +647,6 @@ Press trans;
 
 
 
-    @Background
-    @Periodic(500)
-    public void updateMap() {
-        map.getOverlays().clear();
-        map.getOverlays().add(this.mCompassOverlay);
-        synchronized (estates) {
-            for (EstimatedState state : estates.values()) {
-                paintState(state);
-            }
-
-        }
-    }
 
 
     @Background
@@ -636,7 +664,7 @@ Press trans;
         int ori2 = (int) Math.round(Math.toDegrees(orientation2));
         ori2 = ori2 - 180;
 
-        Bitmap source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_blue);
+         source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_blue);
 
         if (vname.equals(imc.getSelectedvehicle())) {
             posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
@@ -675,6 +703,19 @@ Press trans;
 
 
 
+    @Background
+    @Periodic(500)
+    public void updateMap() {
+       // map.getOverlays().clear();
+        map.getOverlays().remove(source2);
+        map.getOverlays().add(this.mCompassOverlay);
+        synchronized (estates) {
+            for (EstimatedState state : estates.values()) {
+                paintState(state);
+            }
+
+        }
+    }
 
 public  void dive() {
     Loiter dive = new Loiter();
@@ -734,19 +775,7 @@ public  void dive() {
     }
 
 
-    public  void Go(GeoPoint p){
-        Goto go2 = new Goto();
-        double lat = Math.toRadians(p.getLatitude());
-        double lon = Math.toRadians(p.getLongitude());
-        go2.setLat(lat);
-        go2.setLon(lon);
-        go2.setZ(depth);
-        go2.setZUnits(Goto.Z_UNITS.DEPTH);
-        go2.setSpeed(speed);
-        go2.setSpeedUnits(Goto.SPEED_UNITS.RPM);
-        String planid = "GoToPoint";
-        startManeuver(planid, go2);
-    }
+
     public  void stopPlan() {
         PlanControl pc = new PlanControl();
         pc.setType(PlanControl.TYPE.REQUEST);
@@ -903,6 +932,21 @@ if(v.getId()==R.id.startplan) {
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
         map.getOverlays().add(this.mCompassOverlay);
+
+
+    }
+
+    public  void draw(GeoPoint p){
+        final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+
+        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", p);
+        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
+        items.add(marker);
+      //  Drawable newMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.arrow_red, null);
+        ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, nodeIcon, null, context);
+        map.getOverlays().add(markersOverlay);
+
+
 
 
     }
