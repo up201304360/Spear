@@ -84,7 +84,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             @Override
             public void onClick(View v) {
 
-//TODO !
+
                 if (markerPoints.size() < 1) {
                     if (imc.selectedvehicle == null) {
                         Toast.makeText(Area.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
@@ -108,7 +108,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     }
 
 
-
     public void drawArea(GeoPoint origin, ArrayList<GeoPoint> markerPoints) {
         BoundingBox bb = BoundingBox.fromGeoPoints(markerPoints);
         map.zoomToBoundingBox(bb, true);
@@ -124,7 +123,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
 
     }
-
 
     public  void Go(GeoPoint p){
         Goto go = new Goto();
