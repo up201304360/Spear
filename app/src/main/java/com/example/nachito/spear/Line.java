@@ -107,7 +107,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
                 if (markerPoints.size() < 1) {
 
-                    //////////////////////////
+                    //////////////////
 
                 } else if (markerPoints.size() > 1) {
 
@@ -120,6 +120,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                 }
             }
         });
+
 
 
 
