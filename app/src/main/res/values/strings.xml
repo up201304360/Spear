@@ -18,7 +18,9 @@
         <string name="stop">Stop</string>
         <string name="abort">Abort</string>
         <string name="dive">Dive</string>
-        <string name="station">Keep Station</string>
+    <string name="done">Done</string>
+
+    <string name="station">Keep Station</string>
         <string name="startplan">Start plan</string>
     <string name="choice_prompt">Select a choice</string>
 

@@ -1,41 +1,19 @@
 package com.example.nachito.spear;
 
 
-
-import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.MarkerOptions;
-
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
-import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
-
-
 import java.util.ArrayList;
+import pt.lsts.imc.FollowPath;
 
 /**
  * Created by ines on 8/14/17.
@@ -46,12 +24,17 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     ArrayList<ArrayList<GeoPoint>> points;
     Polyline polyline;
     InfoWindow infoWindow;
+IMCGlobal imc;
+
+    public void setImc(IMCGlobal imc) {
+        this.imc = imc;
+        imc.register(this);
+    }
 
 
 
     @Override
     public void onLongPress(double x, double y) {
-
         Projection proj = map.getProjection();
          IGeoPoint p2 =  proj.fromPixels((int)x,(int)y);
 
@@ -100,16 +83,27 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                 }
             });
 
-       done.setOnClickListener(new View.OnClickListener() {
+
+
+
+
+        MainActivity.done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
 
-                if (markerPoints.size() < 1) {
 
-                    //////////////////
+                if (markerPoints.size() <= 2) {
 
-                } else if (markerPoints.size() > 1) {
+                   if (imc.selectedvehicle == null) {
+                       System.out.println("No vehicles");
+//                        Toast.makeText(line.getApplicationContext(), "No vehicles available", Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        Go(p);
+                    }
+                }
+                else if (markerPoints.size() > 2) {
 
 
                     GeoPoint origin =  markerPoints.get(markerPoints.size() - 2);
@@ -124,8 +118,10 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
 
+
     }
 
+    //TODO Se carrego em Area apagar os marcadores fazer o mesmo na area
 
 
 
@@ -149,6 +145,33 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
     }
+
+
+    public  void Go(GeoPoint p){
+
+        FollowPath go = new FollowPath();
+        double lat = Math.toRadians(p.getLatitude());
+        double lon = Math.toRadians(p.getLongitude());
+        go.setLat(lat);
+        go.setLon(lon);
+        go.setZ(depth);
+        go.setZUnits(FollowPath.Z_UNITS.DEPTH);
+        go.setSpeed(speed);
+        go.setSpeedUnits(FollowPath.SPEED_UNITS.RPM);
+        String planid = "FollowPath";
+        startManeuver(planid, go);
+    }
+
+
+    public void finish() {
+
+        map.getOverlays().remove(nodeMarker);
+        nodeMarker.remove(map);
+        map.invalidate();
+        imc.unregister(this);
+
+    }
+
 
 
 }

@@ -134,7 +134,6 @@ public  class MainActivity extends AppCompatActivity
     double lonVeiculo;
     double latitude;
     double longitude;
-    boolean doubleBackToExitPressedOnce = false;
     @ViewById(R.id.velocity)
     TextView velocity;
     double speed;
@@ -149,11 +148,12 @@ public  class MainActivity extends AppCompatActivity
 Line line;
 static Press trans;
   static  Marker nodeMarker;
-  static  Button done;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.marker_node)
    static Drawable nodeIcon;
     Bitmap source2;
 Area area;
+    @ViewById(R.id.done)
+    static Button done;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,7 +194,7 @@ Area area;
         stopTeleop.setVisibility(View.INVISIBLE);
         trans=(Press)findViewById(R.id.transparente);
         trans.setVisibility(View.INVISIBLE);
-
+        done.setVisibility(View.INVISIBLE);
         imc.register(this);
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
@@ -229,8 +229,7 @@ Area area;
         mapController.setZoom(3);
         //(Done) Centrar na localizacao do android
         mapController.setCenter(new GeoPoint(location));
-        done = (Button) findViewById(R.id.done);
-        done.setVisibility(View.INVISIBLE);
+
 
 
     }
@@ -536,13 +535,11 @@ Area area;
 
                 trans.setVisibility(View.INVISIBLE);
                 bottom.setVisibility(View.VISIBLE);
-                done.setVisibility(View.INVISIBLE);
 
             }else if(area!=null) {
                 area.finish();
                 trans.setVisibility(View.INVISIBLE);
                 bottom.setVisibility(View.VISIBLE);
-                done.setVisibility(View.INVISIBLE);
 
             }else
                 finish();
@@ -584,33 +581,46 @@ Area area;
         }
 
         else if(id==R.id.edit){
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
             AlertDialog.Builder builder = alertDialogBuilder
                     .setMessage("Area or Line?")
                     .setCancelable(true)
                     .setPositiveButton("Line", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int which) {
-                            done.setVisibility(View.VISIBLE);
+                            if(area!=null)
+                                area.finish();
+
+                                //Fazer erase aos pontos
+
                             bottom.setVisibility(View.INVISIBLE);
                             line = new Line();
                             mCompassOverlay.disableCompass();
-
+                            done.setVisibility(View.VISIBLE);
+                            done.setClickable(true);
+                            done.setOnClickListener(line);
                             trans.setonPress(line);
                             trans.setVisibility(View.VISIBLE);
+                            line.setImc(imc);
 
 
                         }
                     })
                     .setNegativeButton("Area", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            done.setVisibility(View.VISIBLE);
+                            if(line!=null)
+                               line.finish();
+
                             bottom.setVisibility(View.INVISIBLE);
                             area = new Area();
                             mCompassOverlay.disableCompass();
-
+                            done.setVisibility(View.VISIBLE);
+                            done.setClickable(true);
+                            done.setOnClickListener(area);
                             trans.setonPress(area);
                             trans.setVisibility(View.VISIBLE);
+                            area.setImc(imc);
+
                         }
                     });
             // create alert dialog

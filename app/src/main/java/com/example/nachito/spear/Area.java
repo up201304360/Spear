@@ -1,6 +1,9 @@
 package com.example.nachito.spear;
 
+import android.os.Bundle;
 import android.view.View;
+import android.widget.Adapter;
+import android.widget.Button;
 import android.widget.Toast;
 
 import org.osmdroid.api.IGeoPoint;
@@ -18,6 +21,7 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.util.ArrayList;
 
+import pt.lsts.imc.FollowPath;
 import pt.lsts.imc.Goto;
 
 /**
@@ -29,16 +33,32 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     float mGroundOverlayBearing = 0.0f;
     Polygon circle;
     InfoWindow infoWindow;
+    IMCGlobal imc;
+
+
+    public void setImc(IMCGlobal imc) {
+        this.imc = imc;
+        imc.register(this);
+    }
+    public void finish() {
+        imc.unregister(this);
+        nodeMarker.remove(map);
+        map.getOverlays().remove(nodeMarker);
+        map.invalidate();
+
+    }
 
 
     @Override
     public void onLongPress(double x, double y) {
+
         Projection proj = map.getProjection();
         IGeoPoint p2 = proj.fromPixels((int) x, (int) y);
 
         final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
         markerPoints.add(p);
+        System.out.println(p);
 
         GroundOverlay myGroundOverlay = new GroundOverlay();
         myGroundOverlay.setPosition(p);
@@ -79,24 +99,22 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
             }
         });
-
-        done.setOnClickListener(new View.OnClickListener() {
+    MainActivity.done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-
-                if (markerPoints.size() < 1) {
-                    if (imc.selectedvehicle == null) {
-                        Toast.makeText(Area.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
-                        return;}
-                        Go(p);
-
-
-                } else if (markerPoints.size() > 1) {
+                if (markerPoints.size() <= 2) {
+                   if (imc.selectedvehicle == null) {
+                     //   Toast.makeText(Area.this, "No vehicles available", Toast.LENGTH_SHORT).show();
+                       System.out.println("No vehicles");
+                    }else{
+                       Go(p);
+                    }
 
 
-                    GeoPoint origin = (GeoPoint) markerPoints.get(markerPoints.size() - 2);
-                    GeoPoint dest = (GeoPoint) markerPoints.get(markerPoints.size() - 1);
+                } else if (markerPoints.size() > 2) {
+
+                    GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
                     drawArea(origin, markerPoints);
                     trans.setVisibility(View.INVISIBLE);
 
@@ -109,8 +127,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
 
     public void drawArea(GeoPoint origin, ArrayList<GeoPoint> markerPoints) {
-        BoundingBox bb = BoundingBox.fromGeoPoints(markerPoints);
-        map.zoomToBoundingBox(bb, true);
         circle = new Polygon();
         circle.getOutlinePaint();
         circle.isVisible();
@@ -125,18 +141,21 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     }
 
     public  void Go(GeoPoint p){
-        Goto go = new Goto();
+
+        FollowPath go = new FollowPath();
         double lat = Math.toRadians(p.getLatitude());
         double lon = Math.toRadians(p.getLongitude());
         go.setLat(lat);
         go.setLon(lon);
         go.setZ(depth);
-        go.setZUnits(Goto.Z_UNITS.DEPTH);
+        go.setZUnits(FollowPath.Z_UNITS.DEPTH);
         go.setSpeed(speed);
-        go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
-        String planid = "GoToPoint";
+        go.setSpeedUnits(FollowPath.SPEED_UNITS.RPM);
+        String planid = "FollowPath";
         startManeuver(planid, go);
     }
+
+
 }
 
 
