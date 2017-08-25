@@ -121,7 +121,6 @@ IMCGlobal imc;
 
     }
 
-    //TODO Se carrego em Area apagar os marcadores fazer o mesmo na area
 
 
 
@@ -141,7 +140,7 @@ IMCGlobal imc;
         map.getOverlayManager().add(polyline);
         map.invalidate();
 
-
+//varios followpath
 
 
     }
@@ -164,9 +163,7 @@ IMCGlobal imc;
 
 
     public void finish() {
-
-        map.getOverlays().remove(nodeMarker);
-        nodeMarker.remove(map);
+        map.getOverlayManager().clear();
         map.invalidate();
         imc.unregister(this);
 

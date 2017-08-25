@@ -42,8 +42,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     }
     public void finish() {
         imc.unregister(this);
-        nodeMarker.remove(map);
-        map.getOverlays().remove(nodeMarker);
+        map.getOverlayManager().clear();
         map.invalidate();
 
     }
