@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
@@ -44,7 +45,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
+
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -59,6 +62,7 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
+import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
@@ -66,10 +70,14 @@ import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
+
+import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Loiter;
@@ -82,6 +90,7 @@ import pt.lsts.imc.VehicleState;
 import pt.lsts.imc.net.Consume;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.WGS84Utilities;
+
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.bottomsheet;
 import static com.example.nachito.spear.R.id.imageView;
@@ -89,8 +98,8 @@ import static com.example.nachito.spear.R.id.imageView;
 
 @EActivity
 
-public  class MainActivity extends AppCompatActivity
-        implements  MapViewConstants, OnLocationChangedListener,SharedPreferences.OnSharedPreferenceChangeListener,  View.OnClickListener,   LocationListener {
+public class MainActivity extends AppCompatActivity
+        implements MapViewConstants, OnLocationChangedListener, SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener, LocationListener {
 
     private Context context;
     @ViewById(R.id.dive)
@@ -143,22 +152,32 @@ public  class MainActivity extends AppCompatActivity
     Bitmap target;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     GeoPoint posicaoVeiculo;
-@ViewById(R.id.bottomsheet)
+    @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
-Line line;
-static Press trans;
-  static  Marker nodeMarker;
+    Line line;
+    static Press trans;
+    static Marker nodeMarker;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.marker_node)
-   static Drawable nodeIcon;
+    static Drawable nodeIcon;
     Bitmap source2;
-Area area;
+    Area area;
+    //TODO correct
     @ViewById(R.id.done)
     static Button done;
+    Drawable newMarker;
+    ItemizedIconOverlay markersOverlay;
+    ItemizedIconOverlay markersOverlay2;
+    Drawable marker_;
+    static ArrayList<GeoPoint> markerPoints = new ArrayList<>();
+    static Polyline polyline;
+    static Polygon circle;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context=this;
+        context = this;
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
@@ -192,7 +211,7 @@ Area area;
         nowifi.setVisibility(View.INVISIBLE);
         StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
         stopTeleop.setVisibility(View.INVISIBLE);
-        trans=(Press)findViewById(R.id.transparente);
+        trans = (Press) findViewById(R.id.transparente);
         trans.setVisibility(View.INVISIBLE);
         done.setVisibility(View.INVISIBLE);
         imc.register(this);
@@ -231,9 +250,7 @@ Area area;
         mapController.setCenter(new GeoPoint(location));
 
 
-
     }
-
 
 
     public void updatePosition(GeoPoint aPoint) {
@@ -245,14 +262,17 @@ Area area;
         lastPosition = overlayItem;
         mItemizedOverlay.addOverlay(overlayItem);
         map.getOverlays().add(mItemizedOverlay);
-        map.getController().animateTo(aPoint);}
+        map.getController().animateTo(aPoint);
+    }
 //Refreshing the map to draw the new overlay
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
     }
+
     public boolean checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this,
                 permission.ACCESS_FINE_LOCATION)
@@ -308,10 +328,11 @@ Area area;
 
 
     private void loadFromPrefs(SharedPreferences sharedPreferences) {
-        speed = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_speed_key),getString(R.string.pref_speed_default)));
-        duration = (int) Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_duration_key),getString(R.string.pref_duration_default)));
-        radius = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_radius_key),getString(R.string.pref_radius_default)));
-        depth = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_depth_key),getString(R.string.pref_depth_default)));    }
+        speed = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_speed_key), getString(R.string.pref_speed_default)));
+        duration = (int) Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_duration_key), getString(R.string.pref_duration_default)));
+        radius = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_radius_key), getString(R.string.pref_radius_default)));
+        depth = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_depth_key), getString(R.string.pref_depth_default)));
+    }
 
 
     @Override
@@ -505,54 +526,48 @@ Area area;
     public void onBackPressed() {
 
 
-            if (teleop2 != null) {
-                teleop2.finish();
+        if (teleop2 != null) {
+            teleop2.finish();
 
-                PlanControl pc = new PlanControl();
-                pc.setType(PlanControl.TYPE.REQUEST);
-                pc.setOp(PlanControl.OP.STOP);
-                pc.setRequestId(1);
-                pc.setFlags(0);
-                pc.setPlanId("stopTeleOp");
+            PlanControl pc = new PlanControl();
+            pc.setType(PlanControl.TYPE.REQUEST);
+            pc.setOp(PlanControl.OP.STOP);
+            pc.setRequestId(1);
+            pc.setFlags(0);
+            pc.setPlanId("stopTeleOp");
 
-                getFragmentManager().popBackStack();
-                dive.setVisibility(View.VISIBLE);
-                teleop.setVisibility(View.VISIBLE);
-                start.setVisibility(View.VISIBLE);
-                near.setVisibility(View.VISIBLE);
-                keep.setVisibility(View.VISIBLE);
-                stop.setVisibility(View.VISIBLE);
-                Accelerate accelerate = (Accelerate) findViewById(R.id.accelerate);
-                accelerate.setVisibility(View.INVISIBLE);
-                Decelerate decelerate = (Decelerate) findViewById(R.id.decelerate);
-                decelerate.setVisibility(View.INVISIBLE);
-                StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
-                stopTeleop.setVisibility(View.INVISIBLE);
-                Joystick joystick = (Joystick) findViewById(R.id.joystick);
-                joystick.setVisibility(View.INVISIBLE);
-            }else if(line!=null) {
-                line.finish();
+            getFragmentManager().popBackStack();
+            dive.setVisibility(View.VISIBLE);
+            teleop.setVisibility(View.VISIBLE);
+            start.setVisibility(View.VISIBLE);
+            near.setVisibility(View.VISIBLE);
+            keep.setVisibility(View.VISIBLE);
+            stop.setVisibility(View.VISIBLE);
+            Accelerate accelerate = (Accelerate) findViewById(R.id.accelerate);
+            accelerate.setVisibility(View.INVISIBLE);
+            Decelerate decelerate = (Decelerate) findViewById(R.id.decelerate);
+            decelerate.setVisibility(View.INVISIBLE);
+            StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
+            stopTeleop.setVisibility(View.INVISIBLE);
+            Joystick joystick = (Joystick) findViewById(R.id.joystick);
+            joystick.setVisibility(View.INVISIBLE);
+        } else if (line != null) {
+            line.finish();
 
-                trans.setVisibility(View.INVISIBLE);
-                bottom.setVisibility(View.VISIBLE);
+            trans.setVisibility(View.INVISIBLE);
+            bottom.setVisibility(View.VISIBLE);
+            done.setVisibility(View.INVISIBLE);
 
-            }else if(area!=null) {
-                area.finish();
-                trans.setVisibility(View.INVISIBLE);
-                bottom.setVisibility(View.VISIBLE);
+        } else if (area != null) {
+            area.finish();
+            trans.setVisibility(View.INVISIBLE);
+            bottom.setVisibility(View.VISIBLE);
+            done.setVisibility(View.INVISIBLE);
 
-            }else
-                finish();
+
+        } else
+            finish();
     }
-
-
-
-
-
-
-
-
-
 
 
     @Override
@@ -578,9 +593,7 @@ Area area;
                 e.printStackTrace();
             }
             return true;
-        }
-
-        else if(id==R.id.edit){
+        } else if (id == R.id.edit) {
             final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
             AlertDialog.Builder builder = alertDialogBuilder
                     .setMessage("Area or Line?")
@@ -588,13 +601,13 @@ Area area;
                     .setPositiveButton("Line", new DialogInterface.OnClickListener() {
 
                         public void onClick(DialogInterface dialog, int which) {
-                            if(area!=null)
+                            if (area != null)
                                 area.finish();
 
-                                //Fazer erase aos pontos
+                            //Fazer erase aos pontos
+                            line = new Line();
 
                             bottom.setVisibility(View.INVISIBLE);
-                            line = new Line();
                             mCompassOverlay.disableCompass();
                             done.setVisibility(View.VISIBLE);
                             done.setClickable(true);
@@ -608,8 +621,8 @@ Area area;
                     })
                     .setNegativeButton("Area", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            if(line!=null)
-                               line.finish();
+                            if (line != null)
+                                line.finish();
 
                             bottom.setVisibility(View.INVISIBLE);
                             area = new Area();
@@ -653,18 +666,13 @@ Area area;
     }
 
 
-
-
-
-
-
-
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
         //(DONE) por todas as posiçoes
         double[] lld = WGS84Utilities.toLatLonDepth(state);
         final ArrayList<OverlayItem> items2 = new ArrayList<OverlayItem>();
+
 
         OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
         marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
@@ -674,7 +682,7 @@ Area area;
         int ori2 = (int) Math.round(Math.toDegrees(orientation2));
         ori2 = ori2 - 180;
 
-         source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_blue);
+        source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_blue);
 
         if (vname.equals(imc.getSelectedvehicle())) {
             posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
@@ -696,36 +704,105 @@ Area area;
 
 
         target = RotateMyBitmap(source2, ori2);
-        Drawable marker_ = new BitmapDrawable(getResources(), target);
-        ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
+        marker_ = new BitmapDrawable(getResources(), target);
+        markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
         map.getOverlays().add(markersOverlay2);
 
 
     }
 
 
-    public static Bitmap RotateMyBitmap(Bitmap source, float angle)
-    {
+    public static Bitmap RotateMyBitmap(Bitmap source, float angle) {
         Matrix matrix = new Matrix();
         matrix.postRotate(angle);
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
+    @Periodic(400)
+    @Override
+    public void onLocationChanged(Location location) {
+        final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+        latitude = Math.toRadians(location.getLatitude());
+        longitude = Math.toRadians(location.getLongitude());
+        GeoPoint posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
 
 
+        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", posicao);
+        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
+        items.add(marker);
+        newMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.arrow_red, null);
+        markersOverlay = new ItemizedIconOverlay<>(items, newMarker, null, context);
+        map.getOverlays().add(markersOverlay);
+        mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
+        mCompassOverlay.enableCompass();
+        map.getOverlays().add(this.mCompassOverlay);
+        map.getOverlays().add(markersOverlay);
+
+
+    }
+
+    //TODO
     @Background
-    @Periodic(500)
+    @Periodic(600)
     public void updateMap() {
-       // map.getOverlays().clear();
-        map.getOverlays().remove(source2);
+        map.getOverlays().clear();
+
         map.getOverlays().add(this.mCompassOverlay);
         synchronized (estates) {
             for (EstimatedState state : estates.values()) {
                 paintState(state);
             }
-
         }
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+
+        for (String provider : locationManager.getProviders(true)) {
+            if (ActivityCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            Location location = locationManager.getLastKnownLocation(provider);
+
+
+            //TODO adicionar tambem o da localizacao e os markers do line e area
+            if(location!=null)
+            onLocationChanged(location);
+        }
+        if(line!=null) {
+            for (int i = 0; i < markerPoints.size() - 1; i++){
+                nodeMarker = new Marker(map);
+                nodeMarker.setPosition(markerPoints.get(i));
+                nodeMarker.setIcon(nodeIcon);
+                nodeMarker.isDraggable();
+                nodeMarker.setDraggable(true);
+                nodeMarker.setTitle("lat/lon:" + markerPoints.get(i));
+                map.getOverlays().add(nodeMarker);
+                if(polyline!=null)
+                map.getOverlays().add(polyline);
+            }
+
+        }else if(area!=null){
+            for(int i =0; i<markerPoints.size()-1; i++){
+                nodeMarker = new Marker(map);
+                nodeMarker.setPosition(markerPoints.get(i));
+                nodeMarker.setIcon(nodeIcon);
+                nodeMarker.isDraggable();
+                nodeMarker.setDraggable(true);
+                nodeMarker.setTitle("lat/lon:" + markerPoints.get(i));
+                map.getOverlays().add(nodeMarker);
+                if(circle!=null)
+                    map.getOverlays().add(circle);
+            }
+        }
+
     }
+
+
 
 public  void dive() {
     Loiter dive = new Loiter();
@@ -792,7 +869,7 @@ public  void dive() {
         pc.setOp(PlanControl.OP.STOP);
         pc.setRequestId(1);
         pc.setFlags(0);
-        pc.setPlanId("teleoperation-mode");
+        pc.setPlanId("stopPlan");
         imc.sendMessage(pc);
     }
 
@@ -924,42 +1001,7 @@ if(v.getId()==R.id.startplan) {
         return super.onContextItemSelected(item);
     }
 
-    @Periodic(500)
-    @Override
-    public void onLocationChanged(Location location) {
-        final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
-        latitude = Math.toRadians(location.getLatitude());
-        longitude = Math.toRadians(location.getLongitude());
-        GeoPoint posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
 
-
-        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", posicao);
-        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
-        items.add(marker);
-        Drawable newMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.arrow_red, null);
-        ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, newMarker, null, context);
-        map.getOverlays().add(markersOverlay);
-        mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
-        mCompassOverlay.enableCompass();
-        map.getOverlays().add(this.mCompassOverlay);
-
-
-    }
-
-    public  void draw(GeoPoint p){
-        final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
-
-        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", p);
-        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
-        items.add(marker);
-      //  Drawable newMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.arrow_red, null);
-        ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, nodeIcon, null, context);
-        map.getOverlays().add(markersOverlay);
-
-
-
-
-    }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {

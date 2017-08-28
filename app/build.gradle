@@ -88,7 +88,6 @@ dependencies {
     apt "org.androidannotations:androidannotations:$AAVersion"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
     compile 'org.jetbrains:annotations-java5:15.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 }
 
 

@@ -29,9 +29,7 @@ import pt.lsts.imc.Goto;
  */
 
 public class Area extends MainActivity implements  PressListener, MapViewConstants {
-    ArrayList<GeoPoint> markerPoints = new ArrayList<>();
     float mGroundOverlayBearing = 0.0f;
-    Polygon circle;
     InfoWindow infoWindow;
     IMCGlobal imc;
 
@@ -44,6 +42,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         imc.unregister(this);
         map.getOverlayManager().clear();
         map.invalidate();
+        done.setVisibility(View.INVISIBLE);
 
     }
 
@@ -114,7 +113,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                 } else if (markerPoints.size() > 2) {
 
                     GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                    drawArea(origin, markerPoints);
+                    drawArea(p, origin, markerPoints);
                     trans.setVisibility(View.INVISIBLE);
 
                 }
@@ -125,7 +124,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     }
 
 
-    public void drawArea(GeoPoint origin, ArrayList<GeoPoint> markerPoints) {
+    public void drawArea(GeoPoint p,GeoPoint origin, ArrayList<GeoPoint> markerPoints) {
         circle = new Polygon();
         circle.getOutlinePaint();
         circle.isVisible();
@@ -135,22 +134,30 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         circle.setTitle("Centered on " + origin.getLatitude() + "," + origin.getLongitude());
         map.getOverlays().add(circle);
         map.invalidate();
+        if (imc.selectedvehicle == null) {
+            System.out.println("No vehicle selected");
+
+
+        } else {
+
+//Cobrir area
+        }
 
 
     }
 
     public  void Go(GeoPoint p){
 
-        FollowPath go = new FollowPath();
+        Goto go = new Goto();
         double lat = Math.toRadians(p.getLatitude());
         double lon = Math.toRadians(p.getLongitude());
         go.setLat(lat);
         go.setLon(lon);
         go.setZ(depth);
-        go.setZUnits(FollowPath.Z_UNITS.DEPTH);
+        go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
-        go.setSpeedUnits(FollowPath.SPEED_UNITS.RPM);
-        String planid = "FollowPath";
+        go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+        String planid = "Goto";
         startManeuver(planid, go);
     }
 

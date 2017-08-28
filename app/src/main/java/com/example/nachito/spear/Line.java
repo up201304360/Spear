@@ -2,6 +2,8 @@ package com.example.nachito.spear;
 
 
 import android.view.View;
+import android.widget.Toast;
+
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
 import org.osmdroid.util.GeoPoint;
@@ -14,17 +16,18 @@ import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
 import pt.lsts.imc.FollowPath;
+import pt.lsts.imc.Goto;
+import pt.lsts.imc.VehicleState;
 
 /**
  * Created by ines on 8/14/17.
  */
 public class Line extends MainActivity implements  PressListener, MapViewConstants{
-    ArrayList<GeoPoint> markerPoints = new ArrayList<>();
+
     float mGroundOverlayBearing = 0.0f;
     ArrayList<ArrayList<GeoPoint>> points;
-    Polyline polyline;
     InfoWindow infoWindow;
-IMCGlobal imc;
+    IMCGlobal imc;
 
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
@@ -84,9 +87,6 @@ IMCGlobal imc;
             });
 
 
-
-
-
         MainActivity.done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,20 +95,22 @@ IMCGlobal imc;
 
                 if (markerPoints.size() <= 2) {
 
-                   if (imc.selectedvehicle == null) {
-                       System.out.println("No vehicles");
-//                        Toast.makeText(line.getApplicationContext(), "No vehicles available", Toast.LENGTH_SHORT).show();
+                    if (imc.selectedvehicle == null) {
+                        System.out.println("No vehicle selected");
+
+                        //Toast.makeText(line.getApplicationContext(), "No vehicles available", Toast.LENGTH_SHORT).show();
 
                     } else {
                         Go(p);
                     }
                 }
+
                 else if (markerPoints.size() > 2) {
 
 
                     GeoPoint origin =  markerPoints.get(markerPoints.size() - 2);
                     GeoPoint dest =  markerPoints.get(markerPoints.size() - 1);
-                    drawLine(origin, dest,  markerPoints);
+                    drawLine(p, origin, dest,  markerPoints);
                     trans.setVisibility(View.INVISIBLE);
 
                 }
@@ -125,7 +127,7 @@ IMCGlobal imc;
 
 
 
-    public void drawLine(GeoPoint origin, GeoPoint dest, ArrayList<GeoPoint> markerPoints) {
+    public void drawLine(GeoPoint p, GeoPoint origin, GeoPoint dest, ArrayList<GeoPoint> markerPoints) {
         points = new ArrayList<>();
         points.add(markerPoints);
         points = new ArrayList<>();
@@ -139,25 +141,46 @@ IMCGlobal imc;
         polyline.setTitle("Origin on " + origin + " Dest on " + dest);
         map.getOverlayManager().add(polyline);
         map.invalidate();
+        if (imc.selectedvehicle == null) {
+            System.out.println("No vehicle selected");
 
-//varios followpath
 
+        } else {
+            follow(markerPoints, p);
+        }
 
     }
 
+ public void follow(ArrayList markerPoints, GeoPoint p){
+
+     FollowPath m = new FollowPath();
+     double lat = Math.toRadians(p.getLatitude());
+     double lon = Math.toRadians(p.getLongitude());
+     m.setLat(lat);
+     m.setLon(lon);
+     m.setZ(depth);
+     m.setZUnits(FollowPath.Z_UNITS.DEPTH);
+     m.setSpeed(speed);
+     m.setSpeedUnits(FollowPath.SPEED_UNITS.RPM);
+     m.setPoints(markerPoints);
+     String planid = "FollowLine";
+     startManeuver(planid, m);
+
+ }
 
     public  void Go(GeoPoint p){
 
-        FollowPath go = new FollowPath();
+
+        Goto go = new Goto();
         double lat = Math.toRadians(p.getLatitude());
         double lon = Math.toRadians(p.getLongitude());
         go.setLat(lat);
         go.setLon(lon);
         go.setZ(depth);
-        go.setZUnits(FollowPath.Z_UNITS.DEPTH);
+        go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
-        go.setSpeedUnits(FollowPath.SPEED_UNITS.RPM);
-        String planid = "FollowPath";
+        go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+        String planid = "Goto";
         startManeuver(planid, go);
     }
 
@@ -165,6 +188,7 @@ IMCGlobal imc;
     public void finish() {
         map.getOverlayManager().clear();
         map.invalidate();
+        done.setVisibility(View.INVISIBLE);
         imc.unregister(this);
 
     }
