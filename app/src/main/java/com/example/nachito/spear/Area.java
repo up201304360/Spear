@@ -1,27 +1,17 @@
 package com.example.nachito.spear;
 
-import android.os.Bundle;
 import android.view.View;
-import android.widget.Adapter;
-import android.widget.Button;
-import android.widget.Toast;
-
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
-import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
-
 import java.util.ArrayList;
-
-import pt.lsts.imc.FollowPath;
 import pt.lsts.imc.Goto;
 
 /**
@@ -97,13 +87,13 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
             }
         });
-    MainActivity.done.setOnClickListener(new View.OnClickListener() {
+    done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if (markerPoints.size() <= 2) {
                    if (imc.selectedvehicle == null) {
-                     //   Toast.makeText(Area.this, "No vehicles available", Toast.LENGTH_SHORT).show();
+
                        System.out.println("No vehicles");
                     }else{
                        Go(p);
@@ -135,12 +125,13 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         map.getOverlays().add(circle);
         map.invalidate();
         if (imc.selectedvehicle == null) {
+
             System.out.println("No vehicle selected");
 
 
         } else {
 
-//Cobrir area
+
         }
 
 

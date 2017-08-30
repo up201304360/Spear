@@ -7,10 +7,8 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
@@ -21,20 +19,15 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
-import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.menu.ExpandedMenuView;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -54,27 +47,27 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
+import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
-import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
-import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -92,7 +85,6 @@ import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.WGS84Utilities;
 
 import static android.os.Build.VERSION_CODES.M;
-import static com.example.nachito.spear.R.id.bottomsheet;
 import static com.example.nachito.spear.R.id.imageView;
 
 
@@ -113,7 +105,7 @@ public class MainActivity extends AppCompatActivity
     @ViewById(R.id.servicebar)
     TextView servicebar;
     @Bean
-    IMCGlobal imc;
+  static  IMCGlobal imc;
     @ViewById(imageView)
     ImageView wifi;
     @ViewById(R.id.imageView2)
@@ -145,10 +137,10 @@ public class MainActivity extends AppCompatActivity
     double longitude;
     @ViewById(R.id.velocity)
     TextView velocity;
-    double speed;
-    int duration;
-    double radius;
-    double depth;
+  static  double speed;
+  static  int duration;
+   static double radius;
+   static double depth;
     Bitmap target;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     GeoPoint posicaoVeiculo;
@@ -156,33 +148,43 @@ public class MainActivity extends AppCompatActivity
     LinearLayout bottom;
     Line line;
     static Press trans;
-    static Marker nodeMarker;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.marker_node)
     static Drawable nodeIcon;
     Bitmap source2;
     Area area;
-    //TODO correct
     @ViewById(R.id.done)
-    static Button done;
-    Drawable newMarker;
+   static  Button done;
+   static Bitmap newMarker;
     ItemizedIconOverlay markersOverlay;
     ItemizedIconOverlay markersOverlay2;
     Drawable marker_;
-    static ArrayList<GeoPoint> markerPoints = new ArrayList<>();
-    static Polyline polyline;
-    static Polygon circle;
-
+    Drawable marker3;
+    GeoPoint posicao;
+   static  ArrayList<GeoPoint> markerPoints = new ArrayList<>();
+   static Polyline polyline;
+   static Marker nodeMarker;
+   static Polygon circle;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        context = this;
+       context = this;
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        map.setTileSource(TileSourceFactory.MAPNIK);
+
+   /*     final MapTileProviderBasic tileProvider = new MapTileProviderBasic(getApplicationContext());
+        final ITileSource tileSource = new XYTileSource("SomeName", 3, 14, 256, ".png", null,
+                "http://192.168.1.5/mapcache/tms/1.0.0/ms-base@GoogleMapsCompatible/");
+
+        tileProvider.setTileSource(tileSource);
+        final TilesOverlay tilesOverlay = new TilesOverlay(tileProvider, this.getBaseContext());
+        map.getOverlays().add(tilesOverlay);*/
+
+
+      map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.setClickable(true);
         mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
@@ -245,10 +247,9 @@ public class MainActivity extends AppCompatActivity
         mLocationOverlay.enableMyLocation();
         map.invalidate();
         mapController = map.getController();
-        mapController.setZoom(3);
+        mapController.setZoom(14);
         //(Done) Centrar na localizacao do android
         mapController.setCenter(new GeoPoint(location));
-
 
     }
 
@@ -358,7 +359,7 @@ public class MainActivity extends AppCompatActivity
 
             public void onClick(View v) {
                 if (imc.selectedvehicle == null) {
-                    Toast.makeText(MainActivity.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                    warning();
                 } else {
                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
                     Builder builder = alertDialogBuilder
@@ -430,7 +431,7 @@ public class MainActivity extends AppCompatActivity
                 start.setBackgroundColor(pressed_color);
 
                 if (imc.selectedvehicle == null) {
-                    Toast.makeText(MainActivity.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                    warning();
                     start.setBackgroundColor(color);
 
                 } else {
@@ -451,7 +452,7 @@ public class MainActivity extends AppCompatActivity
                 dive.setBackgroundColor(pressed_color);
 
                 if (imc.selectedvehicle == null) {
-                    Toast.makeText(MainActivity.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                    warning();
                     dive.setBackgroundColor(color);
 
                 } else {
@@ -469,7 +470,7 @@ public class MainActivity extends AppCompatActivity
                 near.setBackgroundColor(pressed_color);
 
                 if (imc.selectedvehicle == null) {
-                    Toast.makeText(MainActivity.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                    warning();
                     near.setBackgroundColor(color);
 
                 } else {
@@ -488,7 +489,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
 
                 if (imc.selectedvehicle == null) {
-                    Toast.makeText(MainActivity.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                    warning();
                 } else {
                     stopPlan();
                     map.getOverlays().clear();
@@ -508,7 +509,7 @@ public class MainActivity extends AppCompatActivity
                 keep.setBackgroundColor(pressed_color);
 
                 if (imc.selectedvehicle == null) {
-                    Toast.makeText(MainActivity.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                    warning();
                     keep.setBackgroundColor(color);
 
                 } else {
@@ -551,18 +552,21 @@ public class MainActivity extends AppCompatActivity
             stopTeleop.setVisibility(View.INVISIBLE);
             Joystick joystick = (Joystick) findViewById(R.id.joystick);
             joystick.setVisibility(View.INVISIBLE);
+            updateMap();
         } else if (line != null) {
             line.finish();
 
             trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
+            updateMap();
 
         } else if (area != null) {
             area.finish();
             trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
+            updateMap();
 
 
         } else
@@ -666,6 +670,30 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+
+    @Periodic(700)
+    @Override
+    public void onLocationChanged(Location location) {
+        final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+        latitude = Math.toRadians(location.getLatitude());
+        longitude = Math.toRadians(location.getLongitude());
+        posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
+
+
+        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", posicao);
+        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
+        items.add(marker);
+
+
+        newMarker = BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_red);
+        newMarker= Bitmap.createScaledBitmap(newMarker, 70, 70, false);
+        marker3 = new BitmapDrawable(getResources(), newMarker);
+        markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
+        map.getOverlays().add(markersOverlay);
+
+
+    }
+
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
@@ -682,13 +710,15 @@ public class MainActivity extends AppCompatActivity
         int ori2 = (int) Math.round(Math.toDegrees(orientation2));
         ori2 = ori2 - 180;
 
-        source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_blue);
-
+        source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_blue);
+       source2= Bitmap.createScaledBitmap(source2, 70, 70, false);
         if (vname.equals(imc.getSelectedvehicle())) {
             posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
             latVeiculo = Math.toRadians(lld[0]);
             lonVeiculo = Math.toRadians(lld[1]);
-            source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.arrow_green);
+            source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_green);
+            source2= Bitmap.createScaledBitmap(source2, 70, 70, false);
+
             DecimalFormat df2 = new DecimalFormat("#.##");
             final String vel = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
             final String dept = df2.format(state.getDepth()); //(DONE) por so 2 casa decimais
@@ -718,46 +748,25 @@ public class MainActivity extends AppCompatActivity
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
-    @Periodic(400)
-    @Override
-    public void onLocationChanged(Location location) {
-        final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
-        latitude = Math.toRadians(location.getLatitude());
-        longitude = Math.toRadians(location.getLongitude());
-        GeoPoint posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
 
-
-        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", posicao);
-        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
-        items.add(marker);
-        newMarker = ResourcesCompat.getDrawable(getResources(), R.drawable.arrow_red, null);
-        markersOverlay = new ItemizedIconOverlay<>(items, newMarker, null, context);
-        map.getOverlays().add(markersOverlay);
-        mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
-        mCompassOverlay.enableCompass();
-        map.getOverlays().add(this.mCompassOverlay);
-        map.getOverlays().add(markersOverlay);
-
-
-    }
-
-    //TODO
     @Background
-    @Periodic(600)
+    @Periodic(500)
     public void updateMap() {
         map.getOverlays().clear();
 
-        map.getOverlays().add(this.mCompassOverlay);
+        map.getOverlays().add(mCompassOverlay);
         synchronized (estates) {
             for (EstimatedState state : estates.values()) {
                 paintState(state);
             }
         }
+
+
         LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
         for (String provider : locationManager.getProviders(true)) {
             if (ActivityCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
+                //  Consider calling
                 //    ActivityCompat#requestPermissions
                 // here to request the missing permissions, and then overriding
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
@@ -769,9 +778,9 @@ public class MainActivity extends AppCompatActivity
             Location location = locationManager.getLastKnownLocation(provider);
 
 
-            //TODO adicionar tambem o da localizacao e os markers do line e area
-            if(location!=null)
+            if(posicao!=null && location!=null)
             onLocationChanged(location);
+
         }
         if(line!=null) {
             for (int i = 0; i < markerPoints.size() - 1; i++){
@@ -781,10 +790,10 @@ public class MainActivity extends AppCompatActivity
                 nodeMarker.isDraggable();
                 nodeMarker.setDraggable(true);
                 nodeMarker.setTitle("lat/lon:" + markerPoints.get(i));
-                map.getOverlays().add(nodeMarker);
+                map.getOverlays().add(nodeMarker); }
                 if(polyline!=null)
                 map.getOverlays().add(polyline);
-            }
+
 
         }else if(area!=null){
             for(int i =0; i<markerPoints.size()-1; i++){
@@ -794,15 +803,13 @@ public class MainActivity extends AppCompatActivity
                 nodeMarker.isDraggable();
                 nodeMarker.setDraggable(true);
                 nodeMarker.setTitle("lat/lon:" + markerPoints.get(i));
-                map.getOverlays().add(nodeMarker);
+                map.getOverlays().add(nodeMarker); }
                 if(circle!=null)
                     map.getOverlays().add(circle);
-            }
+
         }
 
     }
-
-
 
 public  void dive() {
     Loiter dive = new Loiter();
@@ -849,7 +856,7 @@ public  void dive() {
     }
 
 
-    public  void startManeuver(String planid, Maneuver maneuver) {
+    public static void startManeuver(String planid, Maneuver maneuver) {
         PlanControl pc = new PlanControl();
         pc.setArg(maneuver);
         pc.setType(PlanControl.TYPE.REQUEST);
@@ -857,7 +864,9 @@ public  void dive() {
         pc.setFlags(0);
         pc.setRequestId(0);
         pc.setPlanId(planid);
+        System.out.println(planid +" "+ pc);
         imc.sendMessage(pc);
+
 
     }
 
@@ -926,7 +935,8 @@ public  void dive() {
 
     public void requestPlans() {
         if (imc.selectedvehicle == null) {
-            Toast.makeText(MainActivity.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+            warning();
+
             return;
         } else {
             PlanDB pdb = new PlanDB();
@@ -959,14 +969,14 @@ if(v.getId()==R.id.startplan) {
     vehicleList = new ArrayList<>();
     states = imc.connectedVehicles();
     if(imc.connectedVehicles()==null)
-        Toast.makeText(this, "No vehicles available", Toast.LENGTH_SHORT).show();
+        warning();
     for (VehicleState state : states) {
         vehicleList.add(state.getSourceName() + ":" + state.getOpMode());    }
     for(int i=0; i<vehicleList.size(); i++){
         String connectedvehicles= vehicleList.toString();
         String[] getName = connectedvehicles.split(",");
         getName[0] = getName[0].substring(1);
-            getName[getName.length-1] = getName[getName.length-1].substring(0,getName[getName.length-1].length()-1);
+        getName[getName.length-1] = getName[getName.length-1].substring(0,getName[getName.length-1].length()-1);
         String selectedName= getName[i];
         menu.add(i,i,i,selectedName );
 
@@ -992,8 +1002,8 @@ if(v.getId()==R.id.startplan) {
             String selectedName2 = getName2[0];
             imc.setSelectedvehicle(selectedName2.trim());
             servicebar.setText(selectedName2);
+
         }
-    //TODO se em teleoperacao mudar para command
     if (teleop2 != null) {
         teleop2.finish();
     }
@@ -1018,10 +1028,11 @@ if(v.getId()==R.id.startplan) {
     }
 
 
+    public void warning(){
+        Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+    }
 }
 
-//TODO 2 joysticks
 //todo map offline
 //todo cores
-//TODO se desligar veiculo selecionado tem de ficar em branco
-//TODO recentrar no veic ou no android
+//TODO - desligar veiculo

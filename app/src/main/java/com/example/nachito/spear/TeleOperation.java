@@ -63,7 +63,6 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
         }
     }
 
-    //TODO thurst opcao settings eixo ou joystick
     @Override
     public void OnMoved(float pan, float tilt) {
         remoteActions.put("Heading", ((int) (pan * 15)));
