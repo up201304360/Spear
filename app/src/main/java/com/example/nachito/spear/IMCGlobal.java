@@ -27,7 +27,6 @@ import pt.lsts.neptus.messages.listener.MessageInfo;
         @Override
         public void onMessage(MessageInfo messageInfo, IMCMessage imcMessage) {
             super.onMessage(messageInfo, imcMessage);
-            // System.out.println("msg: "+imcMessage.getAbbrev());
 
         }
 

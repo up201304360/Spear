@@ -26,7 +26,6 @@ public class PlanList {
 
     @Consume
     public void plan(PlanDB msg) {
-        //System.err.println(msg);
         if (msg.getOp() != PlanDB.OP.GET_STATE || msg.getType() != (PlanDB.TYPE.SUCCESS))
             return;
         IMCMessage arg = msg.getArg();
@@ -49,7 +48,6 @@ public class PlanList {
         PlanDB msg = new PlanDB();
         msg.setOp(PlanDB.OP.GET_STATE);
         msg.setType(PlanDB.TYPE.REQUEST);
-      //  System.out.println(msg.asJSON());
         imc.sendToAll(msg);
     }
 

@@ -47,10 +47,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.MapTileProviderBasic;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -59,18 +56,15 @@ import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Loiter;
@@ -83,7 +77,6 @@ import pt.lsts.imc.VehicleState;
 import pt.lsts.imc.net.Consume;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.WGS84Utilities;
-
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.imageView;
 
@@ -131,8 +124,8 @@ public class MainActivity extends AppCompatActivity
     OverlayItem lastPosition = null;
     OsmMapsItemizedOverlay mItemizedOverlay;
     int tamanhoLista;
-    double latVeiculo;
-    double lonVeiculo;
+  static  double latVeiculo;
+  static  double lonVeiculo;
     double latitude;
     double longitude;
     @ViewById(R.id.velocity)
@@ -154,6 +147,8 @@ public class MainActivity extends AppCompatActivity
     Area area;
     @ViewById(R.id.done)
    static  Button done;
+    @ViewById(R.id.erase)
+    static Button erase;
    static Bitmap newMarker;
     ItemizedIconOverlay markersOverlay;
     ItemizedIconOverlay markersOverlay2;
@@ -216,6 +211,7 @@ public class MainActivity extends AppCompatActivity
         trans = (Press) findViewById(R.id.transparente);
         trans.setVisibility(View.INVISIBLE);
         done.setVisibility(View.INVISIBLE);
+        erase.setVisibility(View.INVISIBLE);
         imc.register(this);
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
@@ -239,7 +235,6 @@ public class MainActivity extends AppCompatActivity
                 break;
             }
         }
-        //Adiciona localizaçao Android
         if (location == null) {
             location = new Location(LocationManager.GPS_PROVIDER);
         }
@@ -248,7 +243,6 @@ public class MainActivity extends AppCompatActivity
         map.invalidate();
         mapController = map.getController();
         mapController.setZoom(14);
-        //(Done) Centrar na localizacao do android
         mapController.setCenter(new GeoPoint(location));
 
     }
@@ -265,7 +259,6 @@ public class MainActivity extends AppCompatActivity
         map.getOverlays().add(mItemizedOverlay);
         map.getController().animateTo(aPoint);
     }
-//Refreshing the map to draw the new overlay
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
@@ -367,7 +360,6 @@ public class MainActivity extends AppCompatActivity
                             .setCancelable(false)
                             .setPositiveButton("Yes", new OnClickListener() {
 
-                                //se carregarmos em yes abre a TeleOp class
                                 public void onClick(DialogInterface dialog, int id) {
                                     if (teleop2 == null)
                                         teleop2 = new TeleOperation();
@@ -407,15 +399,11 @@ public class MainActivity extends AppCompatActivity
                             })
                             .setNegativeButton("No", new OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
-                                    // if this button is clicked, just close
-                                    // the dialog box and do nothing
 
                                     dialog.cancel();
                                 }
                             });
-                    // create alert dialog
                     AlertDialog alertDialog = alertDialogBuilder.create();
-                    // show it
                     alertDialog.show();
                 }
 
@@ -423,7 +411,6 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-//carregar no StartPlan
         start.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -483,7 +470,6 @@ public class MainActivity extends AppCompatActivity
 
         });
 
-//carregar no stop
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -555,17 +541,22 @@ public class MainActivity extends AppCompatActivity
             updateMap();
         } else if (line != null) {
             line.finish();
-
             trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
+            erase.setVisibility(View.INVISIBLE);
+           // line=null;
             updateMap();
+
 
         } else if (area != null) {
             area.finish();
             trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
+            bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
+            erase.setVisibility(View.INVISIBLE);
+         //   area=null;
             updateMap();
 
 
@@ -581,8 +572,7 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    //(DONE) andar back settings
-    //(DONE) botoes acelerar
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -607,15 +597,13 @@ public class MainActivity extends AppCompatActivity
                         public void onClick(DialogInterface dialog, int which) {
                             if (area != null)
                                 area.finish();
-
-                            //Fazer erase aos pontos
                             line = new Line();
-
                             bottom.setVisibility(View.INVISIBLE);
                             mCompassOverlay.disableCompass();
-                            done.setVisibility(View.VISIBLE);
                             done.setClickable(true);
                             done.setOnClickListener(line);
+                            erase.setClickable(true);
+                            erase.setOnClickListener(line);
                             trans.setonPress(line);
                             trans.setVisibility(View.VISIBLE);
                             line.setImc(imc);
@@ -631,18 +619,17 @@ public class MainActivity extends AppCompatActivity
                             bottom.setVisibility(View.INVISIBLE);
                             area = new Area();
                             mCompassOverlay.disableCompass();
-                            done.setVisibility(View.VISIBLE);
                             done.setClickable(true);
                             done.setOnClickListener(area);
+                            erase.setClickable(true);
+                            erase.setOnClickListener(area);
                             trans.setonPress(area);
                             trans.setVisibility(View.VISIBLE);
                             area.setImc(imc);
 
                         }
                     });
-            // create alert dialog
             AlertDialog alertDialog = alertDialogBuilder.create();
-            // show it
             alertDialog.show();
         }
         return super.onOptionsItemSelected(item);
@@ -655,7 +642,10 @@ public class MainActivity extends AppCompatActivity
         // Unregister MainActv as an OnPreferenceChangedListener to avoid any memory leaks.
         android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
-
+        area=null;
+        line= null;
+        done=null;
+        erase=null;
         imc.stop();
     }
 
@@ -685,8 +675,7 @@ public class MainActivity extends AppCompatActivity
         items.add(marker);
 
 
-        newMarker = BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_red);
-        newMarker= Bitmap.createScaledBitmap(newMarker, 70, 70, false);
+        newMarker= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_red), 70, 70, false);
         marker3 = new BitmapDrawable(getResources(), newMarker);
         markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
         map.getOverlays().add(markersOverlay);
@@ -697,7 +686,6 @@ public class MainActivity extends AppCompatActivity
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
-        //(DONE) por todas as posiçoes
         double[] lld = WGS84Utilities.toLatLonDepth(state);
         final ArrayList<OverlayItem> items2 = new ArrayList<OverlayItem>();
 
@@ -710,18 +698,17 @@ public class MainActivity extends AppCompatActivity
         int ori2 = (int) Math.round(Math.toDegrees(orientation2));
         ori2 = ori2 - 180;
 
-        source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_blue);
-       source2= Bitmap.createScaledBitmap(source2, 70, 70, false);
+
+       source2= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_blue), 70, 70, false);
         if (vname.equals(imc.getSelectedvehicle())) {
             posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
-            latVeiculo = Math.toRadians(lld[0]);
-            lonVeiculo = Math.toRadians(lld[1]);
-            source2 = BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_green);
-            source2= Bitmap.createScaledBitmap(source2, 70, 70, false);
+
+
+            source2= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_green), 70, 70, false);
 
             DecimalFormat df2 = new DecimalFormat("#.##");
             final String vel = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
-            final String dept = df2.format(state.getDepth()); //(DONE) por so 2 casa decimais
+            final String dept = df2.format(state.getDepth());
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -778,7 +765,7 @@ public class MainActivity extends AppCompatActivity
             Location location = locationManager.getLastKnownLocation(provider);
 
 
-            if(posicao!=null && location!=null)
+            if( location!=null)
             onLocationChanged(location);
 
         }
@@ -824,7 +811,7 @@ public  void dive() {
     dive.setBearing(0);
     String planid = "Dive";
     startManeuver(planid, dive);
-}// /.neptus.sh mra
+}
 
     public  void keepStation() {
         StationKeeping stationKeepingmsg = new StationKeeping();
@@ -928,10 +915,8 @@ public  void dive() {
 
 
 
-    //ContextMenu para os planos (start button)
 
 
-    //(DONE) Adicionar lista de planos
 
     public void requestPlans() {
         if (imc.selectedvehicle == null) {

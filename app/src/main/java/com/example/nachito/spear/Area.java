@@ -23,7 +23,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     InfoWindow infoWindow;
     IMCGlobal imc;
 
-
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
@@ -35,7 +34,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         done.setVisibility(View.INVISIBLE);
 
     }
-
 
     @Override
     public void onLongPress(double x, double y) {
@@ -87,32 +85,34 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
             }
         });
-    done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            done.setVisibility(View.VISIBLE);
+            erase.setVisibility(View.VISIBLE);
+            done.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-                if (markerPoints.size() <= 2) {
-                   if (imc.selectedvehicle == null) {
+                    if (markerPoints.size() <= 2) {
+                        if (imc.selectedvehicle == null) {
 
-                       System.out.println("No vehicles");
-                    }else{
-                       Go(p);
+                            System.out.println("No vehicles");
+                        } else {
+                            Go(p);
+                        }
+
+
+                    } else if (markerPoints.size() > 2) {
+
+                        GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
+                        drawArea(p, origin, markerPoints);
+                        trans.setVisibility(View.INVISIBLE);
+
                     }
-
-
-                } else if (markerPoints.size() > 2) {
-
-                    GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                    drawArea(p, origin, markerPoints);
-                    trans.setVisibility(View.INVISIBLE);
-
                 }
-            }
-        });
+            });
+
 
 
     }
-
 
     public void drawArea(GeoPoint p,GeoPoint origin, ArrayList<GeoPoint> markerPoints) {
         circle = new Polygon();

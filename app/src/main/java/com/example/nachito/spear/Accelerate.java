@@ -27,14 +27,9 @@ public class Accelerate  extends View {
         super(context, attrs, defStyleAttr);
     }
 
-
-
-
     public void setOnAccelerate(AccelListener listener) {
         this .listener = listener;
     }
-
-
 
 
     @Override
@@ -45,11 +40,10 @@ public class Accelerate  extends View {
 
         if (listener != null)
             listener.accelerate();
-
-        invalidate();
-     if(actionType == MotionEvent.ACTION_UP) {
-        release();}
-return true;
+            invalidate();
+        if(actionType == MotionEvent.ACTION_UP) {
+            release();}
+        return true;
     }
 
 

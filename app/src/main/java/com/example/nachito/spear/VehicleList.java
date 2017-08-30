@@ -21,7 +21,6 @@ public class VehicleList {
 
     @Consume
     public void vehicle(VehicleState msg) {
-        //(DONE) atualizar no mapa com  os ulti veiculos recebidos
         String nome=msg.getSourceName();
         synchronized (hashMap) {
             hashMap.put(nome, new Pair<>(new Date(), msg));

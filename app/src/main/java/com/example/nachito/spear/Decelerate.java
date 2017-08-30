@@ -28,16 +28,9 @@ public class Decelerate extends View {
         super(context, attrs, defStyleAttr);
     }
 
-
-
-
     public void setOnDec(DecListener listener) {
         this .listener = listener;
     }
-
-
-
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -52,9 +45,6 @@ this.setBackgroundColor(pressed_color);
         return true;
     }
 
-
-
-
     public void release(){
 
 this.setBackgroundColor(color);
@@ -62,8 +52,5 @@ this.setBackgroundColor(color);
             listener.OnReleaseDec();
         }
     }
-
-
-
 
 }

@@ -18,6 +18,8 @@
         <string name="stop">Stop</string>
         <string name="abort">Abort</string>
         <string name="dive">Dive</string>
+    <string name="erase">Erase</string>
+
     <string name="done">Done</string>
 
     <string name="station">Keep Station</string>

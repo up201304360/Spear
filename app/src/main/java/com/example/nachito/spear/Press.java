@@ -22,9 +22,6 @@ import org.osmdroid.views.overlay.Marker;
  */
 public class Press extends View  {
     private PressListener listener;
-    GeoPoint p;
-
-
 
 
     public Press(Context context) {
@@ -40,13 +37,9 @@ public class Press extends View  {
     }
 
 
-
-
     public void setonPress(PressListener listener) {
         this .listener = listener;
     }
-
-
 
     @Override
     public boolean onTouchEvent(MotionEvent v) {

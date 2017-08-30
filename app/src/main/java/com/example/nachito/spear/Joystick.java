@@ -112,7 +112,6 @@ public class Joystick extends View {
         }
         return result;
     }
-    //(DONE) fixar o painel
     @Override
     protected void onDraw(Canvas canvas) {
         int px = getMeasuredWidth() / 2;
