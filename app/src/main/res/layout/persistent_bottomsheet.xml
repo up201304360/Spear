@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="253dp"
     android:layout_alignParentBottom="true"
-    android:background="#F3F3F3"
+        android:background="#FFFFFF"
     android:orientation="vertical"
     android:paddingBottom="@dimen/inbetween_space"
     app:behavior_hideable="false"
@@ -22,38 +22,37 @@
             android:id="@+id/servicebar"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_alignBottom="@+id/imageView"
-            android:layout_alignParentTop="true"
             android:background="#a9a9a9"
             android:clickable="true"
             android:onClick="onClick"
             android:textColor="#FFFFFF"
-            android:textSize="25sp" />
+            android:textSize="25sp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
 
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:layout_alignLeft="@+id/imageView2"
 
-            android:layout_alignParentTop="true"
+            android:background="@drawable/wifi"
+            android:layout_alignLeft="@+id/imageView2"
             android:layout_alignStart="@+id/imageView2"
-            android:layout_marginLeft="11dp"
-            android:background="@drawable/wifi" />
+            android:layout_alignBottom="@+id/servicebar" />
 
         <ImageView
             android:id="@+id/imageView2"
             android:layout_width="35dp"
             android:layout_height="35dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginEnd="36dp"
-            android:layout_marginLeft="11dp"
-            android:layout_marginRight="36dp"
+            android:layout_marginEnd="31dp"
+            android:layout_marginRight="31dp"
             android:background="@drawable/nowifi"
-            android:fitsSystemWindows="true" />
+            android:fitsSystemWindows="true"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
 
     </RelativeLayout>
@@ -67,30 +66,27 @@
             android:id="@+id/teleop"
             android:layout_width="110dp"
             android:layout_height="55dp"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_margin="5dp"
             android:background="@drawable/teleopbutton"
             android:onClick="Teleop"
             android:text="@string/teleop"
             android:textColor="#ffffff"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:layout_alignTop="@+id/accelerate"
+            android:layout_alignRight="@+id/accelerate"
+            android:layout_alignEnd="@+id/accelerate" />
 
         <Button
             android:id="@+id/near"
             android:layout_width="110dp"
             android:layout_height="55dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:layout_margin="5dp"
-            android:layout_marginTop="11dp"
             android:background="@drawable/commandbutton"
             android:onClick="near"
             android:text="@string/near"
             android:textColor="#ffffff"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:layout_alignTop="@+id/accelerate"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
 
         <Button
@@ -99,8 +95,7 @@
             android:layout_height="55dp"
             android:layout_alignLeft="@+id/startplan"
             android:layout_alignStart="@+id/startplan"
-            android:layout_below="@+id/startplan"
-            android:layout_marginTop="11dp"
+            android:layout_alignTop="@+id/textView5"
             android:background="@drawable/stopbutton"
             android:onClick="Stop"
             android:text="@string/stop"
@@ -125,8 +120,8 @@
             android:layout_height="55dp"
             android:layout_alignBaseline="@+id/stop"
             android:layout_alignBottom="@+id/stop"
-            android:layout_alignLeft="@+id/KeepStation"
-            android:layout_alignStart="@+id/KeepStation"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:background="@drawable/commandbutton"
             android:onClick="Dive"
             android:text="@string/dive"
@@ -137,28 +132,28 @@
             android:id="@+id/KeepStation"
             android:layout_width="110dp"
             android:layout_height="55dp"
-            android:layout_alignLeft="@+id/near"
-            android:layout_alignStart="@+id/near"
-            android:layout_below="@+id/teleop"
             android:background="@drawable/commandbutton"
             android:onClick="keepStation"
             android:text="@string/station"
             android:textColor="#ffffff"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:layout_alignTop="@+id/textView2"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
 
         <Button
             android:id="@+id/startplan"
             android:layout_width="110dp"
             android:layout_height="55dp"
-            android:layout_alignLeft="@+id/teleop"
-            android:layout_alignStart="@+id/teleop"
-            android:layout_below="@+id/teleop"
             android:background="@drawable/commandbutton"
             android:onClick="start"
             android:text="@string/startplan"
             android:textColor="#ffffff"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:layout_alignTop="@+id/textView2"
+            android:layout_alignRight="@+id/stopTeleop"
+            android:layout_alignEnd="@+id/stopTeleop" />
 
         <com.example.nachito.spear.StopTeleop xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/stopTeleop"
@@ -228,6 +223,7 @@
             android:textSize="14sp" />
 
         <TextView
+            android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/textView4"

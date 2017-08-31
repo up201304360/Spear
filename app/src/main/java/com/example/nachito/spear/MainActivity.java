@@ -1,6 +1,7 @@
 package com.example.nachito.spear;
 
 import android.Manifest.permission;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -47,7 +48,10 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.MapTileProviderBasic;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -56,6 +60,7 @@ import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
+import org.osmdroid.views.overlay.TilesOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
@@ -145,8 +150,10 @@ public class MainActivity extends AppCompatActivity
     static Drawable nodeIcon;
     Bitmap source2;
     Area area;
+    @SuppressLint("StaticFieldLeak")
     @ViewById(R.id.done)
-   static  Button done;
+     static Button done;
+    @SuppressLint("StaticFieldLeak")
     @ViewById(R.id.erase)
     static Button erase;
    static Bitmap newMarker;
@@ -170,16 +177,16 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-   /*     final MapTileProviderBasic tileProvider = new MapTileProviderBasic(getApplicationContext());
+      final MapTileProviderBasic tileProvider = new MapTileProviderBasic(getApplicationContext());
         final ITileSource tileSource = new XYTileSource("SomeName", 3, 14, 256, ".png", null,
                 "http://192.168.1.5/mapcache/tms/1.0.0/ms-base@GoogleMapsCompatible/");
 
         tileProvider.setTileSource(tileSource);
         final TilesOverlay tilesOverlay = new TilesOverlay(tileProvider, this.getBaseContext());
-        map.getOverlays().add(tilesOverlay);*/
+        map.getOverlays().add(tilesOverlay);
 
 
-      map.setTileSource(TileSourceFactory.MAPNIK);
+      //  map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.setClickable(true);
         mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
@@ -538,7 +545,6 @@ public class MainActivity extends AppCompatActivity
             stopTeleop.setVisibility(View.INVISIBLE);
             Joystick joystick = (Joystick) findViewById(R.id.joystick);
             joystick.setVisibility(View.INVISIBLE);
-            //updateMap();
         } else if (line != null) {
             line.finish();
             trans.setVisibility(View.INVISIBLE);
@@ -546,7 +552,6 @@ public class MainActivity extends AppCompatActivity
             done.setVisibility(View.INVISIBLE);
             erase.setVisibility(View.INVISIBLE);
            // line=null;
-          //  updateMap();
 
 
         } else if (area != null) {
@@ -557,7 +562,6 @@ public class MainActivity extends AppCompatActivity
             done.setVisibility(View.INVISIBLE);
             erase.setVisibility(View.INVISIBLE);
          //   area=null;
-         //   updateMap();
 
 
         } else
@@ -645,6 +649,7 @@ public class MainActivity extends AppCompatActivity
         area=null;
         line= null;
         done=null;
+
         erase=null;
         imc.stop();
     }
@@ -659,7 +664,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
+//TODO
     @Background
     @Periodic(500)
     @Override
@@ -735,7 +740,7 @@ public class MainActivity extends AppCompatActivity
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
-
+//TODO
     @Background
     @Periodic(500)
     public void updateMap() {

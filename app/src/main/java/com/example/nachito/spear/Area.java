@@ -12,10 +12,18 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+
+import pt.lsts.coverage.GeoCoord;
 import pt.lsts.imc.Goto;
+
+import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
+
 
 /**
  * Created by ines on 8/23/17.
+ *
  */
 
 public class Area extends MainActivity implements  PressListener, MapViewConstants {
@@ -103,7 +111,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                     } else if (markerPoints.size() > 2) {
 
                         GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                        drawArea(p, origin, markerPoints);
+                        drawArea(p, origin);
                         trans.setVisibility(View.INVISIBLE);
 
                     }
@@ -114,7 +122,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
     }
 
-    public void drawArea(GeoPoint p,GeoPoint origin, ArrayList<GeoPoint> markerPoints) {
+    public void drawArea(GeoPoint p,GeoPoint origin) {
         circle = new Polygon();
         circle.getOutlinePaint();
         circle.isVisible();
@@ -132,6 +140,32 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         } else {
 
 
+            LinkedHashSet<String> lhs = new LinkedHashSet<>();
+            Iterator<GeoPoint> it = markerPoints.iterator();
+
+            System.out.println("ANTES:"+markerPoints);
+            while(it.hasNext()) {
+                String val = it.next().toString();
+                if (lhs.contains(val)) {
+                    System.out.println("Remove "+val);
+                    it.remove();
+                }
+                else
+                    lhs.add(val);
+            }
+
+
+            double swathWidth = 30;
+            ArrayList<GeoCoord> coords = new ArrayList<>();
+
+     for(int i=0; i<markerPoints.size()-1; i++ ){
+
+         coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
+         System.out.println("DEPOIS:"+coords);
+
+     }
+            for (GeoCoord coord : computeCoveragePath(coords, swathWidth))
+                System.out.println(coord.latitudeDegs+", "+coord.longitudeDegs);
 
             //Settings da largura da area
             //swath width
