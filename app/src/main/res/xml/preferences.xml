@@ -29,7 +29,11 @@
         android:key="@string/pref_depth_key"
         android:singleLine="true"
         android:title="@string/depth" />
-
+    <EditTextPreference
+        android:defaultValue="@string/pref_width_default"
+        android:key="@string/pref_width_key"
+        android:singleLine="true"
+        android:title="@string/width" />
 
 
 

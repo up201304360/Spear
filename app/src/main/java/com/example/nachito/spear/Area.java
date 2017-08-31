@@ -155,7 +155,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             }
 
 
-            double swathWidth = 30;
             ArrayList<GeoCoord> coords = new ArrayList<>();
 
      for(int i=0; i<markerPoints.size()-1; i++ ){
@@ -164,12 +163,9 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
          System.out.println("DEPOIS:"+coords);
 
      }
-            for (GeoCoord coord : computeCoveragePath(coords, swathWidth))
+            for (GeoCoord coord : computeCoveragePath(coords, swath_width))
                 System.out.println(coord.latitudeDegs+", "+coord.longitudeDegs);
 
-            //Settings da largura da area
-            //swath width
-            //alg dada area gera waypoints
         }
 
 

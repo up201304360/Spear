@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity
   static  int duration;
    static double radius;
    static double depth;
+    static double swath_width;
     Bitmap target;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     GeoPoint posicaoVeiculo;
@@ -333,6 +334,8 @@ public class MainActivity extends AppCompatActivity
         duration = (int) Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_duration_key), getString(R.string.pref_duration_default)));
         radius = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_radius_key), getString(R.string.pref_radius_default)));
         depth = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_depth_key), getString(R.string.pref_depth_default)));
+        swath_width=Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_width_key), "25"));
+
     }
 
 

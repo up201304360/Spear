@@ -32,7 +32,7 @@
    <string name="duration">duration</string>
     <string name="radius">radius</string>
     <string name="depth">depth</string>
-
+    <string name="width">swath width</string>
     <string name="pref_speed_key" translatable="false">speed</string>
     <string name="pref_speed_default" translatable="false">1300</string>
 
@@ -45,7 +45,8 @@
     <string name="pref_depth_key" translatable="false">depth</string>
     <string name="pref_depth_default" translatable="false">5</string>
 
-
+    <string name="pref_width_key" translatable="false">swath width</string>
+    <string name="pref_width_default" translatable="false">25</string>
 
 
 
