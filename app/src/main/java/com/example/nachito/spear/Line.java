@@ -12,12 +12,12 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 
-import pt.lsts.imc.FollowPath;
 import pt.lsts.imc.Goto;
-import pt.lsts.imc.PathPoint;
+import pt.lsts.imc.Maneuver;
+import pt.lsts.util.PlanUtilities;
 
 
 /**
@@ -31,6 +31,8 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     IMCGlobal imc;
     GeoPoint p;
     Boolean doneClicked=false;
+    Goto follow;
+
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
@@ -42,6 +44,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         if (!doneClicked) {
             IGeoPoint p2 = map.getProjection().fromPixels((int) x, (int) y);
             p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
+
             markerPoints.add(p);
             GroundOverlay myGroundOverlay = new GroundOverlay();
             myGroundOverlay.setPosition(p);
@@ -99,7 +102,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
                             GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
                             GeoPoint dest = markerPoints.get(markerPoints.size() - 1);
-                            drawLine(p, origin, dest, markerPoints);
+                            drawLine(origin, dest);
                             trans.setVisibility(View.INVISIBLE);
                         }
                     }
@@ -131,7 +134,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
 
-    public void drawLine(GeoPoint p, GeoPoint origin, GeoPoint dest, ArrayList<GeoPoint> markerPoints) {
+    public void drawLine( GeoPoint origin, GeoPoint dest) {
         points = new ArrayList<>();
         points.add(markerPoints);
         points = new ArrayList<>();
@@ -150,29 +153,48 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
         } else {
-            follow(markerPoints, p);
+            followPoints();
         }
 
     }
 
-    public void follow(ArrayList markerPoints, GeoPoint p) {
-        if(latVeiculo ==0 && lonVeiculo==0)
-         return;
-        System.out.println(latVeiculo + " " + lonVeiculo);
+    public void followPoints() {
+        LinkedHashSet<String> lhs = new LinkedHashSet<String>();
+        Iterator<GeoPoint> it = markerPoints.iterator();
 
-        FollowPath m = new FollowPath();
+        System.out.println("ANTES:"+markerPoints);
+        while(it.hasNext()) {
+            String val = it.next().toString();
+            if (lhs.contains(val)) {
+                System.out.println("Remove "+val);
+                it.remove();
+            }
+            else
+                lhs.add(val);
+        }
+        System.out.println("DEPOIS:"+markerPoints);
 
-      //  m.setLat();
-       // m.setLon();
-        m.setZ(depth);
-        m.setZUnits(FollowPath.Z_UNITS.DEPTH);
-        m.setSpeed(speed);
-        m.setSpeedUnits(FollowPath.SPEED_UNITS.RPM);
-       // m.setPoints();
-        String planid = "FollowLine";
-        System.out.println(p);
-        startManeuver(planid, m);
+        ArrayList<Maneuver> maneuvers = new ArrayList<>();
+
+        for (GeoPoint p : markerPoints) {
+
+            follow = new Goto();
+            double lat = Math.toRadians((p.getLatitude()));
+            double lon = Math.toRadians((p.getLongitude()));
+             follow.setLat(lat);
+                follow.setLon(lon);
+                follow.setZ(depth);
+                follow.setZUnits(Goto.Z_UNITS.DEPTH);
+                follow.setSpeed(speed);
+                follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+
+            maneuvers.add(follow);
+        }
+
+    startBehaviour("SpearFollowPoints" , PlanUtilities.createPlan("followPoints", maneuvers.toArray(new Maneuver[0])));
+
     }
+
 
     public void Go(GeoPoint p) {
         Goto go = new Goto();
@@ -184,8 +206,8 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
         go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
-        String planid = "Goto";
-        startManeuver(planid, go);
+        String planid = "SpearGoto";
+        startBehaviour(planid, go);
     }
 
     public void finish() {

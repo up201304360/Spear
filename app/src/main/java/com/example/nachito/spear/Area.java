@@ -132,6 +132,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         } else {
 
 
+
+            //Settings da largura da area
+            //swath width
+            //alg dada area gera waypoints
         }
 
 
@@ -148,8 +152,8 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
         go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
-        String planid = "Goto";
-        startManeuver(planid, go);
+        String planid = "SpearGoto";
+        startBehaviour(planid, go);
     }
 
 

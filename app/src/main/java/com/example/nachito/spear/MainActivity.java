@@ -67,8 +67,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
+import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
-import pt.lsts.imc.Maneuver;
 import pt.lsts.imc.PlanControl;
 import pt.lsts.imc.PlanDB;
 import pt.lsts.imc.StationKeeping;
@@ -393,7 +393,7 @@ public class MainActivity extends AppCompatActivity
                                     pc.setOp(PlanControl.OP.START);
                                     pc.setFlags(0);
                                     pc.setRequestId(0);
-                                    pc.setPlanId("teleoperation-mode");
+                                    pc.setPlanId("SpearTeleoperation");
                                     imc.sendMessage(pc);
                                 }
                             })
@@ -538,7 +538,7 @@ public class MainActivity extends AppCompatActivity
             stopTeleop.setVisibility(View.INVISIBLE);
             Joystick joystick = (Joystick) findViewById(R.id.joystick);
             joystick.setVisibility(View.INVISIBLE);
-            updateMap();
+            //updateMap();
         } else if (line != null) {
             line.finish();
             trans.setVisibility(View.INVISIBLE);
@@ -546,7 +546,7 @@ public class MainActivity extends AppCompatActivity
             done.setVisibility(View.INVISIBLE);
             erase.setVisibility(View.INVISIBLE);
            // line=null;
-            updateMap();
+          //  updateMap();
 
 
         } else if (area != null) {
@@ -557,7 +557,7 @@ public class MainActivity extends AppCompatActivity
             done.setVisibility(View.INVISIBLE);
             erase.setVisibility(View.INVISIBLE);
          //   area=null;
-            updateMap();
+         //   updateMap();
 
 
         } else
@@ -660,8 +660,8 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-    @Periodic(700)
+    @Background
+    @Periodic(500)
     @Override
     public void onLocationChanged(Location location) {
         final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
@@ -740,8 +740,8 @@ public class MainActivity extends AppCompatActivity
     @Periodic(500)
     public void updateMap() {
         map.getOverlays().clear();
-
-        map.getOverlays().add(mCompassOverlay);
+//
+       map.getOverlays().add(mCompassOverlay);
         synchronized (estates) {
             for (EstimatedState state : estates.values()) {
                 paintState(state);
@@ -765,7 +765,7 @@ public class MainActivity extends AppCompatActivity
             Location location = locationManager.getLastKnownLocation(provider);
 
 
-            if( location!=null)
+            if( location!=null )
             onLocationChanged(location);
 
         }
@@ -809,8 +809,8 @@ public  void dive() {
     dive.setRadius(radius);
     dive.setDuration(duration);
     dive.setBearing(0);
-    String planid = "Dive";
-    startManeuver(planid, dive);
+    String planid = "SpearDive";
+    startBehaviour(planid, dive);
 }
 
     public  void keepStation() {
@@ -823,8 +823,8 @@ public  void dive() {
         stationKeepingmsg.setRadius(radius);
         stationKeepingmsg.setZ(depth);
         stationKeepingmsg.setZUnits(StationKeeping.Z_UNITS.DEPTH);
-        String planid = " StationKeeping";
-        startManeuver(planid, stationKeepingmsg);
+        String planid = " SpearStationKeeping";
+        startBehaviour(planid, stationKeepingmsg);
     }
 
     public  void near() {
@@ -838,14 +838,14 @@ public  void dive() {
         go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
         go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
-        String planid = "ComeNear";
-        startManeuver(planid, go);
+        String planid = "SpearComeNear";
+        startBehaviour(planid, go);
     }
 
 
-    public static void startManeuver(String planid, Maneuver maneuver) {
+    public static void startBehaviour(String planid, IMCMessage what) {
         PlanControl pc = new PlanControl();
-        pc.setArg(maneuver);
+        pc.setArg(what);
         pc.setType(PlanControl.TYPE.REQUEST);
         pc.setOp(PlanControl.OP.START);
         pc.setFlags(0);

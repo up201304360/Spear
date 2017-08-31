@@ -55,7 +55,7 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
                 pc.setOp(PlanControl.OP.START);
                 pc.setFlags(0);
                 pc.setRequestId(0);
-                pc.setPlanId("teleoperation-mode");
+                pc.setPlanId("SpearTeleoperation");
 
                 imc.sendMessage(pc);
             }
