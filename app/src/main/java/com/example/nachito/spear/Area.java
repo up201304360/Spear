@@ -16,7 +16,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 
 import pt.lsts.coverage.GeoCoord;
+import pt.lsts.imc.CoverArea;
 import pt.lsts.imc.Goto;
+import pt.lsts.imc.Loiter;
+import pt.lsts.imc.Maneuver;
+import pt.lsts.util.PlanUtilities;
 
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
 
@@ -143,11 +147,9 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             LinkedHashSet<String> lhs = new LinkedHashSet<>();
             Iterator<GeoPoint> it = markerPoints.iterator();
 
-            System.out.println("ANTES:"+markerPoints);
             while(it.hasNext()) {
                 String val = it.next().toString();
                 if (lhs.contains(val)) {
-                    System.out.println("Remove "+val);
                     it.remove();
                 }
                 else
@@ -156,15 +158,37 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
 
             ArrayList<GeoCoord> coords = new ArrayList<>();
+            ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
      for(int i=0; i<markerPoints.size()-1; i++ ){
 
          coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
-         System.out.println("DEPOIS:"+coords);
+         System.out.println(": "+coords);
 
      }
-            for (GeoCoord coord : computeCoveragePath(coords, swath_width))
+
+            for (GeoCoord coord : computeCoveragePath(coords, swath_width)){
                 System.out.println(coord.latitudeDegs+", "+coord.longitudeDegs);
+
+                CoverArea area;
+                area = new CoverArea();
+                double lat = Math.toRadians((coord.latitudeDegs));
+                double lon = Math.toRadians((coord.longitudeDegs));
+                area.setLat(lat);
+                area.setLon(lon);
+                area.setZ(depth);
+                area.setZUnits(CoverArea.Z_UNITS.DEPTH);
+                area.setSpeed(speed);
+
+                if(!showrpm) {
+                    area.setSpeedUnits(CoverArea.SPEED_UNITS.METERS_PS);
+                } else{
+                    area.setSpeedUnits(CoverArea.SPEED_UNITS.RPM);}
+                maneuvers.add(area);
+            }
+
+            startBehaviour("SpearCoverArea" , PlanUtilities.createPlan("CoverArea", maneuvers.toArray(new Maneuver[0])));
+
 
         }
 
@@ -181,7 +205,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         go.setZ(depth);
         go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
-        go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+        if(!showrpm) {
+            go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+        } else{
+            go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
         String planid = "SpearGoto";
         startBehaviour(planid, go);
     }

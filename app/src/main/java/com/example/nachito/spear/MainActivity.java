@@ -20,6 +20,8 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
@@ -84,6 +86,7 @@ import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.WGS84Utilities;
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.imageView;
+import static java.lang.Boolean.getBoolean;
 
 
 @EActivity
@@ -167,27 +170,19 @@ public class MainActivity extends AppCompatActivity
    static Polyline polyline;
    static Marker nodeMarker;
    static Polygon circle;
-
+   boolean showrpm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       context = this;
+        context = this;
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-      final MapTileProviderBasic tileProvider = new MapTileProviderBasic(getApplicationContext());
-        final ITileSource tileSource = new XYTileSource("SomeName", 3, 14, 256, ".png", null,
-                "http://192.168.1.5/mapcache/tms/1.0.0/ms-base@GoogleMapsCompatible/");
 
-        tileProvider.setTileSource(tileSource);
-        final TilesOverlay tilesOverlay = new TilesOverlay(tileProvider, this.getBaseContext());
-        map.getOverlays().add(tilesOverlay);
-
-
-      //  map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.setClickable(true);
         mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
@@ -253,8 +248,8 @@ public class MainActivity extends AppCompatActivity
         mapController.setZoom(14);
         mapController.setCenter(new GeoPoint(location));
 
-    }
 
+    }
 
     public void updatePosition(GeoPoint aPoint) {
         if (mItemizedOverlay == null) {
@@ -321,10 +316,13 @@ public class MainActivity extends AppCompatActivity
         openContextMenu(servicebar);
     }
 
-
+//get all the values
     private void setupSharedPreferences() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        setShowRPM(sharedPreferences.getBoolean(getString(R.string.pref_show_rpmms_key), getResources().getBoolean((R.bool.pref_show_rpmms_default))));
         loadFromPrefs(sharedPreferences);
+
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -337,11 +335,24 @@ public class MainActivity extends AppCompatActivity
         swath_width=Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_width_key), "25"));
 
     }
+    public void setShowRPM(boolean showrpm) {
+        this.showrpm = showrpm;
+
+    }
 
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(getString(R.string.pref_speed_key))) {
+
+//update the screen if the shared preferences change
+
+        if (key.equals(getString(R.string.pref_show_rpmms_key))) {
+
+
+            setShowRPM(sharedPreferences.getBoolean(key, getResources().getBoolean((R.bool.pref_show_rpmms_default))));
+            System.out.println(showrpm +"---------");
+
+        } else if (key.equals(getString(R.string.pref_speed_key))) {
             loadFromPrefs(sharedPreferences);
 
         } else if (key.equals(getString(R.string.pref_duration_key))) {
@@ -629,6 +640,7 @@ public class MainActivity extends AppCompatActivity
                             done.setClickable(true);
                             done.setOnClickListener(area);
                             erase.setClickable(true);
+
                             erase.setOnClickListener(area);
                             trans.setonPress(area);
                             trans.setVisibility(View.VISIBLE);
@@ -813,7 +825,10 @@ public  void dive() {
     dive.setZ(depth);
     dive.setZUnits(Loiter.Z_UNITS.DEPTH);
     dive.setSpeed(speed);
-    dive.setSpeedUnits(Loiter.SPEED_UNITS.RPM);
+    if(!showrpm) {
+        dive.setSpeedUnits(Loiter.SPEED_UNITS.METERS_PS);
+    } else{
+    dive.setSpeedUnits(Loiter.SPEED_UNITS.RPM);}
     dive.setRadius(radius);
     dive.setDuration(duration);
     dive.setBearing(0);
@@ -826,7 +841,10 @@ public  void dive() {
         stationKeepingmsg.setLat(latVeiculo);
         stationKeepingmsg.setLon(lonVeiculo);
         stationKeepingmsg.setSpeed(speed);
-        stationKeepingmsg.setSpeedUnits(StationKeeping.SPEED_UNITS.RPM);
+        if(!showrpm) {
+            stationKeepingmsg.setSpeedUnits(StationKeeping.SPEED_UNITS.METERS_PS);
+        } else{
+        stationKeepingmsg.setSpeedUnits(StationKeeping.SPEED_UNITS.RPM);}
         stationKeepingmsg.setDuration(duration);
         stationKeepingmsg.setRadius(radius);
         stationKeepingmsg.setZ(depth);
@@ -845,7 +863,10 @@ public  void dive() {
         go.setZ(0);
         go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
-        go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+        if(!showrpm) {
+            go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+        } else{
+        go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
         String planid = "SpearComeNear";
         startBehaviour(planid, go);
     }
@@ -1029,3 +1050,4 @@ if(v.getId()==R.id.startplan) {
 //todo map offline
 //todo cores
 //TODO - desligar veiculo
+//TODO - centrar no veic escolhido

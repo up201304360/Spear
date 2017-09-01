@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 
 import pt.lsts.imc.Goto;
+import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
 import pt.lsts.util.PlanUtilities;
 
@@ -104,6 +105,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                             GeoPoint dest = markerPoints.get(markerPoints.size() - 1);
                             drawLine(origin, dest);
                             trans.setVisibility(View.INVISIBLE);
+
                         }
                     }
                 });
@@ -186,7 +188,10 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                 follow.setZ(depth);
                 follow.setZUnits(Goto.Z_UNITS.DEPTH);
                 follow.setSpeed(speed);
-                follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+            if(!showrpm) {
+                follow.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+            } else{
+                follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
 
             maneuvers.add(follow);
         }
@@ -205,7 +210,10 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         go.setZ(depth);
         go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
-        go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+        if(!showrpm) {
+            go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+        } else{
+            go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
         String planid = "SpearGoto";
         startBehaviour(planid, go);
     }

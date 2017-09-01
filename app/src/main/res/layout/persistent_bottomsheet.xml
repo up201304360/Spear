@@ -72,8 +72,8 @@
             android:textColor="#ffffff"
             android:textSize="12sp"
             android:layout_alignTop="@+id/accelerate"
-            android:layout_alignRight="@+id/accelerate"
-            android:layout_alignEnd="@+id/accelerate" />
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
         <Button
             android:id="@+id/near"
@@ -107,11 +107,10 @@
             android:id="@+id/velocity"
             android:layout_width="120dp"
             android:layout_height="100dp"
-            android:layout_alignBaseline="@+id/startplan"
-            android:layout_alignBottom="@+id/startplan"
-            android:layout_centerHorizontal="true"
             android:textColor="#8B0000"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:layout_alignBottom="@+id/joystick"
+            android:layout_centerHorizontal="true" />
 
 
         <Button
@@ -152,8 +151,8 @@
             android:textColor="#ffffff"
             android:textSize="12sp"
             android:layout_alignTop="@+id/textView2"
-            android:layout_alignRight="@+id/stopTeleop"
-            android:layout_alignEnd="@+id/stopTeleop" />
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
         <com.example.nachito.spear.StopTeleop xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/stopTeleop"
