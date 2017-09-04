@@ -146,6 +146,7 @@ public class MainActivity extends AppCompatActivity
     Bitmap target;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     GeoPoint posicaoVeiculo;
+GeoPoint posicaoVeiculo2;
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
     Line line;
@@ -245,11 +246,13 @@ public class MainActivity extends AppCompatActivity
         mLocationOverlay.enableMyLocation();
         map.invalidate();
         mapController = map.getController();
-        mapController.setZoom(14);
+        mapController.setZoom(12);
         mapController.setCenter(new GeoPoint(location));
 
 
     }
+
+
 
     public void updatePosition(GeoPoint aPoint) {
         if (mItemizedOverlay == null) {
@@ -703,6 +706,7 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
@@ -721,6 +725,7 @@ public class MainActivity extends AppCompatActivity
 
        source2= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_blue), 70, 70, false);
         if (vname.equals(imc.getSelectedvehicle())) {
+
             posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
 
 
@@ -748,7 +753,16 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+public  void zoomVehicle(final EstimatedState state){
+    final String vname = state.getSourceName();
+    double[] lld = WGS84Utilities.toLatLonDepth(state);
+    posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
 
+    mapController.setZoom(14);
+    mapController.setCenter(posicaoVeiculo2);
+
+
+}
     public static Bitmap RotateMyBitmap(Bitmap source, float angle) {
         Matrix matrix = new Matrix();
         matrix.postRotate(angle);
@@ -995,6 +1009,7 @@ if(v.getId()==R.id.startplan) {
         menu.add(i,i,i,selectedName );
 
 
+
     }
 
 }
@@ -1015,8 +1030,14 @@ if(v.getId()==R.id.startplan) {
             String[] getName2 = selected.split(":");
             String selectedName2 = getName2[0];
             imc.setSelectedvehicle(selectedName2.trim());
-            servicebar.setText(selectedName2);
+                servicebar.setText(selectedName2);
+            synchronized (estates) {
+                for (EstimatedState state : estates.values()) {
+                    zoomVehicle(state);
+                }
 
+
+            }
         }
     if (teleop2 != null) {
         teleop2.finish();
@@ -1050,4 +1071,3 @@ if(v.getId()==R.id.startplan) {
 //todo map offline
 //todo cores
 //TODO - desligar veiculo
-//TODO - centrar no veic escolhido

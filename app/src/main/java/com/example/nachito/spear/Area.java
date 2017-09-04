@@ -12,6 +12,7 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -20,6 +21,7 @@ import pt.lsts.imc.CoverArea;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
+import pt.lsts.imc.PolygonVertex;
 import pt.lsts.util.PlanUtilities;
 
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
@@ -170,16 +172,23 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             for (GeoCoord coord : computeCoveragePath(coords, swath_width)){
                 System.out.println(coord.latitudeDegs+", "+coord.longitudeDegs);
 
+
+           Collection< PolygonVertex> poly =null;
+    
+
+
+
                 CoverArea area;
                 area = new CoverArea();
                 double lat = Math.toRadians((coord.latitudeDegs));
                 double lon = Math.toRadians((coord.longitudeDegs));
+
                 area.setLat(lat);
                 area.setLon(lon);
                 area.setZ(depth);
                 area.setZUnits(CoverArea.Z_UNITS.DEPTH);
                 area.setSpeed(speed);
-
+                area.setPolygon( poly);
                 if(!showrpm) {
                     area.setSpeedUnits(CoverArea.SPEED_UNITS.METERS_PS);
                 } else{

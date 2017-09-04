@@ -36,6 +36,7 @@ public class VehicleList {
             for (Map.Entry<String, Pair<Date, VehicleState>> entry : hashMap.entrySet()) {
                 if (entry.getValue().first.after(connectedTime))
                     ligados.add(entry.getValue().second);
+
             }
         }
         return ligados;
