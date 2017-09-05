@@ -53,7 +53,6 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -70,19 +69,25 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
+import pt.lsts.imc.Maneuver;
 import pt.lsts.imc.PlanControl;
 import pt.lsts.imc.PlanDB;
+import pt.lsts.imc.PlanSpecification;
 import pt.lsts.imc.StationKeeping;
 import pt.lsts.imc.Teleoperation;
 import pt.lsts.imc.VehicleState;
 import pt.lsts.imc.net.Consume;
 import pt.lsts.neptus.messages.listener.Periodic;
+import pt.lsts.util.PlanUtilities;
 import pt.lsts.util.WGS84Utilities;
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.imageView;
@@ -172,6 +177,16 @@ GeoPoint posicaoVeiculo2;
    static Marker nodeMarker;
    static Polygon circle;
    boolean showrpm;
+    @SuppressLint("StaticFieldLeak")
+    @ViewById(R.id.vel2)
+   static TextView vel2;
+   static  String dept;
+    static  String vel;
+   static Collection<PlanUtilities.Waypoint> points;
+static Marker nodeMarkerWaypoints;
+  static  GeoPoint ponto;
+    static Double valLat;
+    static Double valLon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -567,6 +582,7 @@ GeoPoint posicaoVeiculo2;
             trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
+
             erase.setVisibility(View.INVISIBLE);
            // line=null;
 
@@ -577,6 +593,7 @@ GeoPoint posicaoVeiculo2;
             bottom.setVisibility(View.VISIBLE);
             bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
+
             erase.setVisibility(View.INVISIBLE);
          //   area=null;
 
@@ -623,6 +640,7 @@ GeoPoint posicaoVeiculo2;
                             mCompassOverlay.disableCompass();
                             done.setClickable(true);
                             done.setOnClickListener(line);
+                            vel2.setVisibility(View.VISIBLE);
                             erase.setClickable(true);
                             erase.setOnClickListener(line);
                             trans.setonPress(line);
@@ -643,6 +661,7 @@ GeoPoint posicaoVeiculo2;
                             done.setClickable(true);
                             done.setOnClickListener(area);
                             erase.setClickable(true);
+                            vel2.setVisibility(View.VISIBLE);
 
                             erase.setOnClickListener(area);
                             trans.setonPress(area);
@@ -679,8 +698,13 @@ GeoPoint posicaoVeiculo2;
     public void receive(final EstimatedState state) {
         synchronized (estates) {
             estates.put(state.getSourceName(), state);
+
         }
     }
+
+
+
+
 
 //TODO
     @Background
@@ -722,18 +746,23 @@ GeoPoint posicaoVeiculo2;
         int ori2 = (int) Math.round(Math.toDegrees(orientation2));
         ori2 = ori2 - 180;
 
-
        source2= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_blue), 70, 70, false);
+
+
+
+
+
         if (vname.equals(imc.getSelectedvehicle())) {
 
             posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
 
 
+
             source2= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_green), 70, 70, false);
 
             DecimalFormat df2 = new DecimalFormat("#.##");
-            final String vel = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
-            final String dept = df2.format(state.getDepth());
+            vel = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
+             dept = df2.format(state.getDepth());
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -754,12 +783,11 @@ GeoPoint posicaoVeiculo2;
     }
 
 public  void zoomVehicle(final EstimatedState state){
-    final String vname = state.getSourceName();
     double[] lld = WGS84Utilities.toLatLonDepth(state);
     posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
-
     mapController.setZoom(14);
     mapController.setCenter(posicaoVeiculo2);
+
 
 
 }
@@ -776,14 +804,22 @@ public  void zoomVehicle(final EstimatedState state){
         map.getOverlays().clear();
 //
        map.getOverlays().add(mCompassOverlay);
+
         synchronized (estates) {
             for (EstimatedState state : estates.values()) {
                 paintState(state);
             }
+
         }
 
+            if(points !=null){
 
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+                map.getOverlays().add(nodeMarkerWaypoints);
+                //TODO ver q plano o veiculo esta a executar e chamar aqui
+            }
+
+
+                LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 
         for (String provider : locationManager.getProviders(true)) {
             if (ActivityCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -848,6 +884,7 @@ public  void dive() {
     dive.setBearing(0);
     String planid = "SpearDive";
     startBehaviour(planid, dive);
+    wayPoints(dive);
 }
 
     public  void keepStation() {
@@ -865,6 +902,8 @@ public  void dive() {
         stationKeepingmsg.setZUnits(StationKeeping.Z_UNITS.DEPTH);
         String planid = " SpearStationKeeping";
         startBehaviour(planid, stationKeepingmsg);
+        wayPoints(stationKeepingmsg);
+
     }
 
     public  void near() {
@@ -883,6 +922,8 @@ public  void dive() {
         go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
         String planid = "SpearComeNear";
         startBehaviour(planid, go);
+        wayPoints(go);
+
     }
 
 
@@ -898,6 +939,7 @@ public  void dive() {
         imc.sendMessage(pc);
 
 
+
     }
 
 
@@ -910,6 +952,15 @@ public  void dive() {
         pc.setFlags(0);
         pc.setPlanId("stopPlan");
         imc.sendMessage(pc);
+
+        if(points!=null){
+            map.getOverlays().remove(nodeMarkerWaypoints);
+            points=null;
+            updateMap();
+
+        }
+
+
     }
 
 
@@ -1045,6 +1096,38 @@ if(v.getId()==R.id.startplan) {
 
         return super.onContextItemSelected(item);
     }
+
+
+    public static void wayPoints(Maneuver maneuver) {
+
+        points = PlanUtilities.computeWaypoints(maneuver);
+
+
+        Iterator<PlanUtilities.Waypoint> it = points.iterator();
+
+        while (it.hasNext()) {
+            PlanUtilities.Waypoint p;
+            p=it.next();
+             valLat = p.getLatitude();
+             valLon = p.getLongitude();
+             ponto = new GeoPoint(valLat, valLon);
+            nodeMarkerWaypoints = new Marker(map);
+            nodeMarkerWaypoints.setPosition(ponto);
+            nodeMarkerWaypoints.setIcon(nodeIcon);
+            nodeMarkerWaypoints.isDraggable();
+            nodeMarkerWaypoints.setDraggable(true);
+            map.getOverlays().add(nodeMarkerWaypoints);
+            // update map
+
+            //TODO apagar os markers quando conclui o plano
+            //TODO mudar markers
+            //TODO apagar qundo passa de maneuver para service
+            //TODO os do startplan
+        }
+    }
+
+
+
 
 
 

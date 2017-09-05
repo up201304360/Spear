@@ -11,13 +11,17 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
+
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
+import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
+import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 
@@ -164,6 +168,9 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         LinkedHashSet<String> lhs = new LinkedHashSet<String>();
         Iterator<GeoPoint> it = markerPoints.iterator();
 
+
+velc();
+
         System.out.println("ANTES:"+markerPoints);
         while(it.hasNext()) {
             String val = it.next().toString();
@@ -197,10 +204,20 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         }
 
     startBehaviour("SpearFollowPoints" , PlanUtilities.createPlan("followPoints", maneuvers.toArray(new Maneuver[0])));
-
+        wayPoints(follow);
     }
+@Periodic
+public void velc(){
 
 
+    runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+            vel2.setText("Speed:" + " " + vel + " " + "m/s" + "\n" + "Depth:" + " " + dept + "\n" + imc.getSelectedvehicle());
+
+        }
+    });
+}
     public void Go(GeoPoint p) {
         Goto go = new Goto();
         double lat = Math.toRadians(p.getLatitude());
@@ -216,6 +233,9 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
         String planid = "SpearGoto";
         startBehaviour(planid, go);
+        velc();
+wayPoints(go);
+
     }
 
     public void finish() {
@@ -223,6 +243,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         map.invalidate();
         done.setVisibility(View.INVISIBLE);
         erase.setVisibility(View.INVISIBLE);
+        vel2.setVisibility(View.INVISIBLE);
         imc.unregister(this);
     }
 

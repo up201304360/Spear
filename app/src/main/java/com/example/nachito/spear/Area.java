@@ -1,5 +1,7 @@
 package com.example.nachito.spear;
 
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.View;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
@@ -12,16 +14,18 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import pt.lsts.coverage.GeoCoord;
 import pt.lsts.imc.CoverArea;
 import pt.lsts.imc.Goto;
-import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
 import pt.lsts.imc.PolygonVertex;
+import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
@@ -36,6 +40,78 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     float mGroundOverlayBearing = 0.0f;
     InfoWindow infoWindow;
     IMCGlobal imc;
+    CoverArea area2;
+
+    Collection<PolygonVertex> e= new Collection<PolygonVertex>() {
+        @Override
+        public int size() {
+            return 0;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return false;
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return false;
+        }
+
+        @NonNull
+        @Override
+        public Iterator<PolygonVertex> iterator() {
+            return null;
+        }
+
+        @NonNull
+        @Override
+        public Object[] toArray() {
+            return new Object[0];
+        }
+
+        @NonNull
+        @Override
+        public <T> T[] toArray(@NonNull T[] ts) {
+            return null;
+        }
+
+        @Override
+        public boolean add(PolygonVertex polygonVertex) {
+            return false;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            return false;
+        }
+
+        @Override
+        public boolean containsAll(@NonNull Collection<?> collection) {
+            return false;
+        }
+
+        @Override
+        public boolean addAll(@NonNull Collection<? extends PolygonVertex> collection) {
+            return false;
+        }
+
+        @Override
+        public boolean removeAll(@NonNull Collection<?> collection) {
+            return false;
+        }
+
+        @Override
+        public boolean retainAll(@NonNull Collection<?> collection) {
+            return false;
+        }
+
+        @Override
+        public void clear() {
+
+        }
+    };
+    PolygonVertex poly = new PolygonVertex();
 
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
@@ -46,6 +122,8 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         map.getOverlayManager().clear();
         map.invalidate();
         done.setVisibility(View.INVISIBLE);
+        vel2.setVisibility(View.INVISIBLE);
+
 
     }
 
@@ -148,7 +226,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
             LinkedHashSet<String> lhs = new LinkedHashSet<>();
             Iterator<GeoPoint> it = markerPoints.iterator();
-
+           velc();
             while(it.hasNext()) {
                 String val = it.next().toString();
                 if (lhs.contains(val)) {
@@ -165,7 +243,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
      for(int i=0; i<markerPoints.size()-1; i++ ){
 
          coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
-         System.out.println(": "+coords);
 
      }
 
@@ -173,38 +250,69 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                 System.out.println(coord.latitudeDegs+", "+coord.longitudeDegs);
 
 
-           Collection< PolygonVertex> poly =null;
-    
+                poly.setLon(Math.toRadians(coord.longitudeDegs));
+                poly.setLat(Math.toRadians(coord.latitudeDegs));
+
+                boolean test = e.add(poly);
+
+                if(e.isEmpty())
+                    Log.i("MEU", "TRUE");
+                else
+                    Log.i("MEU", "FALSE");
+
+                if(test)
+                    Log.i("MEU", "TRUE");
+                else
+                    Log.i("MEU", "FALSE");
+
+                Log.i("MEU", "SIZE: "+e.size());
 
 
 
-                CoverArea area;
-                area = new CoverArea();
+
+
+
+
+
+
+                area2 = new CoverArea();
                 double lat = Math.toRadians((coord.latitudeDegs));
                 double lon = Math.toRadians((coord.longitudeDegs));
+                area2.setLat(lat);
+                area2.setLon(lon);
+                area2.setZ(depth);
+                area2.setZUnits(CoverArea.Z_UNITS.DEPTH);
+                area2.setSpeed(speed);
 
-                area.setLat(lat);
-                area.setLon(lon);
-                area.setZ(depth);
-                area.setZUnits(CoverArea.Z_UNITS.DEPTH);
-                area.setSpeed(speed);
-                area.setPolygon( poly);
+                area2.setPolygon(e);
                 if(!showrpm) {
-                    area.setSpeedUnits(CoverArea.SPEED_UNITS.METERS_PS);
+                    area2.setSpeedUnits(CoverArea.SPEED_UNITS.METERS_PS);
                 } else{
-                    area.setSpeedUnits(CoverArea.SPEED_UNITS.RPM);}
-                maneuvers.add(area);
+                    area2.setSpeedUnits(CoverArea.SPEED_UNITS.RPM);}
+                maneuvers.add(area2);
             }
 
             startBehaviour("SpearCoverArea" , PlanUtilities.createPlan("CoverArea", maneuvers.toArray(new Maneuver[0])));
 
-
+            wayPoints(area2);
         }
 
 
     }
+    @Periodic
+    public void velc() {
 
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                vel2.setText("Speed:" + " " + vel + " " + "m/s" + "\n" + "Depth:" + " " + dept + "\n" + imc.getSelectedvehicle());
+
+            }
+        });
+    }
     public  void Go(GeoPoint p){
+        velc();
 
         Goto go = new Goto();
         double lat = Math.toRadians(p.getLatitude());
@@ -220,6 +328,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
         String planid = "SpearGoto";
         startBehaviour(planid, go);
+        wayPoints(go);
     }
 
 

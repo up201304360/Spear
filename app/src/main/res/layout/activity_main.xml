@@ -39,6 +39,17 @@
 
 
     </com.example.nachito.spear.Press>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#07000000"
+        android:id="@+id/vel2"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/erase"
+        android:layout_toEndOf="@+id/erase"
+        android:layout_marginLeft="23dp"
+        android:layout_marginStart="23dp"
+        android:layout_marginBottom="105dp" />
     <include layout="@layout/persistent_bottomsheet"/>
 
 
