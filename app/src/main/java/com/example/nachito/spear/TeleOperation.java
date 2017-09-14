@@ -28,13 +28,14 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
     }
 
     public void finish() {
-        imc.unregister(this);
         PlanControl pc = new PlanControl();
         pc.setType(PlanControl.TYPE.REQUEST);
         pc.setOp(PlanControl.OP.STOP);
         pc.setRequestId(1);
         pc.setFlags(0);
         pc.setPlanId("stopTeleOp");
+        imc.sendMessage(pc);
+        imc.unregister(this);
     }
 
 

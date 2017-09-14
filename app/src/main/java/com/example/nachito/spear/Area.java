@@ -136,7 +136,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
         markerPoints.add(p);
-        System.out.println(p);
 
         GroundOverlay myGroundOverlay = new GroundOverlay();
         myGroundOverlay.setPosition(p);
@@ -148,16 +147,16 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         map.invalidate();
 
 
-        nodeMarker = new Marker(map);
-        nodeMarker.setPosition(p);
-        nodeMarker.setIcon(nodeIcon);
-        nodeMarker.isDraggable();
-        nodeMarker.setDraggable(true);
-        nodeMarker.setTitle("lat/lon:" + p);
-        map.getOverlays().add(nodeMarker);
+        lineMarker = new Marker(map);
+        lineMarker.setPosition(p);
+        lineMarker.setIcon(lineIcon);
+        lineMarker.isDraggable();
+        lineMarker.setDraggable(true);
+        lineMarker.setTitle("lat/lon:" + p);
+        map.getOverlays().add(lineMarker);
 
 
-        nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+        lineMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker, MapView mapView) {
                 infoWindow = marker.getInfoWindow();
@@ -177,33 +176,51 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
             }
         });
-            done.setVisibility(View.VISIBLE);
-            erase.setVisibility(View.VISIBLE);
-            done.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
+        done.setVisibility(View.VISIBLE);
+        erase.setVisibility(View.VISIBLE);
+        done.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-                    if (markerPoints.size() <= 2) {
-                        if (imc.selectedvehicle == null) {
+                if (markerPoints.size() <= 2) {
+                    if (imc.selectedvehicle == null) {
 
-                            System.out.println("No vehicles");
-                        } else {
-                            Go(p);
-                        }
-
-
-                    } else if (markerPoints.size() > 2) {
-
-                        GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                        drawArea(p, origin);
-                        trans.setVisibility(View.INVISIBLE);
-
+                        System.out.println("No vehicles");
+                    } else {
+                        Go(p);
                     }
+
+
+                } else if (markerPoints.size() > 2) {
+
+                    GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
+                    drawArea(p, origin);
+                    trans.setVisibility(View.INVISIBLE);
+
                 }
-            });
+            }
+        });
 
 
+        erase.setOnClickListener(new View.OnClickListener() {
 
+
+            @Override
+            public void onClick(View v) {
+                for (int i = 0; i < markerPoints.size(); i++) {
+                    lineMarker.remove(map);
+
+
+                    map.invalidate();
+                }
+                markerPoints.clear();
+
+                if (polyline != null)
+                    polyline.setPoints(markerPoints);
+                map.getOverlays().clear();
+                trans.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     public void drawArea(GeoPoint p,GeoPoint origin) {
@@ -236,7 +253,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                     lhs.add(val);
             }
 
-
             ArrayList<GeoCoord> coords = new ArrayList<>();
             ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
@@ -247,34 +263,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
      }
 
             for (GeoCoord coord : computeCoveragePath(coords, swath_width)){
-                System.out.println(coord.latitudeDegs+", "+coord.longitudeDegs);
-
 
                 poly.setLon(Math.toRadians(coord.longitudeDegs));
                 poly.setLat(Math.toRadians(coord.latitudeDegs));
-
-                boolean test = e.add(poly);
-
-                if(e.isEmpty())
-                    Log.i("MEU", "TRUE");
-                else
-                    Log.i("MEU", "FALSE");
-
-                if(test)
-                    Log.i("MEU", "TRUE");
-                else
-                    Log.i("MEU", "FALSE");
-
-                Log.i("MEU", "SIZE: "+e.size());
-
-
-
-
-
-
-
-
-
+                e.add(poly);
                 area2 = new CoverArea();
                 double lat = Math.toRadians((coord.latitudeDegs));
                 double lon = Math.toRadians((coord.longitudeDegs));
@@ -283,7 +275,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                 area2.setZ(depth);
                 area2.setZUnits(CoverArea.Z_UNITS.DEPTH);
                 area2.setSpeed(speed);
-
                 area2.setPolygon(e);
                 if(!showrpm) {
                     area2.setSpeedUnits(CoverArea.SPEED_UNITS.METERS_PS);
@@ -291,9 +282,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                     area2.setSpeedUnits(CoverArea.SPEED_UNITS.RPM);}
                 maneuvers.add(area2);
             }
-
             startBehaviour("SpearCoverArea" , PlanUtilities.createPlan("CoverArea", maneuvers.toArray(new Maneuver[0])));
-
             wayPoints(area2);
         }
 

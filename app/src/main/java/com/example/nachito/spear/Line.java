@@ -60,15 +60,15 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             map.getOverlayManager().add(myGroundOverlay);
             map.invalidate();
 
-            nodeMarker = new Marker(map);
-            nodeMarker.setPosition(p);
-            nodeMarker.setIcon(nodeIcon);
-            nodeMarker.isDraggable();
-            nodeMarker.setDraggable(true);
-            nodeMarker.setTitle("lat/lon:" + p);
-            map.getOverlays().add(nodeMarker);
+            lineMarker = new Marker(map);
+            lineMarker.setPosition(p);
+            lineMarker.setIcon(lineIcon);
+            lineMarker.isDraggable();
+            lineMarker.setDraggable(true);
+            lineMarker.setTitle("lat/lon:" + p);
+            map.getOverlays().add(lineMarker);
 
-            nodeMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+            lineMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
                 @Override
                 public boolean onMarkerClick(Marker marker, MapView mapView) {
                     infoWindow = marker.getInfoWindow();
@@ -121,7 +121,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                 @Override
                 public void onClick(View v) {
                     for (int i = 0; i < markerPoints.size(); i++) {
-                        nodeMarker.remove(map);
+                        lineMarker.remove(map);
 
 
                         map.invalidate();
@@ -171,17 +171,14 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 velc();
 
-        System.out.println("ANTES:"+markerPoints);
         while(it.hasNext()) {
             String val = it.next().toString();
             if (lhs.contains(val)) {
-                System.out.println("Remove "+val);
                 it.remove();
             }
             else
                 lhs.add(val);
         }
-        System.out.println("DEPOIS:"+markerPoints);
 
         ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
@@ -234,7 +231,7 @@ public void velc(){
         String planid = "SpearGoto";
         startBehaviour(planid, go);
         velc();
-wayPoints(go);
+        wayPoints(go);
 
     }
 

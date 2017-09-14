@@ -1,13 +1,21 @@
 package com.example.nachito.spear;
 
+import android.support.annotation.NonNull;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import pt.lsts.imc.IMCMessage;
+import pt.lsts.imc.Maneuver;
+import pt.lsts.imc.PlanControlState;
 import pt.lsts.imc.PlanDB;
 import pt.lsts.imc.PlanDBInformation;
 import pt.lsts.imc.PlanDBState;
+import pt.lsts.imc.PlanManeuver;
+import pt.lsts.imc.PlanSpecification;
 import pt.lsts.imc.net.Consume;
 import pt.lsts.neptus.messages.listener.Periodic;
 
@@ -17,8 +25,12 @@ import pt.lsts.neptus.messages.listener.Periodic;
  */
 
 public class PlanList {
-    static LinkedHashMap< String,List<String>> hashMap = new LinkedHashMap<>();
+    static LinkedHashMap<String, List<String>> hashMap = new LinkedHashMap<>();
     IMCGlobal imc = null;
+    ArrayList<String> array;
+    ArrayList<Maneuver> array2;
+    static LinkedHashMap<String, List<Maneuver>> hashMap2 = new LinkedHashMap<>();
+    PlanDB pdb;
 
     public PlanList(IMCGlobal ref) {
         imc = ref;
@@ -32,23 +44,79 @@ public class PlanList {
         if (arg == null || arg.getMgid() != PlanDBState.ID_STATIC)
             return;
         PlanDBState state = (PlanDBState) arg;
-        ArrayList<String> array = new ArrayList<>();
+        array = new ArrayList<>();
         for (PlanDBInformation info : state.getPlansInfo()) {
             array.add(info.getPlanId());
         }
-        String vehicle= msg.getSourceName();
+        String vehicle = msg.getSourceName();
         synchronized (hashMap) {
             hashMap.put(vehicle, array);
+        }
+
+
+    }
+
+    @Consume
+    public void maneuver(IMCMessage msg) {
+
+        if (msg instanceof PlanDB) {
+            pdb = (PlanDB) msg;
+
+            if (pdb.getArg() instanceof PlanDBState) {
+                PlanDBState pdbState = (PlanDBState) pdb.getArg();
+
+                for (PlanDBInformation p : pdbState.getPlansInfo()) {
+                    PlanDB pdbRequest = new PlanDB();
+                    pdbRequest.setPlanId(p.getPlanId());
+                    pdbRequest.setOp(PlanDB.OP.GET);
+                    pdbRequest.setType(PlanDB.TYPE.REQUEST);
+                    imc.sendMessage(pdbRequest);
+                }
+
+            }
+        } if(pdb!=null) {
+            if (pdb.getArg() instanceof PlanSpecification) {
+                PlanSpecification ps = (PlanSpecification) pdb.getArg();
+                array2 = new ArrayList<>();
+
+                if (msg.getAbbrev().equals("PlanControlState")) {
+                    PlanControlState planControlState = (PlanControlState) msg;
+
+                    String planID = planControlState.getPlanId();
+
+                    System.out.println(planID + " veic");
+                    System.out.println(pdb.getPlanId() + " pdb");
+
+                    if ((pdb.getPlanId().equals(planID))) {
+
+                        for (PlanManeuver info : ps.getManeuvers()) {
+                            array2.add(info.getData());
+                            System.out.println(array2 + " array2");
+                        }
+                    }
+
+
+                    String vehicle = msg.getSourceName();
+
+                    synchronized (hashMap2) {
+                        hashMap2.put(vehicle, array2);
+
+                    }
+                }
+            }
         }
     }
 
 
+
     @Periodic(10000)
     public void AskPlans(){
+
         PlanDB msg = new PlanDB();
         msg.setOp(PlanDB.OP.GET_STATE);
         msg.setType(PlanDB.TYPE.REQUEST);
         imc.sendToAll(msg);
+
     }
 
 
@@ -59,6 +127,16 @@ public class PlanList {
             return hashMap.get(vehicle);
         }
     }
+
+
+    public List<Maneuver> ListaManeuvers(String vehicle) {
+        synchronized (hashMap2) {
+            return hashMap2.get(vehicle);
+        }
+    }
+
+
+
 }
 
 
