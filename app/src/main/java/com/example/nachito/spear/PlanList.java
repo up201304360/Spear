@@ -25,11 +25,11 @@ import pt.lsts.neptus.messages.listener.Periodic;
  */
 
 public class PlanList {
-    static LinkedHashMap<String, List<String>> hashMap = new LinkedHashMap<>();
+    static final LinkedHashMap<String, List<String>> hashMap = new LinkedHashMap<>();
     IMCGlobal imc = null;
     ArrayList<String> array;
     ArrayList<Maneuver> array2;
-    static LinkedHashMap<String, List<Maneuver>> hashMap2 = new LinkedHashMap<>();
+    static final LinkedHashMap<String, List<Maneuver>> hashMap2 = new LinkedHashMap<>();
     PlanDB pdb;
 
     public PlanList(IMCGlobal ref) {
@@ -55,7 +55,7 @@ public class PlanList {
 
 
     }
-
+    @Periodic
     @Consume
     public void maneuver(IMCMessage msg) {
 
@@ -83,15 +83,13 @@ public class PlanList {
                     PlanControlState planControlState = (PlanControlState) msg;
 
                     String planID = planControlState.getPlanId();
-
-                    System.out.println(planID + " veic");
-                    System.out.println(pdb.getPlanId() + " pdb");
-
+                    System.out.println(planID + "planID veic");
                     if ((pdb.getPlanId().equals(planID))) {
+                        System.out.println("mesmo ------------------------");
 
                         for (PlanManeuver info : ps.getManeuvers()) {
                             array2.add(info.getData());
-                            System.out.println(array2 + " array2");
+                           // System.out.println(array2 + " array2");
                         }
                     }
 

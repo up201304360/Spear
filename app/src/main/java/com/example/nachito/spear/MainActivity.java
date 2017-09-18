@@ -68,6 +68,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -148,7 +149,7 @@ public class MainActivity extends AppCompatActivity
     Bitmap target;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     GeoPoint posicaoVeiculo;
-GeoPoint posicaoVeiculo2;
+    GeoPoint posicaoVeiculo2;
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
     Line line;
@@ -187,7 +188,8 @@ static Marker nodeMarkerWaypoints;
   static  GeoPoint ponto;
     static Double valLat;
     static Double valLon;
-    Location location = null;
+    Location location;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,8 +199,6 @@ static Marker nodeMarkerWaypoints;
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-
-
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setMultiTouchControls(true);
         map.setClickable(true);
@@ -255,7 +255,7 @@ static Marker nodeMarkerWaypoints;
         if (location == null) {
             location = new Location(LocationManager.GPS_PROVIDER);
         }
-        map.getOverlays().add(this.mLocationOverlay);
+        this.map.getOverlays().add(this.mLocationOverlay);
         mLocationOverlay.enableMyLocation();
         map.invalidate();
         mapController = map.getController();
@@ -517,6 +517,8 @@ static Marker nodeMarkerWaypoints;
                     mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
                     mCompassOverlay.enableCompass();
                     map.getOverlays().add(mCompassOverlay);
+                    map.setMultiTouchControls(true);
+
 
                 }
             }
@@ -673,7 +675,7 @@ static Marker nodeMarkerWaypoints;
         imc.stop();
     }
 
-    LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
+    final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
 
     @Background
     @Consume
@@ -692,7 +694,7 @@ static Marker nodeMarkerWaypoints;
     @Periodic(500)
     @Override
     public void onLocationChanged(Location location) {
-        final ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+        final ArrayList<OverlayItem> items = new ArrayList<>();
         latitude = Math.toRadians(location.getLatitude());
         longitude = Math.toRadians(location.getLongitude());
         posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
@@ -702,11 +704,10 @@ static Marker nodeMarkerWaypoints;
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker);
 
-
-        newMarker= Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_red), 70, 70, false);
-        marker3 = new BitmapDrawable(getResources(), newMarker);
-        markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
-        map.getOverlays().add(markersOverlay);
+    newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.nav_red), 70, 70, false);
+    marker3 = new BitmapDrawable(getResources(), newMarker);
+    markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
+    map.getOverlays().add(markersOverlay);
 
 
     }
@@ -717,10 +718,11 @@ static Marker nodeMarkerWaypoints;
 
         final String vname = state.getSourceName();
         if (imc.stillConnected() != null) {
+
             if (imc.stillConnected().contains(vname)) {
 
                 double[] lld = WGS84Utilities.toLatLonDepth(state);
-                final ArrayList<OverlayItem> items2 = new ArrayList<OverlayItem>();
+                final ArrayList<OverlayItem> items2 = new ArrayList<>();
 
 
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
@@ -802,6 +804,8 @@ public  void zoomVehicle(final EstimatedState state){
                     map.getOverlays().remove(nodeMarkerWaypoints);
                     points = null;
                     updateMap();
+                    map.setMultiTouchControls(true);
+
                 }
             }
         }
@@ -816,6 +820,7 @@ public  void zoomVehicle(final EstimatedState state){
     @Periodic(500)
     public void updateMap() {
         map.getOverlays().clear();
+        map.setMultiTouchControls(true);
 
        map.getOverlays().add(mCompassOverlay);
 
@@ -983,23 +988,22 @@ public  void dive() {
     //if there is wifi show an imageview, when the wifi is off change it to another
     private boolean isConnectedToWifi(Context context) {
 
-        ConnectedWifi = false;
+        boolean connectedWifi = false;
         try {
             ConnectivityManager nConManager = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
             if (nConManager != null) {
                 NetworkInfo nNetworkinfo = nConManager.getActiveNetworkInfo();
                 if (nNetworkinfo.isConnected()) {
-                    ConnectedWifi = true;
-                    return ConnectedWifi;
+                    connectedWifi = true;
+                    return connectedWifi;
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
-        return ConnectedWifi;
+        return connectedWifi;
     }
 
-    private static boolean ConnectedWifi;
     //Set a timer to check if is connected to a Wifi Network
     TimerWifi timer = new TimerWifi(new Runnable() {
         @Override
@@ -1024,7 +1028,6 @@ public  void dive() {
         if (imc.selectedvehicle == null) {
             warning();
 
-            return;
         } else {
             PlanDB pdb = new PlanDB();
             pdb.setOp(PlanDB.OP.GET_INFO);
@@ -1058,6 +1061,8 @@ if(v.getId()==R.id.startplan) {
 
 
 }else if(v.getId()==R.id.servicebar){
+
+
     vehicleList = new ArrayList<>();
     mList = new ArrayList<>();
 
@@ -1153,21 +1158,23 @@ if(v.getId()==R.id.startplan) {
         points = PlanUtilities.computeWaypoints(maneuver);
         if(points!=null) {
 
-            for (PlanUtilities.Waypoint point : points) {
-                PlanUtilities.Waypoint p;
-                p = point;
-                valLat = p.getLatitude();
-                valLon = p.getLongitude();
-                ponto = new GeoPoint(valLat, valLon);
-                nodeMarkerWaypoints = new Marker(map);
-                nodeMarkerWaypoints.setPosition(ponto);
-                nodeMarkerWaypoints.setIcon(nodeIcon);
-                nodeMarkerWaypoints.isDraggable();
-                nodeMarkerWaypoints.setDraggable(true);
-                map.getOverlays().add(nodeMarkerWaypoints);
 
+            for (PlanUtilities.Waypoint point : points) {
+
+
+                if (point.getLatitude() != 0.0 && point.getLongitude() != 0.0) {
+                    valLat = point.getLatitude();
+                    valLon = point.getLongitude();
+                    ponto = new GeoPoint(valLat, valLon);
+                    System.out.println(ponto + " ponto");
+                    nodeMarkerWaypoints = new Marker(map);
+                    nodeMarkerWaypoints.setPosition(ponto);
+                    nodeMarkerWaypoints.setIcon(nodeIcon);
+                    map.getOverlays().add(nodeMarkerWaypoints);
+
+                }
             }
-}
+        }
     }
 
 

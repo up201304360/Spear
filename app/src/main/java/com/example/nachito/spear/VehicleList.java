@@ -18,8 +18,8 @@ import pt.lsts.imc.net.Consume;
  */
 
 public class VehicleList {
-    static LinkedHashMap< String, Pair<Date, VehicleState>> hashMap = new LinkedHashMap<>();
-    static LinkedHashMap<String, Pair<Date, String>> hashMap2 = new LinkedHashMap<>();
+    static final LinkedHashMap< String, Pair<Date, VehicleState>> hashMap = new LinkedHashMap<>();
+    static final LinkedHashMap<String, Pair<Date, String>> hashMap2 = new LinkedHashMap<>();
    static LinkedHashSet<String> lhs;
     @Consume
     public void vehicle(VehicleState msg) {
