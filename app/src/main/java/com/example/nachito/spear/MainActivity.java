@@ -34,9 +34,11 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -189,6 +191,8 @@ static Marker nodeMarkerWaypoints;
     static Double valLat;
     static Double valLon;
     Location location;
+    ListView listView_sys;
+    ArrayAdapter<String> adapter;
 
 
     @Override
@@ -255,12 +259,14 @@ static Marker nodeMarkerWaypoints;
         if (location == null) {
             location = new Location(LocationManager.GPS_PROVIDER);
         }
-        this.map.getOverlays().add(this.mLocationOverlay);
+        map.getOverlays().add(this.mLocationOverlay);
         mLocationOverlay.enableMyLocation();
         map.invalidate();
         mapController = map.getController();
         mapController.setZoom(12);
         mapController.setCenter(new GeoPoint(location));
+        listView_sys = (ListView) findViewById(R.id.sys_list);
+
 
     }
 
@@ -1126,6 +1132,7 @@ if(v.getId()==R.id.startplan) {
             String[] getName2 = selected.split(":");
             String selectedName2 = getName2[0];
             imc.setSelectedvehicle(selectedName2.trim());
+
                 servicebar.setText(selectedName2);
             synchronized (estates) {
                 for (EstimatedState state : estates.values()) {
@@ -1154,9 +1161,9 @@ if(v.getId()==R.id.startplan) {
     }
 
     public static void wayPoints(Maneuver maneuver) {
+        if(points!=null) {
 
         points = PlanUtilities.computeWaypoints(maneuver);
-        if(points!=null) {
 
 
             for (PlanUtilities.Waypoint point : points) {

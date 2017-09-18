@@ -83,9 +83,9 @@ public class PlanList {
                     PlanControlState planControlState = (PlanControlState) msg;
 
                     String planID = planControlState.getPlanId();
-                    System.out.println(planID + "planID veic");
+                    //System.out.println(planID + "planID veic");
                     if ((pdb.getPlanId().equals(planID))) {
-                        System.out.println("mesmo ------------------------");
+                      //  System.out.println("mesmo ------------------------");
 
                         for (PlanManeuver info : ps.getManeuvers()) {
                             array2.add(info.getData());

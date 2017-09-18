@@ -16,6 +16,7 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,79 +41,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     float mGroundOverlayBearing = 0.0f;
     InfoWindow infoWindow;
     IMCGlobal imc;
-    CoverArea area2;
+    Goto area2;
 
-    Collection<PolygonVertex> e= new Collection<PolygonVertex>() {
-        @Override
-        public int size() {
-            return 0;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            return false;
-        }
-
-        @NonNull
-        @Override
-        public Iterator<PolygonVertex> iterator() {
-            return null;
-        }
-
-        @NonNull
-        @Override
-        public Object[] toArray() {
-            return new Object[0];
-        }
-
-        @NonNull
-        @Override
-        public <T> T[] toArray(@NonNull T[] ts) {
-            return null;
-        }
-
-        @Override
-        public boolean add(PolygonVertex polygonVertex) {
-            return false;
-        }
-
-        @Override
-        public boolean remove(Object o) {
-            return false;
-        }
-
-        @Override
-        public boolean containsAll(@NonNull Collection<?> collection) {
-            return false;
-        }
-
-        @Override
-        public boolean addAll(@NonNull Collection<? extends PolygonVertex> collection) {
-            return false;
-        }
-
-        @Override
-        public boolean removeAll(@NonNull Collection<?> collection) {
-            return false;
-        }
-
-        @Override
-        public boolean retainAll(@NonNull Collection<?> collection) {
-            return false;
-        }
-
-        @Override
-        public void clear() {
-
-        }
-    };
-    PolygonVertex poly = new PolygonVertex();
-
+    PolygonVertex poly;
+   Collection<PolygonVertex> e;
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
@@ -256,33 +188,39 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             ArrayList<GeoCoord> coords = new ArrayList<>();
             ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
-     for(int i=0; i<markerPoints.size()-1; i++ ){
+     for(int i=0; i<markerPoints.size(); i++ ){
 
          coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
 
+
+
+
+         System.out.println("coords " + Arrays.toString(coords.toArray()));
      }
 
-            for (GeoCoord coord : computeCoveragePath(coords, swath_width)){
+            for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
 
-                poly.setLon(Math.toRadians(coord.longitudeDegs));
-                poly.setLat(Math.toRadians(coord.latitudeDegs));
-                e.add(poly);
-                area2 = new CoverArea();
-                double lat = Math.toRadians((coord.latitudeDegs));
-                double lon = Math.toRadians((coord.longitudeDegs));
+
+
+                area2 = new Goto();
+                double lat = Math.toRadians(coord.latitudeDegs);
+                double lon = Math.toRadians(coord.longitudeDegs);
                 area2.setLat(lat);
                 area2.setLon(lon);
                 area2.setZ(depth);
-                area2.setZUnits(CoverArea.Z_UNITS.DEPTH);
+                area2.setZUnits(Goto.Z_UNITS.DEPTH);
                 area2.setSpeed(speed);
-                area2.setPolygon(e);
+
                 if(!showrpm) {
-                    area2.setSpeedUnits(CoverArea.SPEED_UNITS.METERS_PS);
+                    area2.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
                 } else{
-                    area2.setSpeedUnits(CoverArea.SPEED_UNITS.RPM);}
+                    area2.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
+
                 maneuvers.add(area2);
+               System.out.println("maneuvers" + Arrays.toString(maneuvers.toArray()));
+
             }
-            startBehaviour("SpearCoverArea" , PlanUtilities.createPlan("CoverArea", maneuvers.toArray(new Maneuver[0])));
+            startBehaviour("SpearArea" , PlanUtilities.createPlan("SpearArea", maneuvers.toArray(new Maneuver[0])));
             wayPoints(area2);
         }
 

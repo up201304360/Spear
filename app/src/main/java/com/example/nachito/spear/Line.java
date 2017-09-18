@@ -14,6 +14,7 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
@@ -196,8 +197,8 @@ velc();
                 follow.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
             } else{
                 follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
-
             maneuvers.add(follow);
+
         }
 
     startBehaviour("SpearFollowPoints" , PlanUtilities.createPlan("followPoints", maneuvers.toArray(new Maneuver[0])));
