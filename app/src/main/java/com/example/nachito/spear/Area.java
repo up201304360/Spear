@@ -1,8 +1,10 @@
 package com.example.nachito.spear;
 
-import android.support.annotation.NonNull;
-import android.util.Log;
+import android.content.Context;
+import android.content.Intent;
 import android.view.View;
+import android.widget.Toast;
+
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
 import org.osmdroid.util.GeoPoint;
@@ -14,18 +16,11 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
-
 import pt.lsts.coverage.GeoCoord;
-import pt.lsts.imc.CoverArea;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
-import pt.lsts.imc.PolygonVertex;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
@@ -42,98 +37,99 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     InfoWindow infoWindow;
     IMCGlobal imc;
     Goto area2;
+    Boolean doneClicked=false;
 
-    PolygonVertex poly;
-   Collection<PolygonVertex> e;
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
     }
     public void finish() {
-        imc.unregister(this);
         map.getOverlayManager().clear();
         map.invalidate();
         done.setVisibility(View.INVISIBLE);
+        erase.setVisibility(View.INVISIBLE);
         vel2.setVisibility(View.INVISIBLE);
+        imc.unregister(this);
 
 
     }
 
     @Override
     public void onLongPress(double x, double y) {
+        if (!doneClicked) {
+            Projection proj = map.getProjection();
+            IGeoPoint p2 = proj.fromPixels((int) x, (int) y);
 
-        Projection proj = map.getProjection();
-        IGeoPoint p2 = proj.fromPixels((int) x, (int) y);
+            final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
-        final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
+            markerPoints.add(p);
 
-        markerPoints.add(p);
-
-        GroundOverlay myGroundOverlay = new GroundOverlay();
-        myGroundOverlay.setPosition(p);
-        myGroundOverlay.setDimensions(2000.0f);
-        myGroundOverlay.setBearing(mGroundOverlayBearing);
-        mGroundOverlayBearing += 20.0f;
-        map.getOverlays().add(myGroundOverlay);
-        map.getOverlayManager().add(myGroundOverlay);
-        map.invalidate();
-
-
-        lineMarker = new Marker(map);
-        lineMarker.setPosition(p);
-        lineMarker.setIcon(lineIcon);
-        lineMarker.isDraggable();
-        lineMarker.setDraggable(true);
-        lineMarker.setTitle("lat/lon:" + p);
-        map.getOverlays().add(lineMarker);
+            GroundOverlay myGroundOverlay = new GroundOverlay();
+            myGroundOverlay.setPosition(p);
+            myGroundOverlay.setDimensions(2000.0f);
+            myGroundOverlay.setBearing(mGroundOverlayBearing);
+            mGroundOverlayBearing += 20.0f;
+            map.getOverlays().add(myGroundOverlay);
+            map.getOverlayManager().add(myGroundOverlay);
+            map.invalidate();
 
 
-        lineMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-            @Override
-            public boolean onMarkerClick(Marker marker, MapView mapView) {
-                infoWindow = marker.getInfoWindow();
-                if (infoWindow.isOpen()) {
-                    infoWindow.close();
-                    marker.remove(map);
-                    markerPoints.remove(p);
+            lineMarker = new Marker(map);
+            lineMarker.setPosition(p);
+            lineMarker.setIcon(lineIcon);
+            lineMarker.isDraggable();
+            lineMarker.setDraggable(true);
+            lineMarker.setTitle("lat/lon:" + p);
+            map.getOverlays().add(lineMarker);
 
-                    if (circle != null)
-                        circle.setPoints(markerPoints);
-                    map.invalidate();
-                } else {
-                    marker.showInfoWindow();
-                    marker.getPosition();
-                }
-                return false;
 
-            }
-        });
-        done.setVisibility(View.VISIBLE);
-        erase.setVisibility(View.VISIBLE);
-        done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            lineMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                @Override
+                public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    infoWindow = marker.getInfoWindow();
+                    if (infoWindow.isOpen()) {
+                        infoWindow.close();
+                        marker.remove(map);
+                        markerPoints.remove(p);
 
-                if (markerPoints.size() <= 2) {
-                    if (imc.selectedvehicle == null) {
-
-                        System.out.println("No vehicles");
+                        if (circle != null)
+                            circle.setPoints(markerPoints);
+                        map.invalidate();
                     } else {
-                        Go(p);
+                        marker.showInfoWindow();
+                        marker.getPosition();
                     }
-
-
-                } else if (markerPoints.size() > 2) {
-
-                    GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                    drawArea(p, origin);
-                    trans.setVisibility(View.INVISIBLE);
+                    return false;
 
                 }
-            }
-        });
+            });
+
+            done.setVisibility(View.VISIBLE);
+            erase.setVisibility(View.VISIBLE);
+            done.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    doneClicked = true;
+                    if (markerPoints.size() <= 2) {
+                        if (imc.selectedvehicle == null) {
+
+                            System.out.println("No vehicles");
+                        } else {
+                            Go(p);
+                        }
 
 
+                    } else if (markerPoints.size() > 2) {
+
+                        GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
+                        drawArea(origin);
+                        trans.setVisibility(View.INVISIBLE);
+
+                    }
+                }
+            });
+
+        }
         erase.setOnClickListener(new View.OnClickListener() {
 
 
@@ -147,15 +143,19 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                 }
                 markerPoints.clear();
 
-                if (polyline != null)
-                    polyline.setPoints(markerPoints);
+
+                if (circle != null)
+                    circle.setPoints(markerPoints);
                 map.getOverlays().clear();
                 trans.setVisibility(View.VISIBLE);
             }
         });
+
+
+
     }
 
-    public void drawArea(GeoPoint p,GeoPoint origin) {
+    public void drawArea(GeoPoint origin) {
         circle = new Polygon();
         circle.getOutlinePaint();
         circle.isVisible();
@@ -166,7 +166,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         map.getOverlays().add(circle);
         map.invalidate();
         if (imc.selectedvehicle == null) {
-
             System.out.println("No vehicle selected");
 
 
@@ -175,7 +174,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
             LinkedHashSet<String> lhs = new LinkedHashSet<>();
             Iterator<GeoPoint> it = markerPoints.iterator();
-           velc();
             while(it.hasNext()) {
                 String val = it.next().toString();
                 if (lhs.contains(val)) {
@@ -193,14 +191,11 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
          coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
 
 
-
-
-         System.out.println("coords " + Arrays.toString(coords.toArray()));
      }
 
             for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
 
-
+//FollowPath
 
                 area2 = new Goto();
                 double lat = Math.toRadians(coord.latitudeDegs);
@@ -217,29 +212,17 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                     area2.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
 
                 maneuvers.add(area2);
-               System.out.println("maneuvers" + Arrays.toString(maneuvers.toArray()));
 
             }
-            startBehaviour("SpearArea" , PlanUtilities.createPlan("SpearArea", maneuvers.toArray(new Maneuver[0])));
+            startBehaviour("SpearArea" , PlanUtilities.createPlan("SpearArea-"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
             wayPoints(area2);
+
         }
 
 
     }
-    @Periodic
-    public void velc() {
 
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                vel2.setText("Speed:" + " " + vel + " " + "m/s" + "\n" + "Depth:" + " " + dept + "\n" + imc.getSelectedvehicle());
-
-            }
-        });
-    }
     public  void Go(GeoPoint p){
-        velc();
 
         Goto go = new Goto();
         double lat = Math.toRadians(p.getLatitude());
@@ -253,9 +236,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
         } else{
             go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
-        String planid = "SpearGoto";
+        String planid = "SpearGoto-"+imc.selectedvehicle;
         startBehaviour(planid, go);
         wayPoints(go);
+
     }
 
 

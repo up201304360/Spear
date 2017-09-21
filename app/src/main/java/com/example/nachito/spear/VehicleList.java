@@ -61,9 +61,8 @@ public LinkedHashSet<String> stillConnected(){
             ligados.add(entry.getValue().second);
 
 
-        //apagar duplicados
 
-         lhs = new LinkedHashSet<String>();
+         lhs = new LinkedHashSet<>();
 
         Iterator< String> it = ligados.iterator();
 

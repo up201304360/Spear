@@ -98,7 +98,7 @@ public class Joystick extends View {
     }
 
     private int measure(int measureSpec) {
-        int result = 0;
+        int result;
         // Decode the measurement specifications.
         int specMode = MeasureSpec.getMode(measureSpec);
         int specSize = MeasureSpec.getSize(measureSpec);

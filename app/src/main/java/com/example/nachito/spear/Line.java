@@ -1,6 +1,8 @@
 package com.example.nachito.spear;
 
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
@@ -11,16 +13,10 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
-
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-
-import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
-import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
@@ -38,7 +34,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     GeoPoint p;
     Boolean doneClicked=false;
     Goto follow;
-
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
@@ -169,9 +164,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         LinkedHashSet<String> lhs = new LinkedHashSet<String>();
         Iterator<GeoPoint> it = markerPoints.iterator();
 
-
-velc();
-
         while(it.hasNext()) {
             String val = it.next().toString();
             if (lhs.contains(val)) {
@@ -201,21 +193,12 @@ velc();
 
         }
 
-    startBehaviour("SpearFollowPoints" , PlanUtilities.createPlan("followPoints", maneuvers.toArray(new Maneuver[0])));
+    startBehaviour("SpearFollowPoints" , PlanUtilities.createPlan("followPoints"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
         wayPoints(follow);
+
     }
-@Periodic
-public void velc(){
 
 
-    runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-            vel2.setText("Speed:" + " " + vel + " " + "m/s" + "\n" + "Depth:" + " " + dept + "\n" + imc.getSelectedvehicle());
-
-        }
-    });
-}
     public void Go(GeoPoint p) {
         Goto go = new Goto();
         double lat = Math.toRadians(p.getLatitude());
@@ -229,10 +212,10 @@ public void velc(){
             go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
         } else{
             go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
-        String planid = "SpearGoto";
+        String planid = "SpearGoto-"+imc.selectedvehicle;
         startBehaviour(planid, go);
-        velc();
         wayPoints(go);
+
 
     }
 
@@ -245,6 +228,8 @@ public void velc(){
         imc.unregister(this);
     }
 
+
 }
 
 
+//depois do done passar para o main

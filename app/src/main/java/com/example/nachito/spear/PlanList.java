@@ -1,9 +1,5 @@
 package com.example.nachito.spear;
 
-import android.support.annotation.NonNull;
-
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,7 +51,11 @@ public class PlanList {
 
 
     }
-    @Periodic
+
+
+
+
+
     @Consume
     public void maneuver(IMCMessage msg) {
 
@@ -83,13 +83,14 @@ public class PlanList {
                     PlanControlState planControlState = (PlanControlState) msg;
 
                     String planID = planControlState.getPlanId();
-                    //System.out.println(planID + "planID veic");
+                    System.out.println(planID + " plano a ser executado");
+                    System.out.println(pdb.getPlanId() + " pdb.getplanid");
+
                     if ((pdb.getPlanId().equals(planID))) {
-                      //  System.out.println("mesmo ------------------------");
 
                         for (PlanManeuver info : ps.getManeuvers()) {
                             array2.add(info.getData());
-                           // System.out.println(array2 + " array2");
+                            System.out.println(" array2");
                         }
                     }
 
