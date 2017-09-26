@@ -1,14 +1,10 @@
 package com.example.nachito.spear;
 
-import android.content.Context;
-import android.content.Intent;
-import android.view.View;
-import android.widget.Toast;
 
+import android.view.View;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
@@ -21,11 +17,8 @@ import java.util.LinkedHashSet;
 import pt.lsts.coverage.GeoCoord;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
-import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
-
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
-
 
 /**
  * Created by ines on 8/23/17.
@@ -83,26 +76,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             map.getOverlays().add(lineMarker);
 
 
-            lineMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    infoWindow = marker.getInfoWindow();
-                    if (infoWindow.isOpen()) {
-                        infoWindow.close();
-                        marker.remove(map);
-                        markerPoints.remove(p);
 
-                        if (circle != null)
-                            circle.setPoints(markerPoints);
-                        map.invalidate();
-                    } else {
-                        marker.showInfoWindow();
-                        marker.getPosition();
-                    }
-                    return false;
-
-                }
-            });
 
             done.setVisibility(View.VISIBLE);
             erase.setVisibility(View.VISIBLE);
@@ -121,8 +95,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
                     } else if (markerPoints.size() > 2) {
 
-                        GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                        drawArea(origin);
+                        drawArea();
                         trans.setVisibility(View.INVISIBLE);
 
                     }
@@ -155,14 +128,14 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
     }
 
-    public void drawArea(GeoPoint origin) {
+    public void drawArea() {
+
         circle = new Polygon();
         circle.getOutlinePaint();
         circle.isVisible();
         circle.setStrokeWidth(7);
         circle.setPoints(markerPoints);
         circle.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
-        circle.setTitle("Centered on " + origin.getLatitude() + "," + origin.getLongitude());
         map.getOverlays().add(circle);
         map.invalidate();
         if (imc.selectedvehicle == null) {
@@ -171,56 +144,66 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
         } else {
 
+            followArea();
 
-            LinkedHashSet<String> lhs = new LinkedHashSet<>();
-            Iterator<GeoPoint> it = markerPoints.iterator();
-            while(it.hasNext()) {
-                String val = it.next().toString();
-                if (lhs.contains(val)) {
-                    it.remove();
-                }
-                else
-                    lhs.add(val);
+
+        }
+    }
+
+    public void followArea(){
+
+
+
+        LinkedHashSet<String> lhs = new LinkedHashSet<>();
+        Iterator<GeoPoint> it = markerPoints.iterator();
+        while(it.hasNext()) {
+            String val = it.next().toString();
+            if (lhs.contains(val)) {
+                it.remove();
             }
+            else
+                lhs.add(val);
+        }
 
-            ArrayList<GeoCoord> coords = new ArrayList<>();
-            ArrayList<Maneuver> maneuvers = new ArrayList<>();
+        ArrayList<GeoCoord> coords = new ArrayList<>();
+        ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
-     for(int i=0; i<markerPoints.size(); i++ ){
+        for(int i=0; i<markerPoints.size(); i++ ){
 
-         coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
-
-
-     }
-
-            for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
-
-//FollowPath
-
-                area2 = new Goto();
-                double lat = Math.toRadians(coord.latitudeDegs);
-                double lon = Math.toRadians(coord.longitudeDegs);
-                area2.setLat(lat);
-                area2.setLon(lon);
-                area2.setZ(depth);
-                area2.setZUnits(Goto.Z_UNITS.DEPTH);
-                area2.setSpeed(speed);
-
-                if(!showrpm) {
-                    area2.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
-                } else{
-                    area2.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
-
-                maneuvers.add(area2);
-
-            }
-            startBehaviour("SpearArea" , PlanUtilities.createPlan("SpearArea-"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
-            wayPoints(area2);
+            coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
+            System.out.println(coords +  "   11111111111111");
 
         }
 
 
+        for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
+            System.out.println(coord + "   2222222222222");
+
+//FollowPath
+            area2 = new Goto();
+            double lat = Math.toRadians(coord.latitudeDegs);
+            double lon = Math.toRadians(coord.longitudeDegs);
+            area2.setLat(lat);
+            area2.setLon(lon);
+            area2.setZ(depth);
+            area2.setZUnits(Goto.Z_UNITS.DEPTH);
+            area2.setSpeed(speed);
+
+            if(!showrpm) {
+                area2.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+            } else{
+                area2.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
+
+            maneuvers.add(area2);
+
+        }
+        startBehaviour("SpearArea" , PlanUtilities.createPlan("SpearArea-"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
+        wayPoints(area2);
+        setEstadoVeiculo(" ");
+        previous="M";
+
     }
+
 
     public  void Go(GeoPoint p){
 
@@ -239,6 +222,8 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         String planid = "SpearGoto-"+imc.selectedvehicle;
         startBehaviour(planid, go);
         wayPoints(go);
+        setEstadoVeiculo(" ");
+        previous="M";
 
     }
 

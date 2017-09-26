@@ -34,79 +34,69 @@ public class PlanList {
 
     @Consume
     public void plan(PlanDB msg) {
-        if (msg.getOp() != PlanDB.OP.GET_STATE || msg.getType() != (PlanDB.TYPE.SUCCESS))
-            return;
-        IMCMessage arg = msg.getArg();
-        if (arg == null || arg.getMgid() != PlanDBState.ID_STATIC)
-            return;
-        PlanDBState state = (PlanDBState) arg;
-        array = new ArrayList<>();
-        for (PlanDBInformation info : state.getPlansInfo()) {
-            array.add(info.getPlanId());
-        }
-        String vehicle = msg.getSourceName();
-        synchronized (hashMap) {
-            hashMap.put(vehicle, array);
-        }
 
+        if (!msg.getSourceName().equals(imc.getSelectedvehicle()))
+            return;
 
+        if (msg.getOp() == PlanDB.OP.GET_STATE && msg.getType() == (PlanDB.TYPE.SUCCESS))
+        {
+            IMCMessage arg = msg.getArg();
+            if (arg == null || arg.getMgid() != PlanDBState.ID_STATIC)
+                return;
+            PlanDBState state = (PlanDBState) arg;
+            array = new ArrayList<>();
+            for (PlanDBInformation info : state.getPlansInfo()) {
+                array.add(info.getPlanId());
+            }
+            String vehicle = msg.getSourceName();
+            synchronized (hashMap) {
+                hashMap.put(vehicle, array);
+            }
+        }
+        else if (msg.getOp() == PlanDB.OP.GET && msg.getType() == PlanDB.TYPE.SUCCESS) {
+            if (msg.getPlanId().equals(planBeingExecuted)) {
+                System.out.println("Received "+msg.getPlanId()+" from "+msg.getSourceName());
+                array2 = new ArrayList<>();
+                for (PlanManeuver info : ((PlanSpecification)msg.getArg()).getManeuvers()) {
+                    array2.add(info.getData());
+                }
+                synchronized (hashMap2) {
+                    hashMap2.put(msg.getSourceName(), array2);
+                }
+            }
+        }
     }
 
-
-
-
+    String planBeingExecuted = null;
 
     @Consume
-    public void maneuver(IMCMessage msg) {
+    public void onMsg(PlanControlState msg) {
 
-        if (msg instanceof PlanDB) {
-            pdb = (PlanDB) msg;
+        String previous = planBeingExecuted;
+        if (!msg.getSourceName().equals(imc.selectedvehicle))
+            return;
 
-            if (pdb.getArg() instanceof PlanDBState) {
-                PlanDBState pdbState = (PlanDBState) pdb.getArg();
-
-                for (PlanDBInformation p : pdbState.getPlansInfo()) {
-                    PlanDB pdbRequest = new PlanDB();
-                    pdbRequest.setPlanId(p.getPlanId());
-                    pdbRequest.setOp(PlanDB.OP.GET);
-                    pdbRequest.setType(PlanDB.TYPE.REQUEST);
-                    imc.sendMessage(pdbRequest);
-                }
-
-            }
-        } if(pdb!=null) {
-            if (pdb.getArg() instanceof PlanSpecification) {
-                PlanSpecification ps = (PlanSpecification) pdb.getArg();
-                array2 = new ArrayList<>();
-
-                if (msg.getAbbrev().equals("PlanControlState")) {
-                    PlanControlState planControlState = (PlanControlState) msg;
-
-                    String planID = planControlState.getPlanId();
-                    System.out.println(planID + " plano a ser executado");
-                    System.out.println(pdb.getPlanId() + " pdb.getplanid");
-
-                    if ((pdb.getPlanId().equals(planID))) {
-
-                        for (PlanManeuver info : ps.getManeuvers()) {
-                            array2.add(info.getData());
-                            System.out.println(" array2");
-                        }
-                    }
-
-
-                    String vehicle = msg.getSourceName();
-
-                    synchronized (hashMap2) {
-                        hashMap2.put(vehicle, array2);
-
-                    }
-                }
-            }
+        if (msg.getState() == PlanControlState.STATE.EXECUTING) {
+            planBeingExecuted = msg.getPlanId();
+            if (previous == null || !previous.equals(planBeingExecuted))
+                askForPlan();
         }
+        else
+            planBeingExecuted = null;
     }
 
+    @Periodic(60000)
+    public void askForPlan() {
 
+        System.out.println("Requesting "+planBeingExecuted+" to vehicle "+imc.selectedvehicle);
+        if (planBeingExecuted != null) {
+            PlanDB pdbRequest = new PlanDB();
+            pdbRequest.setPlanId(planBeingExecuted);
+            pdbRequest.setOp(PlanDB.OP.GET);
+            pdbRequest.setType(PlanDB.TYPE.REQUEST);
+            imc.sendMessage(pdbRequest);
+        }
+    }
 
     @Periodic(10000)
     public void AskPlans(){
@@ -115,10 +105,7 @@ public class PlanList {
         msg.setOp(PlanDB.OP.GET_STATE);
         msg.setType(PlanDB.TYPE.REQUEST);
         imc.sendToAll(msg);
-
     }
-
-
 
 
     public List<String> ListaPlanos(String vehicle) {
@@ -126,7 +113,6 @@ public class PlanList {
             return hashMap.get(vehicle);
         }
     }
-
 
     public List<Maneuver> ListaManeuvers(String vehicle) {
         synchronized (hashMap2) {

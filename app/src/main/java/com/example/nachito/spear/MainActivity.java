@@ -82,6 +82,7 @@ import pt.lsts.util.PlanUtilities;
 import pt.lsts.util.WGS84Utilities;
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.imageView;
+import static com.example.nachito.spear.R.id.up;
 
 
 @EActivity
@@ -149,7 +150,7 @@ public class MainActivity extends AppCompatActivity
     static Press trans;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.newmarker)
     static Drawable nodeIcon;
-    @org.androidannotations.annotations.res.DrawableRes(R.drawable.marker_node)
+    @org.androidannotations.annotations.res.DrawableRes(R.drawable.blueled)
     static Drawable lineIcon;
     Bitmap source2;
     Area area;
@@ -183,6 +184,7 @@ public class MainActivity extends AppCompatActivity
     static Double valLon;
     Location location;
     RotationGestureOverlay mRotationGestureOverlay;
+    static String previous=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -427,6 +429,7 @@ public class MainActivity extends AppCompatActivity
                                     pc.setRequestId(0);
                                     pc.setPlanId("SpearTeleoperation-" + imc.selectedvehicle);
                                     imc.sendMessage(pc);
+                                    setEstadoVeiculo(" ");
                                 }
                             })
                             .setNegativeButton("No", new OnClickListener() {
@@ -515,6 +518,7 @@ public class MainActivity extends AppCompatActivity
                     mCompassOverlay.enableCompass();
                     map.getOverlays().add(mCompassOverlay);
                     map.setMultiTouchControls(true);
+
                 }
             }
 
@@ -808,9 +812,8 @@ public class MainActivity extends AppCompatActivity
 
 
     @Background
-    @Periodic(500)
+    @Periodic
     public void updateState() {
-
         map.setMultiTouchControls(true);
 
         stateList = new ArrayList<>();
@@ -819,28 +822,51 @@ public class MainActivity extends AppCompatActivity
             warning();
 
         for (VehicleState state : states) {
+            if(imc.selectedvehicle!=null)
+                if(imc.selectedvehicle.equals(state.getSourceName()))
             stateList.add(state.getOpModeStr());
 
         }
 
 
         for (int i = 0; i < stateList.size(); i++) {
+
             String stateconncected = stateList.toString();
-            estadoVeiculo= stateconncected;
 
-            if (stateconncected.charAt(1) == 'S') {
 
-                if (points != null) {
-                        map.getOverlays().remove(nodeMarkerWaypoints);
-                        points = null;
+                if (previous!=null && stateconncected.charAt(1) == 'S') {
+//TODO funcionar
+
+
+System.out.println("service -------------------");
+
+                        map.getOverlays().remove(lineMarker);
+                    map.getOverlays().remove(nodeMarkerWaypoints);
+                    map.getOverlays().remove(points);
+                    if(points!=null)
+                        points.clear();
+                    points=null;
+                    mList.clear();
+
+                    map.getOverlays().clear();
+
+                    if (line != null) {
+                        map.getOverlays().remove(lineMarker);
+                        line = null;
                         updateMap();
-                    map.setMultiTouchControls(true);
-
+                    } else if (area != null) {
+                        map.getOverlays().remove(lineMarker);
+                        area = null;
+                        updateMap();
+                    }
                 }
-            }
+
         }
     }
+    public static void  setEstadoVeiculo(String e){
 
+        estadoVeiculo=e;
+    }
 
     @Background
     @Periodic(500)
@@ -916,7 +942,9 @@ public class MainActivity extends AppCompatActivity
         dive.setBearing(0);
         String planid = "SpearDive-" + imc.selectedvehicle;
         startBehaviour(planid, dive);
+
         wayPoints(dive);
+
     }
 
     public void keepStation() {
@@ -970,7 +998,16 @@ public class MainActivity extends AppCompatActivity
         pc.setFlags(0);
         pc.setRequestId(0);
         pc.setPlanId(planid);
+
+      map.getOverlays().remove(nodeMarkerWaypoints);
+        if(points!=null)
+            points.clear();
+        points=null;
+        map.invalidate();
+        map.getOverlays().clear();
+
         imc.sendMessage(pc);
+        previous="M";
 
 
     }
@@ -983,13 +1020,24 @@ public class MainActivity extends AppCompatActivity
         pc.setRequestId(1);
         pc.setFlags(0);
         pc.setPlanId("stopPlan-" + imc.selectedvehicle);
+        setEstadoVeiculo("Plan Stopped");
+        previous="S";
+
+//TODO
+
+
+
+        map.getOverlays().remove(nodeMarkerWaypoints);
+        if(points!=null)
+        points.clear();
+        points=null;
+        map.invalidate();
+        map.getOverlays().clear();
+        mList.clear();
+
+
         imc.sendMessage(pc);
 
-        if (points != null) {
-            map.getOverlays().remove(nodeMarkerWaypoints);
-            points = null;
-            updateMap();
-        }
         if (line != null) {
             map.getOverlays().remove(lineMarker);
             line = null;
@@ -1119,34 +1167,29 @@ public class MainActivity extends AppCompatActivity
             pc.setRequestId(0);
             pc.setPlanId(item.toString());
             imc.sendMessage(pc);
+            setEstadoVeiculo("Plan:" + pc.getPlanId());
 
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (imc.allManeuvers() == null) {
-                        Toast.makeText(MainActivity.this, "No plan specification available", Toast.LENGTH_SHORT).show();
-                    }else {
+            if (imc.allManeuvers() == null) {
+                Toast.makeText(MainActivity.this, "No plan specification available", Toast.LENGTH_SHORT).show();
+            } else {
 
 
-                        for (int i = 0; i < imc.allManeuvers().size(); i++) {
+                for (int i = 0; i < imc.allManeuvers().size(); i++) {
 
-                            mList.addAll(imc.allManeuvers());
+                    mList.addAll(imc.allManeuvers());
 
-                        }
-                        //todo se dentro for fica no come near ou nao
-                        callWaypoint(mList);
-
-                        System.out.println(mList + "mList");
-                        System.out.println(imc.allManeuvers() + "allmaneuvers");
-                    }
                 }
-            },5000);
+                callWaypoint(mList);
 
-        } else {
+            }
+
+        }
+
+         else {
             selected = item.toString();
             String[] getName2 = selected.split(":");
             String selectedName2 = getName2[0];
+            setEstadoVeiculo( getName2[1]);
             imc.setSelectedvehicle(selectedName2.trim());
             servicebar.setText(selectedName2);
 
@@ -1192,7 +1235,7 @@ public class MainActivity extends AppCompatActivity
                         nodeMarkerWaypoints.setPosition(ponto);
                         nodeMarkerWaypoints.setIcon(nodeIcon);
                         map.getOverlays().add(nodeMarkerWaypoints);
-
+//linha a ligar os pontos
 
                     }
                 }

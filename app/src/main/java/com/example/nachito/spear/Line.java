@@ -64,25 +64,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             lineMarker.setTitle("lat/lon:" + p);
             map.getOverlays().add(lineMarker);
 
-            lineMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
-                @Override
-                public boolean onMarkerClick(Marker marker, MapView mapView) {
-                    infoWindow = marker.getInfoWindow();
-                    if (infoWindow.isOpen()) {
-                        infoWindow.close();
-                        marker.remove(map);
-                        markerPoints.remove(p);
-                        if (polyline != null)
-                            polyline.setPoints(markerPoints);
-                        map.invalidate();
-                    } else {
-                        marker.showInfoWindow();
-                        marker.getPosition();
-                    }
-                    return false;
 
-                }
-            });
                 done.setVisibility(View.VISIBLE);
                 erase.setVisibility(View.VISIBLE);
                 done.setOnClickListener(new View.OnClickListener() {
@@ -191,10 +173,13 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                 follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
             maneuvers.add(follow);
 
+
         }
 
-    startBehaviour("SpearFollowPoints" , PlanUtilities.createPlan("followPoints"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
+    startBehaviour("followPoints"+imc.selectedvehicle, PlanUtilities.createPlan("followPoints"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
         wayPoints(follow);
+        setEstadoVeiculo(" ");
+        previous="M";
 
     }
 
@@ -215,6 +200,8 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         String planid = "SpearGoto-"+imc.selectedvehicle;
         startBehaviour(planid, go);
         wayPoints(go);
+        setEstadoVeiculo(" ");
+        previous="M";
 
 
     }
