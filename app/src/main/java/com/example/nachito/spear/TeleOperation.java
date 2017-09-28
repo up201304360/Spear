@@ -17,10 +17,8 @@ import pt.lsts.neptus.messages.listener.Periodic;
 @EFragment(R.layout.fragment_teleop)
 public class TeleOperation extends Fragment implements JoystickMovedListener, AccelListener, DecListener, StopListener {
     IMCGlobal imc;
-    RemoteActions rm;
     boolean teleop = false;
     protected LinkedHashMap<String, Object> remoteActions = new LinkedHashMap<>();
-    float tilt;
 
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
@@ -71,6 +69,8 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
 
     @Override
     public void Thrust(float tilt2) {
+        float tilt;
+
         tilt = (int) (tilt2 * 15);
     }
 
@@ -122,6 +122,8 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
     public void sendActions() {
         if (!teleop)
             return;
+        RemoteActions rm;
+
         rm = new RemoteActions();
         rm.setActions(remoteActions);
         imc.sendMessage(rm);

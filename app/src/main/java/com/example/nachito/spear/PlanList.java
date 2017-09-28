@@ -21,12 +21,9 @@ import pt.lsts.neptus.messages.listener.Periodic;
  */
 
 public class PlanList {
-    static final LinkedHashMap<String, List<String>> hashMap = new LinkedHashMap<>();
+    static final LinkedHashMap<String, List<String>> planHashMap = new LinkedHashMap<>();
     IMCGlobal imc = null;
-    ArrayList<String> array;
-    ArrayList<Maneuver> array2;
-    static final LinkedHashMap<String, List<Maneuver>> hashMap2 = new LinkedHashMap<>();
-    PlanDB pdb;
+    static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
 
     public PlanList(IMCGlobal ref) {
         imc = ref;
@@ -44,24 +41,27 @@ public class PlanList {
             if (arg == null || arg.getMgid() != PlanDBState.ID_STATIC)
                 return;
             PlanDBState state = (PlanDBState) arg;
-            array = new ArrayList<>();
+            ArrayList<String> planNameArray;
+
+            planNameArray = new ArrayList<>();
             for (PlanDBInformation info : state.getPlansInfo()) {
-                array.add(info.getPlanId());
+                planNameArray.add(info.getPlanId());
             }
             String vehicle = msg.getSourceName();
-            synchronized (hashMap) {
-                hashMap.put(vehicle, array);
+            synchronized (planHashMap) {
+                planHashMap.put(vehicle, planNameArray);
             }
         }
         else if (msg.getOp() == PlanDB.OP.GET && msg.getType() == PlanDB.TYPE.SUCCESS) {
             if (msg.getPlanId().equals(planBeingExecuted)) {
                 System.out.println("Received "+msg.getPlanId()+" from "+msg.getSourceName());
-                array2 = new ArrayList<>();
+                ArrayList<Maneuver> planExecutingArray;
+                planExecutingArray = new ArrayList<>();
                 for (PlanManeuver info : ((PlanSpecification)msg.getArg()).getManeuvers()) {
-                    array2.add(info.getData());
+                    planExecutingArray.add(info.getData());
                 }
-                synchronized (hashMap2) {
-                    hashMap2.put(msg.getSourceName(), array2);
+                synchronized (planExecuting) {
+                    planExecuting.put(msg.getSourceName(), planExecutingArray);
                 }
             }
         }
@@ -84,6 +84,8 @@ public class PlanList {
         else
             planBeingExecuted = null;
     }
+
+
 
     @Periodic(60000)
     public void askForPlan() {
@@ -109,14 +111,14 @@ public class PlanList {
 
 
     public List<String> ListaPlanos(String vehicle) {
-        synchronized (hashMap) {
-            return hashMap.get(vehicle);
+        synchronized (planHashMap) {
+            return planHashMap.get(vehicle);
         }
     }
 
     public List<Maneuver> ListaManeuvers(String vehicle) {
-        synchronized (hashMap2) {
-            return hashMap2.get(vehicle);
+        synchronized (planExecuting) {
+            return planExecuting.get(vehicle);
         }
     }
 

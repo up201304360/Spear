@@ -1,24 +1,19 @@
 package com.example.nachito.spear;
 
 
-import android.content.Context;
-import android.content.Intent;
 import android.view.View;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
-import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
-import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 
@@ -27,13 +22,10 @@ import pt.lsts.util.PlanUtilities;
  */
 public class Line extends MainActivity implements  PressListener, MapViewConstants {
 
-    float mGroundOverlayBearing = 0.0f;
-    ArrayList<ArrayList<GeoPoint>> points;
-    InfoWindow infoWindow;
     IMCGlobal imc;
-    GeoPoint p;
     Boolean doneClicked=false;
     Goto follow;
+
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
@@ -44,11 +36,12 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     public void onLongPress(double x, double y) {
         if (!doneClicked) {
             IGeoPoint p2 = map.getProjection().fromPixels((int) x, (int) y);
-            p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
+            final GeoPoint clickedLocation = new GeoPoint(p2.getLatitude(), p2.getLongitude());
+            float mGroundOverlayBearing = 0.0f;
 
-            markerPoints.add(p);
+            markerPoints.add(clickedLocation);
             GroundOverlay myGroundOverlay = new GroundOverlay();
-            myGroundOverlay.setPosition(p);
+            myGroundOverlay.setPosition(clickedLocation);
             myGroundOverlay.setDimensions(2000.0f);
             myGroundOverlay.setBearing(mGroundOverlayBearing);
             mGroundOverlayBearing += 20.0f;
@@ -57,70 +50,72 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             map.invalidate();
 
             lineMarker = new Marker(map);
-            lineMarker.setPosition(p);
+            lineMarker.setPosition(clickedLocation);
             lineMarker.setIcon(lineIcon);
             lineMarker.isDraggable();
             lineMarker.setDraggable(true);
-            lineMarker.setTitle("lat/lon:" + p);
+            lineMarker.setTitle("lat/lon:" + clickedLocation);
             map.getOverlays().add(lineMarker);
 
 
-                done.setVisibility(View.VISIBLE);
-                erase.setVisibility(View.VISIBLE);
-                done.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        doneClicked = true;
-
-                        if (markerPoints.size() <= 2) {
-                            if (imc.selectedvehicle == null) {
-
-                                System.out.println("No vehicles");
-                            } else {
-                                Go(p);
-                            }
-
-
-                        } else if (markerPoints.size() > 2) {
-
-                            GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                            GeoPoint dest = markerPoints.get(markerPoints.size() - 1);
-                            drawLine(origin, dest);
-                            trans.setVisibility(View.INVISIBLE);
-
-                        }
-                    }
-                });
-
-        }
-            erase.setOnClickListener(new View.OnClickListener() {
-
-
+            done.setVisibility(View.VISIBLE);
+            erase.setVisibility(View.VISIBLE);
+            done.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    for (int i = 0; i < markerPoints.size(); i++) {
-                        lineMarker.remove(map);
+                    doneClicked = true;
+
+                    if (markerPoints.size() <= 2) {
+                        if (imc.selectedvehicle == null) {
+
+                            System.out.println("No vehicles");
+                        } else {
+                            Go(clickedLocation);
+                            velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
+
+                        }
 
 
-                        map.invalidate();
+                    } else if (markerPoints.size() > 2) {
+
+                        GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
+                        GeoPoint dest = markerPoints.get(markerPoints.size() - 1);
+                        drawLine(origin, dest);
+                        transparentView.setVisibility(View.INVISIBLE);
+
                     }
-                    markerPoints.clear();
-
-                    if (polyline != null)
-                        polyline.setPoints(markerPoints);
-                    map.getOverlays().clear();
-                    trans.setVisibility(View.VISIBLE);
-
                 }
-
             });
+
         }
+        erase.setOnClickListener(new View.OnClickListener() {
+
+
+            @Override
+            public void onClick(View v) {
+                for (int i = 0; i < markerPoints.size(); i++) {
+                    lineMarker.remove(map);
+
+
+                    map.invalidate();
+                }
+                markerPoints.clear();
+
+                if (polyline != null)
+                    polyline.setPoints(markerPoints);
+                map.getOverlays().clear();
+                transparentView.setVisibility(View.VISIBLE);
+
+            }
+
+        });
+    }
 
 
 
     public void drawLine( GeoPoint origin, GeoPoint dest) {
-        points = new ArrayList<>();
-        points.add(markerPoints);
+        ArrayList<ArrayList<GeoPoint>> points;
+
         points = new ArrayList<>();
         points.add(markerPoints);
         polyline = new Polyline();
@@ -143,30 +138,32 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     }
 
     public void followPoints() {
-        LinkedHashSet<String> lhs = new LinkedHashSet<String>();
-        Iterator<GeoPoint> it = markerPoints.iterator();
+        velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
 
-        while(it.hasNext()) {
-            String val = it.next().toString();
-            if (lhs.contains(val)) {
-                it.remove();
+        LinkedHashSet<String> noRepetitions = new LinkedHashSet<String>();
+        Iterator<GeoPoint> iterator = markerPoints.iterator();
+
+        while(iterator.hasNext()) {
+            String val = iterator.next().toString();
+            if (noRepetitions.contains(val)) {
+                iterator.remove();
             }
             else
-                lhs.add(val);
+                noRepetitions.add(val);
         }
 
         ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
-        for (GeoPoint p : markerPoints) {
+        for (GeoPoint point : markerPoints) {
 
             follow = new Goto();
-            double lat = Math.toRadians((p.getLatitude()));
-            double lon = Math.toRadians((p.getLongitude()));
-             follow.setLat(lat);
-                follow.setLon(lon);
-                follow.setZ(depth);
-                follow.setZUnits(Goto.Z_UNITS.DEPTH);
-                follow.setSpeed(speed);
+            double lat = Math.toRadians((point.getLatitude()));
+            double lon = Math.toRadians((point.getLongitude()));
+            follow.setLat(lat);
+            follow.setLon(lon);
+            follow.setZ(depth);
+            follow.setZUnits(Goto.Z_UNITS.DEPTH);
+            follow.setSpeed(speed);
             if(!showrpm) {
                 follow.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
             } else{
@@ -176,7 +173,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
         }
 
-    startBehaviour("followPoints"+imc.selectedvehicle, PlanUtilities.createPlan("followPoints"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
+        startBehaviour("followPoints"+imc.selectedvehicle, PlanUtilities.createPlan("followPoints"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
         wayPoints(follow);
         setEstadoVeiculo(" ");
         previous="M";
@@ -211,7 +208,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         map.invalidate();
         done.setVisibility(View.INVISIBLE);
         erase.setVisibility(View.INVISIBLE);
-        vel2.setVisibility(View.INVISIBLE);
+        velocityTextView.setVisibility(View.INVISIBLE);
         imc.unregister(this);
     }
 
@@ -219,4 +216,3 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 }
 
 
-//depois do done passar para o main

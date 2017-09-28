@@ -26,8 +26,6 @@ import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
  */
 
 public class Area extends MainActivity implements  PressListener, MapViewConstants {
-    float mGroundOverlayBearing = 0.0f;
-    InfoWindow infoWindow;
     IMCGlobal imc;
     Goto area2;
     Boolean doneClicked=false;
@@ -41,7 +39,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         map.invalidate();
         done.setVisibility(View.INVISIBLE);
         erase.setVisibility(View.INVISIBLE);
-        vel2.setVisibility(View.INVISIBLE);
+        velocityTextView.setVisibility(View.INVISIBLE);
         imc.unregister(this);
 
 
@@ -56,6 +54,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
             markerPoints.add(p);
+            float mGroundOverlayBearing = 0.0f;
 
             GroundOverlay myGroundOverlay = new GroundOverlay();
             myGroundOverlay.setPosition(p);
@@ -90,13 +89,14 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                             System.out.println("No vehicles");
                         } else {
                             Go(p);
+                            velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
                         }
 
 
                     } else if (markerPoints.size() > 2) {
 
                         drawArea();
-                        trans.setVisibility(View.INVISIBLE);
+                        transparentView.setVisibility(View.INVISIBLE);
 
                     }
                 }
@@ -120,7 +120,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                 if (circle != null)
                     circle.setPoints(markerPoints);
                 map.getOverlays().clear();
-                trans.setVisibility(View.VISIBLE);
+                transparentView.setVisibility(View.VISIBLE);
             }
         });
 
@@ -152,6 +152,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
     public void followArea(){
 
+        velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
 
 
         LinkedHashSet<String> lhs = new LinkedHashSet<>();
