@@ -601,6 +601,14 @@ public class MainActivity extends AppCompatActivity
             }
             return true;
         }
+        else if(id==R.id.sms){
+            Intent i = new Intent(this, Sms.class);
+            i.putExtra("selected", imc.selectedvehicle);
+            startActivity(i);
+           // startActivity(new Intent(this, Sms.class));
+
+            return true;
+        }
 
 
         else if (id == R.id.edit) {
@@ -682,7 +690,6 @@ public class MainActivity extends AppCompatActivity
 
 
     @Background
-    @Periodic(500)
     @Override
     public void onLocationChanged(Location location) {
         final ArrayList<OverlayItem> items = new ArrayList<>();

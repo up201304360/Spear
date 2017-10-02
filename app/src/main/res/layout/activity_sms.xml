@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/nomeVeiculo"
+        android:layout_gravity="center"
+        android:textSize="20sp"
+        android:layout_margin="20dp"
+        android:text="Vehicle Name"/>
+
+    <RadioGroup
+        android:id="@+id/radioButtons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:paddingTop="10dp"
+        android:layout_margin="15dp">
+
+        <RadioButton
+            android:id="@+id/diveRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:checked="false"
+            android:text="@string/dive" />
+
+        <RadioButton
+            android:id="@+id/stationKeepingRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/station" />
+
+        <RadioButton
+            android:id="@+id/abortRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/abort" />
+
+        <RadioButton
+            android:id="@+id/surfaceRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/surface" />
+
+    </RadioGroup>
+
+
+</LinearLayout>
