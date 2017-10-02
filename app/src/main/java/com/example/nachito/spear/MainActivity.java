@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.BitmapRegionDecoder;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
@@ -22,10 +21,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v4.app.ActivityCompat;
@@ -48,7 +44,6 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
-import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -58,23 +53,19 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
-import org.osmdroid.views.overlay.PathOverlay;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
-import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
@@ -146,7 +137,7 @@ public class MainActivity extends AppCompatActivity
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
     Line line;
-    static Press transparentView;
+    static Press trans;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.orangeled)
     static Drawable nodeIcon;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.blueled)
@@ -175,6 +166,14 @@ public class MainActivity extends AppCompatActivity
     Location location;
     RotationGestureOverlay mRotationGestureOverlay;
     static String previous=null;
+    Double valLat;
+    Double valLon;
+    List<String> vehicleList;
+    List<String> planList;
+    int tamanhoLista;
+    OSMHandler updateHandler;
+    List<String> stateList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,8 +215,8 @@ public class MainActivity extends AppCompatActivity
         nowifi.setVisibility(View.INVISIBLE);
         StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
         stopTeleop.setVisibility(View.INVISIBLE);
-        transparentView = (Press) findViewById(R.id.transparente);
-        transparentView.setVisibility(View.INVISIBLE);
+        trans = (Press) findViewById(R.id.transparente);
+        trans.setVisibility(View.INVISIBLE);
         done.setVisibility(View.INVISIBLE);
         erase.setVisibility(View.INVISIBLE);
         imc.register(this);
@@ -232,7 +231,7 @@ public class MainActivity extends AppCompatActivity
 
         /* location manager */
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        OSMHandler updateHandler = new OSMHandler(this);
+         updateHandler = new OSMHandler(this);
 
         for (String provider : locationManager.getProviders(true)) {
             location = locationManager.getLastKnownLocation(provider);
@@ -559,7 +558,7 @@ public class MainActivity extends AppCompatActivity
             joystick.setVisibility(View.INVISIBLE);
         } else if (line != null) {
             line.finish();
-            transparentView.setVisibility(View.INVISIBLE);
+            trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
             erase.setVisibility(View.INVISIBLE);
@@ -567,7 +566,7 @@ public class MainActivity extends AppCompatActivity
 
         } else if (area != null) {
             area.finish();
-            transparentView.setVisibility(View.INVISIBLE);
+            trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
             bottom.setVisibility(View.VISIBLE);
             done.setVisibility(View.INVISIBLE);
@@ -601,7 +600,10 @@ public class MainActivity extends AppCompatActivity
                 e.printStackTrace();
             }
             return true;
-        } else if (id == R.id.edit) {
+        }
+
+
+        else if (id == R.id.edit) {
             final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
             alertDialogBuilder
                     .setMessage("Area or Line?")
@@ -619,8 +621,8 @@ public class MainActivity extends AppCompatActivity
                             velocityTextView.setVisibility(View.VISIBLE);
                             erase.setClickable(true);
                             erase.setOnClickListener(line);
-                            transparentView.setonPress(line);
-                            transparentView.setVisibility(View.VISIBLE);
+                            trans.setonPress(line);
+                            trans.setVisibility(View.VISIBLE);
                             line.setImc(imc);
 
 
@@ -640,8 +642,8 @@ public class MainActivity extends AppCompatActivity
                             velocityTextView.setVisibility(View.VISIBLE);
 
                             erase.setOnClickListener(area);
-                            transparentView.setonPress(area);
-                            transparentView.setVisibility(View.VISIBLE);
+                            trans.setonPress(area);
+                            trans.setVisibility(View.VISIBLE);
                             area.setImc(imc);
 
                         }
@@ -804,7 +806,7 @@ public class MainActivity extends AppCompatActivity
     @Periodic
     public void updateState() {
         map.setMultiTouchControls(true);
-        List<String> stateList = new ArrayList<>();
+         stateList = new ArrayList<>();
         states = imc.connectedVehicles();
         if (imc.connectedVehicles() == null)
             warning();
@@ -1007,9 +1009,6 @@ public class MainActivity extends AppCompatActivity
         setEstadoVeiculo("Plan Stopped");
         previous="S";
 
-//TODO
-
-
 
         map.getOverlays().remove(nodeMarkerWaypoints);
         if(points!=null)
@@ -1093,7 +1092,7 @@ public class MainActivity extends AppCompatActivity
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         if (v.getId() == R.id.startplan) {
 
-            List<String> planList = new ArrayList<>();
+         planList = new ArrayList<>();
 
             if (imc.allPlans() == null) {
                 Toast.makeText(this, "No plans available", Toast.LENGTH_SHORT).show();
@@ -1109,11 +1108,11 @@ public class MainActivity extends AppCompatActivity
             }
 
 
-
+            tamanhoLista = planList.size();
         } else if (v.getId() == R.id.servicebar) {
 
 
-            List<String> vehicleList = new ArrayList<>();
+           vehicleList = new ArrayList<>();
             mList = new ArrayList<>();
 
 
@@ -1170,7 +1169,7 @@ public class MainActivity extends AppCompatActivity
 
                     }
                 }
-                },5000);
+                },3000);
             }
 
 
@@ -1215,8 +1214,7 @@ public class MainActivity extends AppCompatActivity
 
 
             for (PlanUtilities.Waypoint point : points) {
-                Double valLat;
-                Double valLon;
+
                 valLat = point.getLatitude();
                 valLon = point.getLongitude();
                 ponto= new GeoPoint(valLat, valLon);
@@ -1224,9 +1222,7 @@ public class MainActivity extends AppCompatActivity
                 nodeMarkerWaypoints = new Marker(map);
                 nodeMarkerWaypoints.setPosition(ponto);
                 nodeMarkerWaypoints.setIcon(nodeIcon);
-                PathOverlay myPath = new PathOverlay(Color.BLUE, this);
-                myPath.addPoints(ponto);
-                map.getOverlays().add(myPath);
+
                 map.getOverlays().add(nodeMarkerWaypoints);
 //linha a ligar os pontos
             }

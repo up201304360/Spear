@@ -25,6 +25,11 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     IMCGlobal imc;
     Boolean doneClicked=false;
     Goto follow;
+    float mGroundOverlayBearing = 0.0f;
+    ArrayList<ArrayList<GeoPoint>> points;
+
+
+
 
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
@@ -36,8 +41,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     public void onLongPress(double x, double y) {
         if (!doneClicked) {
             IGeoPoint p2 = map.getProjection().fromPixels((int) x, (int) y);
-            final GeoPoint clickedLocation = new GeoPoint(p2.getLatitude(), p2.getLongitude());
-            float mGroundOverlayBearing = 0.0f;
+           final GeoPoint  clickedLocation = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
             markerPoints.add(clickedLocation);
             GroundOverlay myGroundOverlay = new GroundOverlay();
@@ -60,6 +64,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
             done.setVisibility(View.VISIBLE);
             erase.setVisibility(View.VISIBLE);
+
             done.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -71,7 +76,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                             System.out.println("No vehicles");
                         } else {
                             Go(clickedLocation);
-                            velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
 
                         }
 
@@ -81,7 +85,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                         GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
                         GeoPoint dest = markerPoints.get(markerPoints.size() - 1);
                         drawLine(origin, dest);
-                        transparentView.setVisibility(View.INVISIBLE);
+                        trans.setVisibility(View.INVISIBLE);
 
                     }
                 }
@@ -103,8 +107,8 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
                 if (polyline != null)
                     polyline.setPoints(markerPoints);
+                trans.setVisibility(View.VISIBLE);
                 map.getOverlays().clear();
-                transparentView.setVisibility(View.VISIBLE);
 
             }
 
@@ -114,7 +118,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
     public void drawLine( GeoPoint origin, GeoPoint dest) {
-        ArrayList<ArrayList<GeoPoint>> points;
 
         points = new ArrayList<>();
         points.add(markerPoints);
@@ -138,7 +141,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     }
 
     public void followPoints() {
-        velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
 
         LinkedHashSet<String> noRepetitions = new LinkedHashSet<String>();
         Iterator<GeoPoint> iterator = markerPoints.iterator();
@@ -175,8 +177,9 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
         startBehaviour("followPoints"+imc.selectedvehicle, PlanUtilities.createPlan("followPoints"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
         wayPoints(follow);
-        setEstadoVeiculo(" ");
         previous="M";
+        setEstadoVeiculo(" ");
+
 
     }
 
@@ -194,11 +197,12 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
         } else{
             go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
-        String planid = "SpearGoto-"+imc.selectedvehicle;
+        String planid = "SpearGoto";
         startBehaviour(planid, go);
         wayPoints(go);
-        setEstadoVeiculo(" ");
         previous="M";
+        setEstadoVeiculo(" ");
+        trans.setVisibility(View.INVISIBLE);
 
 
     }

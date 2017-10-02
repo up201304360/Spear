@@ -9,7 +9,6 @@ import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
-import org.osmdroid.views.overlay.infowindow.InfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,6 +28,8 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     IMCGlobal imc;
     Goto area2;
     Boolean doneClicked=false;
+    float mGroundOverlayBearing = 0.0f;
+
 
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
@@ -50,11 +51,9 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         if (!doneClicked) {
             Projection proj = map.getProjection();
             IGeoPoint p2 = proj.fromPixels((int) x, (int) y);
-
-            final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
+           final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
             markerPoints.add(p);
-            float mGroundOverlayBearing = 0.0f;
 
             GroundOverlay myGroundOverlay = new GroundOverlay();
             myGroundOverlay.setPosition(p);
@@ -89,14 +88,12 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                             System.out.println("No vehicles");
                         } else {
                             Go(p);
-                            velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
                         }
 
 
                     } else if (markerPoints.size() > 2) {
 
                         drawArea();
-                        transparentView.setVisibility(View.INVISIBLE);
 
                     }
                 }
@@ -120,7 +117,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                 if (circle != null)
                     circle.setPoints(markerPoints);
                 map.getOverlays().clear();
-                transparentView.setVisibility(View.VISIBLE);
+                trans.setVisibility(View.VISIBLE);
             }
         });
 
@@ -152,18 +149,16 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
     public void followArea(){
 
-        velocityTextView.setText(vel + " \n" + dept + "\n" + estadoVeiculo);
 
-
-        LinkedHashSet<String> lhs = new LinkedHashSet<>();
+        LinkedHashSet<String> noRepetitions = new LinkedHashSet<>();
         Iterator<GeoPoint> it = markerPoints.iterator();
         while(it.hasNext()) {
             String val = it.next().toString();
-            if (lhs.contains(val)) {
+            if (noRepetitions.contains(val)) {
                 it.remove();
             }
             else
-                lhs.add(val);
+                noRepetitions.add(val);
         }
 
         ArrayList<GeoCoord> coords = new ArrayList<>();
@@ -172,13 +167,11 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         for(int i=0; i<markerPoints.size(); i++ ){
 
             coords.add(new GeoCoord(markerPoints.get(i).getLatitude(), markerPoints.get(i).getLongitude()));
-            System.out.println(coords +  "   11111111111111");
 
         }
 
 
         for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
-            System.out.println(coord + "   2222222222222");
 
 //FollowPath
             area2 = new Goto();
@@ -202,8 +195,13 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         wayPoints(area2);
         setEstadoVeiculo(" ");
         previous="M";
+        trans.setVisibility(View.INVISIBLE);
+
 
     }
+
+
+
 
 
     public  void Go(GeoPoint p){
@@ -225,6 +223,8 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         wayPoints(go);
         setEstadoVeiculo(" ");
         previous="M";
+        trans.setVisibility(View.INVISIBLE);
+
 
     }
 
