@@ -47,6 +47,12 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
     }
 
     @Override
+    public void onBackPressed() {
+        Area.super.onBackPressed();
+        imc.unregister(this);
+
+    }
+    @Override
     public void onLongPress(double x, double y) {
         if (!doneClicked) {
             Projection proj = map.getProjection();

@@ -4,7 +4,6 @@
 
     <string-array name="names">
 
-        <item>lauv-seacon-2</item>
         <item>lauv-seacon-3</item>
         <item>lauv-xtreme-2</item>
         <item>lauv-noptilus-1</item>
@@ -17,16 +16,14 @@
     </string-array>
 
     <string-array name="phonenumbers">
-        <item>+351927319253</item>
-        <item>+351924176966</item>
-        <item>+351926343690</item>
+        <item>+351964144216</item>
+        <item>+351968761421</item>
         <item>+351969349133</item>
         <item>+351925978180</item>
-        <item>+351927319253</item>
-        <item>+351962142936</item>
-        <item>+351963332169</item>
-        <item>+351969349133</item>
-
+        <item>+351966575686</item>
+        <item>+351964085112</item>
+        <item>+351965655424</item>
+        <item>+351924176966</item>
 </string-array>
 
 </resources>

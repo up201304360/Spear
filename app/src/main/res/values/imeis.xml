@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+
+    <string-array name="namesIMEI">
+
+        <item>lauv-seacon-2</item>
+        <item>lauv-seacon-3</item>
+        <item>lauv-xtreme-2</item>
+        <item>lauv-noptilus-1</item>
+        <item>lauv-noptilus-2</item>
+        <item>lauv-noptilus-3</item>
+        <item>lauv-xplore-1</item>
+        <item>lauv-xplore-2</item>
+        <item>lauv-arpao</item>
+
+    </string-array>
+
+    <string-array name="imei">
+        <item>300234061180110</item>
+        <item>300234061188110</item>
+        <item>300234060567670</item>
+        <item>300234060694670</item>
+        <item>300234060567650</item>
+        <item>300234060895910</item>
+        <item>300234061464450</item>
+        <item>300234061188110</item>
+        <item>300234060694670</item>
+
+    </string-array>
+</resources>

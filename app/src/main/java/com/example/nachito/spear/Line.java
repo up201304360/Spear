@@ -11,6 +11,7 @@ import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
@@ -23,12 +24,10 @@ import pt.lsts.util.PlanUtilities;
 public class Line extends MainActivity implements  PressListener, MapViewConstants {
 
     IMCGlobal imc;
-    Boolean doneClicked=false;
+    Boolean doneClicked = false;
     Goto follow;
     float mGroundOverlayBearing = 0.0f;
     ArrayList<ArrayList<GeoPoint>> points;
-
-
 
 
     public void setImc(IMCGlobal imc) {
@@ -41,7 +40,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     public void onLongPress(double x, double y) {
         if (!doneClicked) {
             IGeoPoint p2 = map.getProjection().fromPixels((int) x, (int) y);
-           final GeoPoint  clickedLocation = new GeoPoint(p2.getLatitude(), p2.getLongitude());
+            final GeoPoint clickedLocation = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
             markerPoints.add(clickedLocation);
             GroundOverlay myGroundOverlay = new GroundOverlay();
@@ -116,8 +115,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     }
 
 
-
-    public void drawLine( GeoPoint origin, GeoPoint dest) {
+    public void drawLine(GeoPoint origin, GeoPoint dest) {
 
         points = new ArrayList<>();
         points.add(markerPoints);
@@ -145,12 +143,11 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         LinkedHashSet<String> noRepetitions = new LinkedHashSet<String>();
         Iterator<GeoPoint> iterator = markerPoints.iterator();
 
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             String val = iterator.next().toString();
             if (noRepetitions.contains(val)) {
                 iterator.remove();
-            }
-            else
+            } else
                 noRepetitions.add(val);
         }
 
@@ -166,18 +163,19 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             follow.setZ(depth);
             follow.setZUnits(Goto.Z_UNITS.DEPTH);
             follow.setSpeed(speed);
-            if(!showrpm) {
+            if (!showrpm) {
                 follow.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
-            } else{
-                follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
+            } else {
+                follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+            }
             maneuvers.add(follow);
 
 
         }
 
-        startBehaviour("followPoints"+imc.selectedvehicle, PlanUtilities.createPlan("followPoints"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
+        startBehaviour("followPoints" + imc.selectedvehicle, PlanUtilities.createPlan("followPoints" + imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
         wayPoints(follow);
-        previous="M";
+        previous = "M";
         setEstadoVeiculo(" ");
 
 
@@ -193,14 +191,15 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         go.setZ(depth);
         go.setZUnits(Goto.Z_UNITS.DEPTH);
         go.setSpeed(speed);
-        if(!showrpm) {
+        if (!showrpm) {
             go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
-        } else{
-            go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
+        } else {
+            go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+        }
         String planid = "SpearGoto";
         startBehaviour(planid, go);
         wayPoints(go);
-        previous="M";
+        previous = "M";
         setEstadoVeiculo(" ");
         trans.setVisibility(View.INVISIBLE);
 
@@ -217,6 +216,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     }
 
 
+
+
 }
-
-

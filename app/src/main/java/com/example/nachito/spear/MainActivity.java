@@ -29,6 +29,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -249,7 +250,17 @@ public class MainActivity extends AppCompatActivity
         mapController = map.getController();
         mapController.setZoom(12);
         mapController.setCenter(new GeoPoint(location));
+
+
+        ReceiveSms.bindListener(new SmsListener() {
+            @Override
+            public void messageReceived(String messageText) {
+                Log.d("Text",messageText);
+                Toast.makeText(MainActivity.this,"Message: "+messageText,Toast.LENGTH_LONG).show();
+            }
+        });
     }
+
 
 
     public void updatePosition(GeoPoint aPoint) {
@@ -602,10 +613,10 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
         else if(id==R.id.sms){
-            Intent i = new Intent(this, Sms.class);
+            Intent i = new Intent(this, SendSms.class);
             i.putExtra("selected", imc.selectedvehicle);
             startActivity(i);
-           // startActivity(new Intent(this, Sms.class));
+           // startActivity(new Intent(this, SendSms.class));
 
             return true;
         }

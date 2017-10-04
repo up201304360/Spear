@@ -8,16 +8,23 @@
         android:id="@+id/nomeVeiculo"
         android:layout_gravity="center"
         android:textSize="20sp"
-        android:layout_margin="20dp"
-        android:text="Vehicle Name"/>
+        android:layout_margin="10dp"
+        android:text="@string/vehicle_name"/>
 
     <RadioGroup
         android:id="@+id/radioButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:paddingTop="10dp"
-        android:layout_margin="15dp">
+        android:layout_margin="10dp"
+       >
+
+        <RadioButton
+            android:id="@+id/pos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/pos" />
 
         <RadioButton
             android:id="@+id/diveRadioButton"
@@ -48,7 +55,37 @@
             android:layout_margin="10dp"
             android:text="@string/surface" />
 
+        <RadioButton
+            android:id="@+id/gotoRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/goTo" />
+
     </RadioGroup>
+<RelativeLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sms"
+        android:layout_marginStart="77dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/iridium"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/button3"
+        android:layout_marginStart="40dp" />
+</RelativeLayout>
+
 
 
 </LinearLayout>
