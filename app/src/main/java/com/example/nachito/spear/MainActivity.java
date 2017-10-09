@@ -29,7 +29,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -40,7 +39,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
+
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -62,14 +63,23 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.Goto;
+import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
@@ -82,6 +92,7 @@ import pt.lsts.imc.net.Consume;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 import pt.lsts.util.WGS84Utilities;
+
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.imageView;
 
@@ -255,8 +266,52 @@ public class MainActivity extends AppCompatActivity
         ReceiveSms.bindListener(new SmsListener() {
             @Override
             public void messageReceived(String messageText) {
-                Log.d("Text",messageText);
-                Toast.makeText(MainActivity.this,"Message: "+messageText,Toast.LENGTH_LONG).show();
+                  Pattern p = Pattern.compile("\\((.)\\) \\((.*)\\) (.*) / (.*), (.*) / .*");
+
+
+
+                    Matcher matcher = p.matcher(messageText);
+                    if (!matcher.matches()) {
+                        Logger.getLogger(getClass().getName()).log(Level.WARNING, "SMS message not understood: " + messageText);
+
+                        return;
+                    }
+                    String type = matcher.group(1);
+                    String vehicle = matcher.group(2);
+                    String timeOfDay = matcher.group(3);
+                    String latMins = matcher.group(4);
+                    String lonMins = matcher.group(5);
+                    GregorianCalendar date = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+                    String[] timeParts = timeOfDay.split(":");
+                    date.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeParts[0]));
+                    date.set(Calendar.MINUTE, Integer.parseInt(timeParts[1]));
+                    date.set(Calendar.SECOND, Integer.parseInt(timeParts[2]));
+                    String latParts[] = latMins.split(" ");
+                    String lonParts[] = lonMins.split(" ");
+
+                    double lat = Double.parseDouble(latParts[0]);
+                    lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 60.0 : -Double.parseDouble(latParts[1]) / 60.0;
+                    double lon = Double.parseDouble(lonParts[0]);
+                    lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
+
+                    int source = IMCDefinition.getInstance().getResolver().resolve(vehicle);
+
+                    if (source == -1) {
+                        System.err.println("Received report from unknown system name: " + vehicle);
+                        return;
+                    }
+
+                //dividir o 2 por 60
+                //somar o 1 pelo 2
+
+
+                GeoPoint coordSMS= new GeoPoint(lat, lon);
+
+                System.out.println(coordSMS + " coordinates from sms");
+
+
+                mapController.setCenter(coordSMS);
+                mapController.setZoom(18);
             }
         });
     }
@@ -1253,3 +1308,4 @@ public class MainActivity extends AppCompatActivity
     }
 
 }
+//TODO escala

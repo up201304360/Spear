@@ -262,24 +262,29 @@ public class SendSms extends AppCompatActivity {
 
             try {
 
-                
+
 
                 SmsManager sms = SmsManager.getDefault();
                 switch (smsText) {
-                 /*      case "sk"://TODO
-                        sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + MainActivity.latVeiculo  +";lon=" + MainActivity.lonVeiculo  +";speed="+vel, sentPI, null);
+                    //TODO
+                    //ir mapa e escolher coordenadas
+
+                       case "sk":
+                      /*  sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + MainActivity.latVeiculo  +";lon=" + MainActivity.lonVeiculo  +";speed="+vel, sentPI, null);
                         checked=null;
-                        SendSms.super.onBackPressed();
+                        SendSms.super.onBackPressed();*/
+                      Toast.makeText(this, "Not yet implemented", Toast.LENGTH_LONG).show();
                         System.out.println(smsText);
 
                         break;
                  case "go"://TODO
-                        sms.sendTextMessage(phoneNumber, null, smsText+" "+ "lat= " +   MainActivity.latVeiculo    +";lon="+ MainActivity.lonVeiculo +";depth=" +depth+ ";speed= "+ vel, sentPI, null);
+                       /* sms.sendTextMessage(phoneNumber, null, smsText+" "+ "lat= " +   MainActivity.latVeiculo    +";lon="+ MainActivity.lonVeiculo +";depth=" +depth+ ";speed= "+ vel, sentPI, null);
                         checked=null;
-                        SendSms.super.onBackPressed();
+                        SendSms.super.onBackPressed();*/
                         System.out.println(smsText);
+                     Toast.makeText(this, "Not yet implemented", Toast.LENGTH_LONG).show();
 
-                        break;*/
+                        break;
                     default:
                         sms.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                         checked=null;
