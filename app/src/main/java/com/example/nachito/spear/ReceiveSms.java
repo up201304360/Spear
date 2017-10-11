@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 
+import java.util.Arrays;
+
 /**
  * Created by ines on 10/4/17.
  */
@@ -26,18 +28,27 @@ public class ReceiveSms extends BroadcastReceiver {
             SmsMessage smsMessage = SmsMessage.createFromPdu((byte[]) pdu);
 
             String sender = smsMessage.getDisplayOriginatingAddress();
-                  String messageBody = smsMessage.getMessageBody();
-                    //Pass on the text to our listener.
+            String messageBody = smsMessage.getMessageBody();
+            //Pass on the text to our listener.
+         //   System.out.println(sender + " - -------------");
 
+            vehicleNumber = context.getResources().getStringArray(R.array.phonenumbers);
 
-//TODO filtrar para ser so de nums dos veiculos
-                    mListener.messageReceived(messageBody);
+            for (String aVehicleNumber : vehicleNumber) {
+               // System.out.println(Arrays.toString(vehicleNumber) + " num veic");
+//TODO ver se recebe sms
+                if (aVehicleNumber.contains(sender)) {
 
-
+                    if (messageBody != null)
+                        mListener.messageReceived(messageBody);
+                }
+            }
 
         }
 
     }
+
+
 
     public static void bindListener(SmsListener listener) {
         mListener = listener;

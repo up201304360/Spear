@@ -53,10 +53,12 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
+import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
@@ -185,7 +187,9 @@ public class MainActivity extends AppCompatActivity
     int tamanhoLista;
     OSMHandler updateHandler;
     List<String> stateList;
-
+    ScaleBarOverlay scaleBarOverlay;
+    static GeoPoint posicaoVeiculo;
+    static GeoPoint posicao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -200,6 +204,7 @@ public class MainActivity extends AppCompatActivity
         map.setClickable(true);
         mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
         mLocationOverlay.enableMyLocation();
+
         map.getOverlays().add(this.mLocationOverlay);
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
@@ -263,6 +268,15 @@ public class MainActivity extends AppCompatActivity
         mapController.setCenter(new GeoPoint(location));
 
 
+
+
+       scaleBarOverlay = new ScaleBarOverlay( map);
+        List<Overlay> overlays = map.getOverlays();
+      //  scaleBarOverlay.setMetric();
+// Add scale bar overlay
+        overlays.add(scaleBarOverlay);
+
+
         ReceiveSms.bindListener(new SmsListener() {
             @Override
             public void messageReceived(String messageText) {
@@ -301,11 +315,7 @@ public class MainActivity extends AppCompatActivity
                         return;
                     }
 
-                //dividir o 2 por 60
-                //somar o 1 pelo 2
-
-
-                GeoPoint coordSMS= new GeoPoint(lat, lon);
+                       GeoPoint coordSMS= new GeoPoint(lat, lon);
 
                 System.out.println(coordSMS + " coordinates from sms");
 
@@ -314,6 +324,11 @@ public class MainActivity extends AppCompatActivity
                 mapController.setZoom(18);
             }
         });
+    }
+
+    public static GeoPoint getVariables(){
+        System.out.println(posicaoVeiculo + "main");
+        return posicaoVeiculo;
     }
 
 
@@ -671,7 +686,6 @@ public class MainActivity extends AppCompatActivity
             Intent i = new Intent(this, SendSms.class);
             i.putExtra("selected", imc.selectedvehicle);
             startActivity(i);
-           // startActivity(new Intent(this, SendSms.class));
 
             return true;
         }
@@ -758,11 +772,11 @@ public class MainActivity extends AppCompatActivity
     @Background
     @Override
     public void onLocationChanged(Location location) {
-        final ArrayList<OverlayItem> items = new ArrayList<>();
         latitude = Math.toRadians(location.getLatitude());
         longitude = Math.toRadians(location.getLongitude());
-      GeoPoint posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
+       posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
 
+        final ArrayList<OverlayItem> items = new ArrayList<>();
 
         OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", posicao);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
@@ -772,6 +786,12 @@ public class MainActivity extends AppCompatActivity
         Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
         ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
         map.getOverlays().add(markersOverlay);
+
+
+    }
+
+    public static GeoPoint localizacao(){
+        return posicao;
 
 
     }
@@ -830,7 +850,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (vname.equals(imc.getSelectedvehicle())) {
 
-                   GeoPoint posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
+                    posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
 
 
                     source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowgreen), 70, 70, false);
@@ -931,9 +951,12 @@ public class MainActivity extends AppCompatActivity
     @Periodic(500)
     public void updateMap() {
         map.getOverlays().clear();
+        map.getOverlayManager().add(scaleBarOverlay);
+        scaleBarOverlay.setAlignRight(true);
+        scaleBarOverlay.setScaleBarOffset(40,30);
 
+        //todo scale smaller
         map.getOverlays().add(mCompassOverlay);
-
         map.setMultiTouchControls(true);
         map.getOverlays().add(this.mRotationGestureOverlay);
         synchronized (estates) {
@@ -1308,4 +1331,3 @@ public class MainActivity extends AppCompatActivity
     }
 
 }
-//TODO escala

@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
 import android.test.mock.MockPackageManager;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -22,6 +23,9 @@ import android.widget.Toast;
 import java.util.Arrays;
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
+import static com.example.nachito.spear.MainActivity.latVeiculo;
+import static com.example.nachito.spear.MainActivity.lonVeiculo;
+
 
 /**
  * Created by ines on 10/2/17.
@@ -47,12 +51,19 @@ public class SendSms extends AppCompatActivity {
     String[] imeiNumb;
     String[] vehicleNames;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sms);
         addListenerOnButton();
 
+        android.app.ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayShowHomeEnabled(false);
+        }
         try {
             if (ActivityCompat.checkSelfPermission(this, mPermission[0])
                     != MockPackageManager.PERMISSION_GRANTED ||
@@ -68,6 +79,15 @@ public class SendSms extends AppCompatActivity {
             e.printStackTrace();
         }
 
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -140,13 +160,19 @@ public class SendSms extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 checked="surface";
-
             }
         });
 
         stationKeeping.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
+
+
+                Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
+                startActivity(yourIntent);
+
+
                 checked="stationKeeping";
 
             }
@@ -154,6 +180,9 @@ public class SendSms extends AppCompatActivity {
         goTo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+
+                Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
+                startActivity(yourIntent);
                 checked="goTo";
 
             }
@@ -266,25 +295,36 @@ public class SendSms extends AppCompatActivity {
 
                 SmsManager sms = SmsManager.getDefault();
                 switch (smsText) {
-                    //TODO
-                    //ir mapa e escolher coordenadas
+//TODO testar
 
                        case "sk":
-                      /*  sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + MainActivity.latVeiculo  +";lon=" + MainActivity.lonVeiculo  +";speed="+vel, sentPI, null);
-                        checked=null;
-                        SendSms.super.onBackPressed();*/
-                      Toast.makeText(this, "Not yet implemented", Toast.LENGTH_LONG).show();
-                        System.out.println(smsText);
 
-                        break;
-                 case "go"://TODO
-                       /* sms.sendTextMessage(phoneNumber, null, smsText+" "+ "lat= " +   MainActivity.latVeiculo    +";lon="+ MainActivity.lonVeiculo +";depth=" +depth+ ";speed= "+ vel, sentPI, null);
-                        checked=null;
-                        SendSms.super.onBackPressed();*/
-                        System.out.println(smsText);
-                     Toast.makeText(this, "Not yet implemented", Toast.LENGTH_LONG).show();
+                           Bundle extras = getIntent().getExtras();
+                           if (extras != null) {
+                               double latitude = extras.getDouble("Latitude");
+                               double longitude = extras.getDouble("Longitude");
 
-                        break;
+                        sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
+                           }
+                           System.out.println(sms.toString());
+
+                        checked=null;
+                        SendSms.super.onBackPressed();
+
+                           break;
+
+                 case "go":
+
+                     Bundle extras2 = getIntent().getExtras();
+                     if (extras2 != null) {
+                         double latitude2 = extras2.getDouble("Latitude");
+                         double longitude2 = extras2.getDouble("Longitude");
+                         sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);}
+                     checked=null;
+                     SendSms.super.onBackPressed();
+                     System.out.println(smsText);
+                     break;
+
                     default:
                         sms.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                         checked=null;
@@ -312,7 +352,7 @@ public class SendSms extends AppCompatActivity {
 
     private boolean sendIMEI(String phoneNumber, double depth, double vel, String smsText) {
 
-
+//TODO
 
         /* o formato dos comandos sao iguais
 mas neste caso deves fazer um post num servidor web */
@@ -360,5 +400,6 @@ public  void unregisterBroadcast(){
     }
 
 }
+
 }
 

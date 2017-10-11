@@ -69,14 +69,7 @@
 
             </activity>
 
-            <activity
-                android:name=".Line"
-                android:label="@string/action_settings"
-                android:parentActivityName="com.example.nachito.spear.MainActivity_">
-                <meta-data
-                    android:name="android.support.PARENT_ACTIVITY"
-                    android:value="com.example.nachito.spear.MainActivity_" />
-            </activity>
+
         </activity>
 
         <activity
@@ -96,6 +89,20 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity_" />
 
+        </activity>
+        <activity
+            android:name="com.example.nachito.spear.MapSMS"
+            android:parentActivityName="com.example.nachito.spear.MainActivity_">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.nachito.spear.MainActivity_" />
+        </activity>
+        <activity
+            android:name=".Line"
+            android:parentActivityName="com.example.nachito.spear.MainActivity_">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
 
         <receiver android:name="com.example.nachito.spear.ReceiveSms">
