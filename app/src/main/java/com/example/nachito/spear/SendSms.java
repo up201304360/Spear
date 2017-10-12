@@ -20,11 +20,13 @@ import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.osmdroid.util.GeoPoint;
+
 import java.util.Arrays;
+
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
-import static com.example.nachito.spear.MainActivity.latVeiculo;
-import static com.example.nachito.spear.MainActivity.lonVeiculo;
 
 
 /**
@@ -295,17 +297,13 @@ public class SendSms extends AppCompatActivity {
 
                 SmsManager sms = SmsManager.getDefault();
                 switch (smsText) {
-//TODO testar
 
                        case "sk":
 
-                           Bundle extras = getIntent().getExtras();
-                           if (extras != null) {
-                               double latitude = extras.getDouble("Latitude");
-                               double longitude = extras.getDouble("Longitude");
-
-                        sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
-                           }
+                           GeoPoint ponto= MapSMS.resultado();
+                           double latitude= ponto.getLatitude();
+                           double longitude=ponto.getLongitude();
+                           sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
                            System.out.println(sms.toString());
 
                         checked=null;
@@ -315,15 +313,16 @@ public class SendSms extends AppCompatActivity {
 
                  case "go":
 
-                     Bundle extras2 = getIntent().getExtras();
-                     if (extras2 != null) {
-                         double latitude2 = extras2.getDouble("Latitude");
-                         double longitude2 = extras2.getDouble("Longitude");
-                         sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);}
-                     checked=null;
-                     SendSms.super.onBackPressed();
-                     System.out.println(smsText);
-                     break;
+                     GeoPoint ponto2= MapSMS.resultado();
+                     double latitude2= ponto2.getLatitude();
+                     double longitude2=ponto2.getLongitude();
+                     sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);
+                     System.out.println(sms.toString());
+                checked=null;
+                SendSms.super.onBackPressed();
+
+                break;
+
 
                     default:
                         sms.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
@@ -356,6 +355,7 @@ public class SendSms extends AppCompatActivity {
 
         /* o formato dos comandos sao iguais
 mas neste caso deves fazer um post num servidor web */
+
 
         return false;
     }

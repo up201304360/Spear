@@ -194,6 +194,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         context = this;
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
@@ -319,15 +320,14 @@ public class MainActivity extends AppCompatActivity
 
                 System.out.println(coordSMS + " coordinates from sms");
 
-
                 mapController.setCenter(coordSMS);
                 mapController.setZoom(18);
             }
+
         });
     }
 
     public static GeoPoint getVariables(){
-        System.out.println(posicaoVeiculo + "main");
         return posicaoVeiculo;
     }
 

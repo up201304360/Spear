@@ -1,5 +1,6 @@
 package com.example.nachito.spear;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,13 +28,15 @@ import java.util.ArrayList;
 public class MapSMS extends AppCompatActivity  {
 
     IMapController mapController;
+    static double lat;
+    static double lon;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sms);
-        MapView map= (MapView) findViewById(R.id.mapSMS);
+        final MapView map= (MapView) findViewById(R.id.mapSMS);
         map.setMultiTouchControls(true);
         android.app.ActionBar actionBar = getActionBar();
         if (actionBar != null) {
@@ -50,7 +53,7 @@ public class MapSMS extends AppCompatActivity  {
 
         final ArrayList<OverlayItem> items = new ArrayList<>();
 
-        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centro);
+        final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centro);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker);
 
@@ -61,17 +64,17 @@ public class MapSMS extends AppCompatActivity  {
 
 
 
-        GeoPoint loc= MainActivity.localizacao();
+        final GeoPoint loc= MainActivity.localizacao();
 
         final ArrayList<OverlayItem> items2 = new ArrayList<>();
 
-        OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", loc);
+        final OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", loc);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker2);
 
-        Bitmap newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
+        final Bitmap newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
         Drawable markerLoc = new BitmapDrawable(getResources(), newMarker2);
-        ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
+        final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
         map.getOverlays().add(markersOverlay2);
 
 
@@ -86,24 +89,34 @@ public class MapSMS extends AppCompatActivity  {
             @Override
             public boolean longPressHelper(GeoPoint p) {
 
-                Intent intent;
-                double lat=p.getLatitude();
-                double lon=p.getLongitude();
-                intent= new Intent(MapSMS.this, SendSms.class);
-                intent.putExtra("Latitude", lat);
-                intent.putExtra("Longitude", lon);
-                startActivity(intent);
-                System.out.println("Long Press" + lat + lon);
+                lat=p.getLatitude();
+                lon=p.getLongitude();
+
+                 Intent i = new Intent(MapSMS.this, SendSms.class);
+                startActivity(i);
+
+
+
+            System.out.println("Long Press");
+
+
+
+
                 return true;
             }
 
 
         };
-
         MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);
         map.getOverlays().add(OverlayEventos);
         //Refreshing the map to draw the new overlay
         map.invalidate();
+    }
+
+
+
+    public static GeoPoint resultado(){
+        return new GeoPoint(lat, lon);
     }
 
     @Override
