@@ -9,4 +9,24 @@
         android:scrollbars="vertical" />
 
 
+    <Button
+        android:id="@+id/doneSMS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/done"
+        android:background="#50505010"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="14dp"
+        android:layout_marginTop="13dp" />
+
+    <Button
+        android:id="@+id/eraseSMS"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/erase"
+        android:background="#50505010"
+        android:layout_marginTop="11dp"
+        android:layout_below="@+id/doneSMS"
+        android:layout_alignStart="@+id/doneSMS" />
 </RelativeLayout>

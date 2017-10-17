@@ -91,6 +91,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             });
 
         }
+        //TODO
         erase.setOnClickListener(new View.OnClickListener() {
 
 
@@ -100,18 +101,19 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                     lineMarker.remove(map);
 
 
-                    map.invalidate();
                 }
                 markerPoints.clear();
 
                 if (polyline != null)
                     polyline.setPoints(markerPoints);
-                trans.setVisibility(View.VISIBLE);
-                map.getOverlays().clear();
+
+
+                    map.invalidate();
 
             }
 
         });
+
     }
 
 
@@ -205,10 +207,9 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
     }
-
+//TODO Manel
     public void finish() {
-        map.getOverlayManager().clear();
-        map.invalidate();
+
         done.setVisibility(View.INVISIBLE);
         erase.setVisibility(View.INVISIBLE);
         velocityTextView.setVisibility(View.INVISIBLE);

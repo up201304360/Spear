@@ -35,9 +35,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         this.imc = imc;
         imc.register(this);
     }
+    //TODO Manel
+
     public void finish() {
-        map.getOverlayManager().clear();
-        map.invalidate();
+
         done.setVisibility(View.INVISIBLE);
         erase.setVisibility(View.INVISIBLE);
         velocityTextView.setVisibility(View.INVISIBLE);
@@ -106,6 +107,8 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             });
 
         }
+        //TODO
+
         erase.setOnClickListener(new View.OnClickListener() {
 
 

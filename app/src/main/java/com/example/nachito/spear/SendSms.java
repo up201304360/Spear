@@ -22,8 +22,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
 import java.util.Arrays;
+
+import pt.lsts.imc.IridiumMsgTx;
 
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
@@ -52,7 +59,7 @@ public class SendSms extends AppCompatActivity {
     Button iridium;
     String[] imeiNumb;
     String[] vehicleNames;
-
+String numeroF;
 
 
     @Override
@@ -120,25 +127,25 @@ public class SendSms extends AppCompatActivity {
         iridium=(Button) findViewById(R.id.button2);
 //sms
         vehicleNumber = getApplicationContext().getResources().getStringArray(R.array.phonenumbers);
-        System.out.println(Arrays.toString(vehicleNumber));
         nomes = getApplicationContext().getResources().getStringArray(R.array.names);
-        System.out.println(Arrays.toString(nomes));
 
   //iridium
         imeiNumb=getApplicationContext().getResources().getStringArray(R.array.imei);
          vehicleNames= getApplicationContext().getResources().getStringArray(R.array.namesIMEI);
-        System.out.println(Arrays.toString(imeiNumb));
-        System.out.println(Arrays.toString(vehicleNames));
+
 
         //
         Intent intent = getIntent();
-        String selected = intent.getExtras().getString("selected");
+        final String selected = intent.getExtras().getString("selected");
         for (int i = 0; i < nomes.length; i++) {
             if (selected != null) {
                 nomeVeiculo.setText(selected);
 
                 if (nomes[i].contains(selected)) {
                     numeroFinal = vehicleNumber[i];
+                }  //TODO fazer para o iridium
+                if(vehicleNames[i].contains(selected)){
+                    numeroF= imeiNumb[i];
                 }
 
             }
@@ -146,14 +153,22 @@ public class SendSms extends AppCompatActivity {
         pos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                checked=("pos");
+                if(selected==null)
+                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+
+                else {
+                checked=("pos");}
             }
         });
 
         dive.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                checked=("dive");
+                if(selected==null)
+                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+
+                else {
+                checked=("dive");}
             }
         });
 
@@ -170,22 +185,29 @@ public class SendSms extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
 
+                    if(selected==null)
+                       Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-                Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
-                startActivity(yourIntent);
+                        else {
+                        Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
+                        startActivity(yourIntent);
 
 
-                checked="stationKeeping";
-
+                        checked = "stationKeeping";
+                    }
             }
         });
         goTo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(selected==null)
+                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-                Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
-                startActivity(yourIntent);
-                checked="goTo";
+                else {
+                    Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
+                    startActivity(yourIntent);
+                    checked = "goTo";
+                }
 
             }
         });
@@ -193,7 +215,11 @@ public class SendSms extends AppCompatActivity {
         abort.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                checked="abort";
+                if(selected==null)
+                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+
+                else {
+                checked="abort";}
             }
         });
 
@@ -231,20 +257,40 @@ public class SendSms extends AppCompatActivity {
             public void onClick(View view) {
                 switch (checked) {
                     case "dive":
-                        sendIMEI(numeroFinal, 0, 0, "dive");
+                        try {
+                            sendIMEI(numeroF, 0, 0, "dive");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case "surface":
-                        sendIMEI(numeroFinal, 0, 0, "surface");
+                        try {
+                            sendIMEI(numeroF, 0, 0, "surface");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case "stationKeeping":
-                        sendIMEI(numeroFinal, MainActivity.depth, MainActivity.speed, "sk");
+                        try {
+                            sendIMEI(numeroF, MainActivity.depth, MainActivity.speed, "sk");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case "abort":
 
-                        sendIMEI(numeroFinal, 0, 0, "abort");
+                        try {
+                            sendIMEI(numeroF, 0, 0, "abort");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                     case "goTo":
-                        sendIMEI(numeroFinal, MainActivity.depth, MainActivity.speed, "go");
+                        try {
+                            sendIMEI(numeroF, MainActivity.depth, MainActivity.speed, "go");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                 }
             }
@@ -306,8 +352,8 @@ public class SendSms extends AppCompatActivity {
                            sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
                            System.out.println(sms.toString());
 
-                        checked=null;
-                        SendSms.super.onBackPressed();
+                           checked=null;
+                           SendSms.super.onBackPressed();
 
                            break;
 
@@ -318,8 +364,8 @@ public class SendSms extends AppCompatActivity {
                      double longitude2=ponto2.getLongitude();
                      sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);
                      System.out.println(sms.toString());
-                checked=null;
-                SendSms.super.onBackPressed();
+                     checked=null;
+                     SendSms.super.onBackPressed();
 
                 break;
 
@@ -349,21 +395,51 @@ public class SendSms extends AppCompatActivity {
 
 
 
-    private boolean sendIMEI(String phoneNumber, double depth, double vel, String smsText) {
-
+    private boolean sendIMEI(String imeiNumber, double depth, double vel, String smsText) throws Exception {
+/*
 //TODO
+        switch (smsText) {
 
-        /* o formato dos comandos sao iguais
-mas neste caso deves fazer um post num servidor web */
+            case "sk":
+                String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
+                int timeoutMillis = 10000;
 
 
+                IridiumMsgTx msg = new IridiumMsgTx();
+                msg.setDestination(imeiNumber);
+                msg.setSource(message.getSrc());
+                msg.source = message.getSrc();
+                msg.setMsg(smsText);
+
+                byte[] data = msg.serialize();
+
+                data = new String(DatatypeConverter.printHexBinary(data)).getBytes();
+
+
+
+        URL u = new URL(serverUrl);
+        HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestMethod( "POST" );
+        conn.setRequestProperty( "Content-Type", "application/hub" );
+        conn.setRequestProperty( "Content-Length", String.valueOf(data.length * 2) );
+        conn.setConnectTimeout(timeoutMillis);
+                break;
+
+
+
+
+
+        }*/
         return false;
+
+
     }
 
-
-
-        @Override
+    @Override
     public void onBackPressed() {
+        unregisterBroadcast();
+
         SendSms.super.onBackPressed();
     }
 
