@@ -15,13 +15,14 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
+import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 
 /**
  * Created by ines on 8/14/17.
  */
-public class Line extends MainActivity implements  PressListener, MapViewConstants {
+public class Line extends MainActivity implements  PressListener {
 
     IMCGlobal imc;
     Boolean doneClicked = false;
@@ -29,16 +30,24 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
     float mGroundOverlayBearing = 0.0f;
     ArrayList<ArrayList<GeoPoint>> points;
 
-
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
     }
 
+    @Override
+    public void onBackPressed() {
+        doneClicked=false;
+        Line.super.onBackPressed();
+        imc.unregister(this);
+
+    }
 
     @Override
     public void onLongPress(double x, double y) {
+
         if (!doneClicked) {
+
             IGeoPoint p2 = map.getProjection().fromPixels((int) x, (int) y);
             final GeoPoint clickedLocation = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
@@ -51,7 +60,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             map.getOverlays().add(myGroundOverlay);
             map.getOverlayManager().add(myGroundOverlay);
             map.invalidate();
-
             lineMarker = new Marker(map);
             lineMarker.setPosition(clickedLocation);
             lineMarker.setIcon(lineIcon);
@@ -68,7 +76,6 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
                 @Override
                 public void onClick(View v) {
                     doneClicked = true;
-
                     if (markerPoints.size() <= 2) {
                         if (imc.selectedvehicle == null) {
 
@@ -91,24 +98,34 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             });
 
         }
-        //TODO
+
         erase.setOnClickListener(new View.OnClickListener() {
 
 
             @Override
             public void onClick(View v) {
+
                 for (int i = 0; i < markerPoints.size(); i++) {
                     lineMarker.remove(map);
 
 
+                    map.invalidate();
                 }
                 markerPoints.clear();
 
+
                 if (polyline != null)
                     polyline.setPoints(markerPoints);
+                if(circle!=null)
+                    circle.setPoints(markerPoints);
+                map.getOverlays().clear();
 
+                if(doneClicked) {
+                    trans.setVisibility(View.INVISIBLE);
+                    doneClicked=false;
 
-                    map.invalidate();
+                }
+                trans.setVisibility(View.VISIBLE);
 
             }
 
@@ -118,6 +135,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
     public void drawLine(GeoPoint origin, GeoPoint dest) {
+
 
         points = new ArrayList<>();
         points.add(markerPoints);
@@ -132,6 +150,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         map.invalidate();
         if (imc.selectedvehicle == null) {
             System.out.println("No vehicle selected");
+            doneClicked=false;
 
 
         } else {
@@ -144,6 +163,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
         LinkedHashSet<String> noRepetitions = new LinkedHashSet<String>();
         Iterator<GeoPoint> iterator = markerPoints.iterator();
+        System.out.println("entrei 1 ");
 
         while (iterator.hasNext()) {
             String val = iterator.next().toString();
@@ -152,6 +172,7 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
             } else
                 noRepetitions.add(val);
         }
+        System.out.println("entrei 2 ");
 
         ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
@@ -174,12 +195,11 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
 
 
         }
+        System.out.println("entrei 3 ");
 
         startBehaviour("followPoints" + imc.selectedvehicle, PlanUtilities.createPlan("followPoints" + imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
-        wayPoints(follow);
         previous = "M";
         setEstadoVeiculo(" ");
-
 
     }
 
@@ -200,19 +220,19 @@ public class Line extends MainActivity implements  PressListener, MapViewConstan
         }
         String planid = "SpearGoto";
         startBehaviour(planid, go);
-        wayPoints(go);
         previous = "M";
         setEstadoVeiculo(" ");
         trans.setVisibility(View.INVISIBLE);
 
 
     }
-//TODO Manel
+
+
+    //TODO
     public void finish() {
 
         done.setVisibility(View.INVISIBLE);
         erase.setVisibility(View.INVISIBLE);
-        velocityTextView.setVisibility(View.INVISIBLE);
         imc.unregister(this);
     }
 

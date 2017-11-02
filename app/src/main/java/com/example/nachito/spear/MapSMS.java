@@ -40,12 +40,14 @@ public class MapSMS extends AppCompatActivity {
     static double lon;
     Button done;
     MapView map;
+    Button eraseSMS;
     int numPontos;
     Drawable nodeIcon;
     Marker startMarker;
     ArrayList<GeoPoint> posicaoOutrosVeiculos;
     GeoPoint centro;
-    ScaleBarOverlay scaleBarOverlay;
+    com.example.nachito.spear.ScaleBarOverlay scaleBarOverlay;
+    static ArrayList<GeoPoint> markers = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +56,9 @@ public class MapSMS extends AppCompatActivity {
         map = (MapView) findViewById(R.id.mapSMS);
         done = (Button) findViewById(R.id.doneSMS);
         nodeIcon = getResources().getDrawable(R.drawable.orangeled);
+        eraseSMS= (Button)findViewById(R.id.eraseSMS);
         map.setMultiTouchControls(true);
-        scaleBarOverlay = new ScaleBarOverlay( map);
+        scaleBarOverlay = new com.example.nachito.spear.ScaleBarOverlay( map);
         List<Overlay> overlays = map.getOverlays();
         Toast.makeText(this,"Long Click on the map to choose a location for the vehicle to go", Toast.LENGTH_SHORT).show();
         overlays.add(scaleBarOverlay);
@@ -89,6 +92,7 @@ public class MapSMS extends AppCompatActivity {
             public boolean longPressHelper(GeoPoint p) {
                 lat = p.getLatitude();
                 lon = p.getLongitude();
+                markers.add(p);
 
                 startMarker = new Marker(map);
                 startMarker.setPosition(p);
@@ -103,24 +107,36 @@ public class MapSMS extends AppCompatActivity {
                 System.out.println(numPontos + " - ");
 
 
-                startMarker.setOnMarkerClickListener(new Marker.OnMarkerClickListener() {
+                //TODO TESTAR se envia a loc do q fica! e nao do 1o q ja foi apagado
+
+                eraseSMS.setOnClickListener(new View.OnClickListener() {
+
+//TODO so elimina um de cada vez
+
                     @Override
-                    public boolean onMarkerClick(Marker marker, MapView mapView) {
+                    public void onClick(View v) {
 
-                        map.getOverlayManager().remove(startMarker);
+                        for (int i = 0; i <=markers.size(); i++) {
+
+                            startMarker.remove(map);
+                            map.invalidate();
+
+                        }
+                        markers.clear();
+                        numPontos = 0;
                         map.invalidate();
+//TODO
 
-
-                        numPontos--;
-
-                        return true;
+                        //      map.getOverlays().clear(); para este temos de fazer update ao mapa
                     }
+
                 });
                 return true;
+
             }
+
         };
-
-
+//TODO
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -177,7 +193,6 @@ public class MapSMS extends AppCompatActivity {
         float orientation2 = MainActivity.orientation();
         int ori2 = (int) Math.round(Math.toDegrees(orientation2));
         ori2 = ori2-180;
-        //TODO
 
         Bitmap target = MainActivity.RotateMyBitmap(newMarker2,ori2);
 
@@ -192,15 +207,18 @@ public class MapSMS extends AppCompatActivity {
 
 
     }
-    public void drawBlue(){ //TODO
-       posicaoOutrosVeiculos = MainActivity.drawPosicaoOutrosVeiculos();
+    public void drawBlue(){
+        posicaoOutrosVeiculos = MainActivity.drawPosicaoOutrosVeiculos();
 
         Set<GeoPoint> hs = new HashSet<>();
         hs.addAll(posicaoOutrosVeiculos);
         posicaoOutrosVeiculos.clear();
         posicaoOutrosVeiculos.addAll(hs);
+
         for(int i = 0 ; i<posicaoOutrosVeiculos.size();i++) {
+
             if(posicaoOutrosVeiculos.get(i)!=centro) {
+
                 final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
                 OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", posicaoOutrosVeiculos.get(i));
                 System.out.println(posicaoOutrosVeiculos.get(i));
@@ -209,7 +227,6 @@ public class MapSMS extends AppCompatActivity {
                 Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
                 float orientation2 = MainActivity.orientation();
                 int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-                //TODO
                 ori2 = ori2-180;
                 Bitmap target = MainActivity.RotateMyBitmap(source2,ori2);
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
@@ -241,7 +258,7 @@ public class MapSMS extends AppCompatActivity {
     }
     @Override
     public void onBackPressed() {
-         super.onBackPressed();
+        super.onBackPressed();
 
     }
 

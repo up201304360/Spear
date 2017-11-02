@@ -21,15 +21,47 @@
 
 
         <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/plus"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="60dp"
+            android:text="@string/plus"
+
+            />
+<Button
+    android:layout_width="50dp"
+    android:layout_height="50dp"
+    android:id="@+id/minus"
+    android:layout_marginStart="10dp"
+
+    android:layout_below="@+id/plus"
+    android:text="@string/minus"
+
+    />
+
+
+
+        <Button
+            android:id="@+id/localizacao"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+           android:layout_alignParentEnd="true"
+            android:layout_marginEnd="25dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/loc2" />
+        <Button
             android:id="@+id/done"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/done"
             android:background="#50505010"
-            android:layout_alignParentTop="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="10dp"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="14dp"
-            android:layout_marginTop="13dp" />
+
+
+             />
 
         <Button
             android:id="@+id/erase"
@@ -42,27 +74,17 @@
             android:layout_alignStart="@+id/done" />
 
 
-    <com.example.nachito.spear.Press
+
+        <com.example.nachito.spear.Press
             android:id="@+id/transparente"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
 
-            android:layout_alignParentBottom="true">
+            android:layout_alignParentTop="true">
 
 
         </com.example.nachito.spear.Press>
 
-        <TextView
-            android:id="@+id/vel2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginBottom="105dp"
-            android:layout_marginLeft="23dp"
-            android:layout_marginStart="23dp"
-            android:layout_toEndOf="@+id/erase"
-            android:layout_toRightOf="@+id/erase"
-            android:background="#07000000" />
 
         <include layout="@layout/persistent_bottomsheet" />
 

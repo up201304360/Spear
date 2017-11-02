@@ -48,4 +48,8 @@
 <string name="iridium">Iridium</string>
     <string name="pos">Pos</string>
     <string name="vehicle_name">Vehicle Name</string>
+    <string name="plus">+</string>
+    <string name="minus">-</string>
+    <string name="wifion">wifion</string>
+    <string name="wifioff">wifioff</string>
 </resources>

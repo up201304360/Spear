@@ -2,6 +2,7 @@ package com.example.nachito.spear;
 
 
 import android.view.View;
+
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.bonuspack.overlays.GroundOverlay;
 import org.osmdroid.util.GeoPoint;
@@ -24,6 +25,7 @@ import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
  *
  */
 
+
 public class Area extends MainActivity implements  PressListener, MapViewConstants {
     IMCGlobal imc;
     Goto area2;
@@ -35,13 +37,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         this.imc = imc;
         imc.register(this);
     }
-    //TODO Manel
+    //TODO
 
     public void finish() {
 
-        done.setVisibility(View.INVISIBLE);
-        erase.setVisibility(View.INVISIBLE);
-        velocityTextView.setVisibility(View.INVISIBLE);
         imc.unregister(this);
 
 
@@ -49,19 +48,20 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
     @Override
     public void onBackPressed() {
+
         Area.super.onBackPressed();
         imc.unregister(this);
 
     }
     @Override
     public void onLongPress(double x, double y) {
+
         if (!doneClicked) {
             Projection proj = map.getProjection();
             IGeoPoint p2 = proj.fromPixels((int) x, (int) y);
-           final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
+            final GeoPoint p = new GeoPoint(p2.getLatitude(), p2.getLongitude());
 
             markerPoints.add(p);
-
             GroundOverlay myGroundOverlay = new GroundOverlay();
             myGroundOverlay.setPosition(p);
             myGroundOverlay.setDimensions(2000.0f);
@@ -83,8 +83,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
 
 
-            done.setVisibility(View.VISIBLE);
-            erase.setVisibility(View.VISIBLE);
+
             done.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -93,6 +92,8 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                         if (imc.selectedvehicle == null) {
 
                             System.out.println("No vehicles");
+                            doneClicked=false;
+
                         } else {
                             Go(p);
                         }
@@ -107,13 +108,13 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             });
 
         }
-        //TODO
 
         erase.setOnClickListener(new View.OnClickListener() {
 
 
             @Override
             public void onClick(View v) {
+
                 for (int i = 0; i < markerPoints.size(); i++) {
                     lineMarker.remove(map);
 
@@ -122,17 +123,33 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
                 }
                 markerPoints.clear();
 
-
+                if (polyline != null)
+                    polyline.setPoints(markerPoints);
                 if (circle != null)
                     circle.setPoints(markerPoints);
                 map.getOverlays().clear();
+
+                if(doneClicked) {
+                    trans.setVisibility(View.INVISIBLE);
+                    doneClicked=false;
+
+                }
                 trans.setVisibility(View.VISIBLE);
+
+
+
+
+
+
             }
+
+
         });
 
 
 
     }
+
 
     public void drawArea() {
 
@@ -146,6 +163,7 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         map.invalidate();
         if (imc.selectedvehicle == null) {
             System.out.println("No vehicle selected");
+            doneClicked=false;
 
 
         } else {
@@ -201,11 +219,10 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
         }
         startBehaviour("SpearArea" , PlanUtilities.createPlan("SpearArea-"+imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
-        wayPoints(area2);
         setEstadoVeiculo(" ");
         previous="M";
         trans.setVisibility(View.INVISIBLE);
-
+        doneClicked=false;
 
     }
 
@@ -229,15 +246,13 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
         String planid = "SpearGoto-"+imc.selectedvehicle;
         startBehaviour(planid, go);
-        wayPoints(go);
         setEstadoVeiculo(" ");
         previous="M";
         trans.setVisibility(View.INVISIBLE);
+        doneClicked=false;
 
 
     }
 
 
 }
-
-

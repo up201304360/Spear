@@ -46,32 +46,27 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
-import org.metalev.multitouch.controller.MultiTouchController;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.ScaleBarOverlay;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
-import org.osmdroid.views.overlay.gestures.RotationGestureDetector;
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
+
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -174,15 +169,12 @@ public class MainActivity extends AppCompatActivity
     boolean showrpm;
     //static - so Area and Line can pass the points clicked
     @SuppressLint("StaticFieldLeak")
-    @ViewById(R.id.vel2)
-    static TextView velocityTextView;
     static String dept;
     static String estadoVeiculo;
     static String vel;
     static Collection<PlanUtilities.Waypoint> points;
     static Marker nodeMarkerWaypoints;
     Location location;
-     RotationGestureOverlay mRotationGestureOverlay;
     static String previous=null;
     Double valLat;
     Double valLon;
@@ -191,12 +183,21 @@ public class MainActivity extends AppCompatActivity
     int tamanhoLista;
     OSMHandler updateHandler;
     List<String> stateList;
-     ScaleBarOverlay scaleBarOverlay;
     static GeoPoint posicaoVeiculo;
     static GeoPoint posicao;
     static  ArrayList<GeoPoint> listaOutrosVeiculos= new ArrayList<>();
     static float orientation2;
-SendSms sendsms;
+    SendSms sendsms;
+    Marker markerSMS;
+    ScaleBarOverlay scaleBarOverlay;
+
+    @ViewById(R.id.localizacao)
+    Button centrarLoc;
+
+    @ViewById(R.id.minus)
+    Button minusZoom;
+    @ViewById(R.id.plus)
+    Button plusZoom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,11 +217,11 @@ SendSms sendsms;
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
         map.getOverlays().add(mCompassOverlay);
-        mRotationGestureOverlay = new RotationGestureOverlay(context, map);
-        mRotationGestureOverlay.setEnabled(true);
+
         map.setMultiTouchControls(true);
-        map.getOverlays().add(mRotationGestureOverlay);
         velocity.bringToFront();
+        minusZoom.setVisibility(View.INVISIBLE);
+        plusZoom.setVisibility(View.INVISIBLE);
         setupSharedPreferences();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -277,8 +278,7 @@ SendSms sendsms;
 
        scaleBarOverlay = new ScaleBarOverlay( map);
         List<Overlay> overlays = map.getOverlays();
-      //  scaleBarOverlay.setMetric();
-// Add scale bar overlay
+
         overlays.add(scaleBarOverlay);
 
 
@@ -613,6 +613,30 @@ SendSms sendsms;
         });
 
 
+
+        centrarLoc.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(posicao!=null)
+                mapController.setCenter(posicao);
+                else
+                    Toast.makeText(context, "Turn Location on", Toast.LENGTH_SHORT).show();
+
+        }
+        });
+
+
+       minusZoom.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+mapController.zoomOut();           }
+       });
+
+        plusZoom.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mapController.zoomIn();           }
+        });
     }
 
 
@@ -639,32 +663,40 @@ SendSms sendsms;
             stopTeleop.setVisibility(View.INVISIBLE);
             Joystick joystick = (Joystick) findViewById(R.id.joystick);
             joystick.setVisibility(View.INVISIBLE);
+            map.getOverlayManager().add(mCompassOverlay);
         } else if (line != null) {
             line.finish();
+
             trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
-            done.setVisibility(View.INVISIBLE);
-            erase.setVisibility(View.INVISIBLE);
 
+
+            minusZoom.setVisibility(View.INVISIBLE);
+            plusZoom.setVisibility(View.INVISIBLE);
+
+            centrarLoc.setVisibility(View.VISIBLE);
 
         } else if (area != null) {
             area.finish();
-            trans.setVisibility(View.INVISIBLE);
-            bottom.setVisibility(View.VISIBLE);
+
             done.setVisibility(View.INVISIBLE);
             erase.setVisibility(View.INVISIBLE);
+            minusZoom.setVisibility(View.INVISIBLE);
+            plusZoom.setVisibility(View.INVISIBLE);
+            trans.setVisibility(View.INVISIBLE);
+            bottom.setVisibility(View.VISIBLE);
+
+
+            centrarLoc.setVisibility(View.VISIBLE);
 
 
         }else if(sendsms!=null){
 //
 
-            mRotationGestureOverlay = new RotationGestureOverlay(this, map);
-            mRotationGestureOverlay.setEnabled(false);
-            map.getOverlays().add(mRotationGestureOverlay);
+
 
             imc.register(this);
             map.setMultiTouchControls(true);
-            map.getOverlays().add(mRotationGestureOverlay);
       } else
             finish();
     }
@@ -712,19 +744,22 @@ SendSms sendsms;
                         public void onClick(DialogInterface dialog, int which) {
                             if (area != null)
                                 area.finish();
+
                             line = new Line();
                             bottom.setVisibility(View.INVISIBLE);
-                            mCompassOverlay.disableCompass();
                             done.setClickable(true);
                             done.setOnClickListener(line);
-                            velocityTextView.setVisibility(View.VISIBLE);
                             erase.setClickable(true);
                             erase.setOnClickListener(line);
                             trans.setonPress(line);
                             trans.setVisibility(View.VISIBLE);
                           Toast.makeText(MainActivity.this, "Click on the map to choose a point to follow", Toast.LENGTH_LONG).show();
                             line.setImc(imc);
-
+                            minusZoom.setVisibility(View.VISIBLE);
+                            plusZoom.setVisibility(View.VISIBLE);
+                            done.setVisibility(View.VISIBLE);
+                            erase.setVisibility(View.VISIBLE);
+                            centrarLoc.setVisibility(View.INVISIBLE);
 
                         }
                     })
@@ -733,14 +768,18 @@ SendSms sendsms;
                             if (line != null)
                                 line.finish();
                             Toast.makeText(MainActivity.this, "Click on the map to choose an area to follow", Toast.LENGTH_LONG).show();
-
                             bottom.setVisibility(View.INVISIBLE);
                             area = new Area();
-                            mCompassOverlay.disableCompass();
+                            minusZoom.setVisibility(View.VISIBLE);
+                            plusZoom.setVisibility(View.VISIBLE);
+                            done.setVisibility(View.VISIBLE);
+                            erase.setVisibility(View.VISIBLE);
+
                             done.setClickable(true);
                             done.setOnClickListener(area);
                             erase.setClickable(true);
-                            velocityTextView.setVisibility(View.VISIBLE);
+                            centrarLoc.setVisibility(View.INVISIBLE);
+                            map.invalidate();
 
                             erase.setOnClickListener(area);
                             trans.setonPress(area);
@@ -848,8 +887,9 @@ SendSms sendsms;
 
                 double[] lld = WGS84Utilities.toLatLonDepth(state);
                 final ArrayList<OverlayItem> items2 = new ArrayList<>();
+
+                if (!vname.equals(imc.getSelectedvehicle()))
                 listaOutrosVeiculos.add(new GeoPoint(lld[0], lld[1]));
-//TODO onde remover os anteriores - no updateMap
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
                 marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
                 items2.add(marker2);
@@ -978,19 +1018,26 @@ public  static float orientation(){
     public  void updateMap() {
         map.getOverlays().clear();
         listaOutrosVeiculos.clear();
+
 //TODO escala mais peq
 
-       map.getOverlayManager().add(scaleBarOverlay);
+        map.getOverlayManager().add(mCompassOverlay);
+        mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
 
+        mCompassOverlay.enableCompass();
+
+        scaleBarOverlay = new ScaleBarOverlay( map);
+        map.getOverlayManager().add(scaleBarOverlay);
+
+        scaleBarOverlay.enableScaleBar();
         scaleBarOverlay.setAlignRight(true);
         scaleBarOverlay.setScaleBarOffset(40,30);
-        map.getOverlayManager().add(mCompassOverlay);
+
+
 
 
         map.setMultiTouchControls(true);
-        mRotationGestureOverlay = new RotationGestureOverlay(map);
-        mRotationGestureOverlay.setEnabled(true);
-        map.getOverlays().add(mRotationGestureOverlay);
+
         synchronized (estates) {
             for (EstimatedState state : estates.values()) {
                 paintState(state);
@@ -1003,6 +1050,16 @@ public  static float orientation(){
             map.getOverlays().add(nodeMarkerWaypoints);
             if(mList!=null)
                 callWaypoint(mList);
+
+        }
+        if(SendSms.pontoSMS()!=null){
+            GeoPoint ponto= SendSms.pontoSMS();
+//TODO no stop apagar
+
+            markerSMS = new Marker(map);
+            markerSMS.setPosition(ponto);
+            markerSMS.setIcon(lineIcon);
+            map.getOverlays().add(markerSMS);
 
         }
 
@@ -1059,7 +1116,8 @@ public  static float orientation(){
         dive.setBearing(0);
         String planid = "SpearDive-" + imc.selectedvehicle;
         startBehaviour(planid, dive);
-
+        setEstadoVeiculo("Dive");
+//TODO previous?
         wayPoints(dive);
 
     }
@@ -1081,7 +1139,9 @@ public  static float orientation(){
         String planid = " SpearStationKeeping-" + imc.selectedvehicle;
         startBehaviour(planid, stationKeepingmsg);
         wayPoints(stationKeepingmsg);
+        setEstadoVeiculo("StationKeeping");
 
+//TODO previous?
     }
 
     public void near() {
@@ -1102,6 +1162,8 @@ public  static float orientation(){
         String planid = "SpearComeNear-" + imc.selectedvehicle;
         startBehaviour(planid, go);
         wayPoints(go);
+        setEstadoVeiculo("Come near");
+//TODO previous?
 
 
     }
@@ -1129,7 +1191,7 @@ public  static float orientation(){
 
     }
 
-
+//TODO velocity parado
     public void stopPlan() {
         PlanControl pc = new PlanControl();
         pc.setType(PlanControl.TYPE.REQUEST);
@@ -1140,24 +1202,43 @@ public  static float orientation(){
         imc.sendMessage(pc);
         setEstadoVeiculo("Plan Stopped");
         previous="S";
-
-        map.getOverlays().remove(nodeMarkerWaypoints);
+        if(nodeMarkerWaypoints!=null)
+            map.getOverlays().remove(nodeMarkerWaypoints);
         if(points!=null)
             points.clear();
-        points=null;
         map.invalidate();
         map.getOverlays().clear();
         mList.clear();
+        updateMap();
 
+        //TODO
         if (line != null) {
             map.getOverlays().remove(lineMarker);
+            map.invalidate();
             line = null;
             updateMap();
+            markerPoints.clear();
+
+            imc.unregister(this);
         } else if (area != null) {
             map.getOverlays().remove(lineMarker);
+            map.invalidate();
+            markerPoints.clear();
+
             area = null;
             updateMap();
+            imc.unregister(this);
+
         }
+
+
+        if(SendSms.pontoSMS()!=null){
+            map.getOverlays().remove(markerSMS);
+            updateMap();
+
+
+        }
+
 
     }
 
@@ -1352,7 +1433,7 @@ public  static float orientation(){
                 nodeMarkerWaypoints.setIcon(nodeIcon);
 
                 map.getOverlays().add(nodeMarkerWaypoints);
-//linha a ligar os pontos
+//TODO linha a ligar os pontos
             }
         }
 

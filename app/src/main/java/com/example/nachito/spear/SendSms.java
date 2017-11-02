@@ -22,15 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay;
 
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.util.Arrays;
-
-import pt.lsts.imc.IridiumMsgTx;
 
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
@@ -59,7 +51,8 @@ public class SendSms extends AppCompatActivity {
     Button iridium;
     String[] imeiNumb;
     String[] vehicleNames;
-String numeroF;
+    String numeroF;
+    static GeoPoint pontoFinal;
 
 
     @Override
@@ -129,9 +122,9 @@ String numeroF;
         vehicleNumber = getApplicationContext().getResources().getStringArray(R.array.phonenumbers);
         nomes = getApplicationContext().getResources().getStringArray(R.array.names);
 
-  //iridium
+        //iridium
         imeiNumb=getApplicationContext().getResources().getStringArray(R.array.imei);
-         vehicleNames= getApplicationContext().getResources().getStringArray(R.array.namesIMEI);
+        vehicleNames= getApplicationContext().getResources().getStringArray(R.array.namesIMEI);
 
 
         //
@@ -143,7 +136,7 @@ String numeroF;
 
                 if (nomes[i].contains(selected)) {
                     numeroFinal = vehicleNumber[i];
-                }  //TODO fazer para o iridium
+                }
                 if(vehicleNames[i].contains(selected)){
                     numeroF= imeiNumb[i];
                 }
@@ -157,7 +150,7 @@ String numeroF;
                     Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
                 else {
-                checked=("pos");}
+                    checked=("pos");}
             }
         });
 
@@ -168,7 +161,7 @@ String numeroF;
                     Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
                 else {
-                checked=("dive");}
+                    checked=("dive");}
             }
         });
 
@@ -184,17 +177,17 @@ String numeroF;
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
+//TODO
+/*                if(selected==null)
+                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-                    if(selected==null)
-                       Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
-
-                        else {
-                        Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
-                        startActivity(yourIntent);
+                else {*/
+                    Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
+                    startActivity(yourIntent);
 
 
-                        checked = "stationKeeping";
-                    }
+                    checked = "stationKeeping";
+               // }
             }
         });
         goTo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -219,7 +212,7 @@ String numeroF;
                     Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
                 else {
-                checked="abort";}
+                    checked="abort";}
             }
         });
 
@@ -344,38 +337,36 @@ String numeroF;
                 SmsManager sms = SmsManager.getDefault();
                 switch (smsText) {
 
-                       case "sk":
+                    case "sk":
 
-                           GeoPoint ponto= MapSMS.resultado();
-                           double latitude= ponto.getLatitude();
-                           double longitude=ponto.getLongitude();
-                           sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
-                           System.out.println(sms.toString());
+                        GeoPoint ponto= MapSMS.resultado();
+                        double latitude= ponto.getLatitude();
+                        double longitude=ponto.getLongitude();
+                        sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
+                        pontoFinal=ponto;
+                        checked=null;
+                        SendSms.super.onBackPressed();
 
-                           checked=null;
-                           SendSms.super.onBackPressed();
+                        break;
 
-                           break;
+                    case "go":
 
-                 case "go":
+                        GeoPoint ponto2= MapSMS.resultado();
+                        double latitude2= ponto2.getLatitude();
+                        double longitude2=ponto2.getLongitude();
+                        sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);
+                        pontoFinal=ponto2;
 
-                     GeoPoint ponto2= MapSMS.resultado();
-                     double latitude2= ponto2.getLatitude();
-                     double longitude2=ponto2.getLongitude();
-                     sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);
-                     System.out.println(sms.toString());
-                     checked=null;
-                     SendSms.super.onBackPressed();
+                        checked=null;
+                        SendSms.super.onBackPressed();
 
-                break;
+                        break;
 
 
                     default:
                         sms.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                         checked=null;
                         SendSms.super.onBackPressed();
-                        System.out.println(smsText);
-
                         break;
                 }
 
@@ -393,15 +384,20 @@ String numeroF;
         return false;
     }
 
+    public  static GeoPoint pontoSMS(){
+        //TODO enviar ponto para Main - ver se funciona
+        return pontoFinal;
 
+        //TODO dummy numero adicionar a lista (pode ser o meu!) e fazer
+    }
 
     private boolean sendIMEI(String imeiNumber, double depth, double vel, String smsText) throws Exception {
-/*
+
 //TODO
         switch (smsText) {
 
             case "sk":
-                String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
+            /*    String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
                 int timeoutMillis = 10000;
 
 
@@ -427,10 +423,10 @@ String numeroF;
                 break;
 
 
+*/
 
 
-
-        }*/
+        }
         return false;
 
 
@@ -467,15 +463,15 @@ String numeroF;
         unregisterBroadcast();
     }
 
-public  void unregisterBroadcast(){
-    if(mBroadcastTime != null) {
-        try {
-            unregisterReceiver(mBroadcastTime);
-        } catch (Exception ignored) {
+    public  void unregisterBroadcast(){
+        if(mBroadcastTime != null) {
+            try {
+                unregisterReceiver(mBroadcastTime);
+            } catch (Exception ignored) {
+            }
         }
-    }
 
-}
+    }
 
 }
 

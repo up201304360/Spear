@@ -114,9 +114,9 @@ public class Joystick extends View {
     }
     @Override
     protected void onDraw(Canvas canvas) {
-        int px = getMeasuredWidth() / 2;
-        int py = getMeasuredHeight() / 2;
-        int radius = Math.min(px, py);
+        float px = (float) (getMeasuredWidth() /2);
+        float py = (float) (getMeasuredHeight() /2);
+        float radius = Math.min(px, py);
 
         // Draw the background
         canvas.drawCircle(px, py, radius - innerPadding, circlePaint);
