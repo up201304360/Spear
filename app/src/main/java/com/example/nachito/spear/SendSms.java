@@ -14,9 +14,7 @@ import android.telephony.SmsManager;
 import android.test.mock.MockPackageManager;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,21 +22,15 @@ import android.widget.Toast;
 import org.osmdroid.util.GeoPoint;
 
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.sender.MessageEditor;
-import pt.lsts.ripples.model.iridium.ImcIridiumMessage;
 
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
 
 
 /**
+ *
  * Created by ines on 10/2/17.
  */
 
@@ -154,149 +146,121 @@ IMCMessage msg;
 
             }
         }
-        pos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(selected==null)
-                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+        pos.setOnCheckedChangeListener((compoundButton, b) -> {
+            if(selected==null)
+                Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-                else {
-                    checked=("pos");}
-            }
+            else {
+                checked=("pos");}
         });
 
-        dive.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(selected==null)
-                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+        dive.setOnCheckedChangeListener((compoundButton, b) -> {
+            if(selected==null)
+                Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-                else {
-                    checked=("dive");}
-            }
+            else {
+                checked=("dive");}
         });
 
 
-        surface.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                checked="surface";
+        surface.setOnCheckedChangeListener((compoundButton, b) -> checked="surface");
+
+        stationKeeping.setOnCheckedChangeListener((compoundButton, b) -> {
+
+            if(selected==null)
+                Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+
+            else {
+                Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
+                startActivity(yourIntent);
+
+
+                checked = "stationKeeping";
             }
         });
+        goTo.setOnCheckedChangeListener((compoundButton, b) -> {
+            if(selected==null)
+                Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-        stationKeeping.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-
-//TODO
-/*                if(selected==null)
-                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
-
-                else {*/
-                    Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
-                    startActivity(yourIntent);
-
-
-                    checked = "stationKeeping";
-               // }
+            else {
+                Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
+                startActivity(yourIntent);
+                checked = "goTo";
             }
-        });
-        goTo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(selected==null)
-                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-                else {
-                    Intent yourIntent = new Intent(SendSms.this, MapSMS.class);
-                    startActivity(yourIntent);
-                    checked = "goTo";
-                }
-
-            }
         });
 
-        abort.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(selected==null)
-                    Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+        abort.setOnCheckedChangeListener((compoundButton, b) -> {
+            if(selected==null)
+                Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
-                else {
-                    checked="abort";}
-            }
+            else {
+                checked="abort";}
         });
 
 
-        sms.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                switch (checked) {
-                    case "pos":
-                        sendSMS(numeroFinal, 0, 0, "pos");
-                        break;
-                    case "dive":
-                        sendSMS(numeroFinal, 0, 0, "dive");
-                        break;
-                    case "surface":
-                        sendSMS(numeroFinal, 0, 0, "surface");
-                        break;
-                    case "stationKeeping":
-                        sendSMS(numeroFinal, MainActivity.depth, MainActivity.speed, "sk");
-                        break;
-                    case "abort":
+        sms.setOnClickListener(view -> {
+            switch (checked) {
+                case "pos":
+                    sendSMS(numeroFinal, 0, 0, "pos");
+                    break;
+                case "dive":
+                    sendSMS(numeroFinal, 0, 0, "dive");
+                    break;
+                case "surface":
+                    sendSMS(numeroFinal, 0, 0, "surface");
+                    break;
+                case "stationKeeping":
+                    sendSMS(numeroFinal, MainActivity.depth, MainActivity.speed, "sk");
+                    break;
+                case "abort":
 
-                        sendSMS(numeroFinal, 0, 0, "abort");
-                        break;
-                    case "goTo":
-                        sendSMS(numeroFinal, MainActivity.depth, MainActivity.speed, "go");
-                        break;
-                }
+                    sendSMS(numeroFinal, 0, 0, "abort");
+                    break;
+                case "goTo":
+                    sendSMS(numeroFinal, MainActivity.depth, MainActivity.speed, "go");
+                    break;
             }
         });
 
-        iridium.setOnClickListener(new View.OnClickListener() {
+        iridium.setOnClickListener(view -> {
+            switch (checked) {
+                case "dive":
+                    try {
+                        sendIMEI(msg, numeroF, 0, 0, "dive");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "surface":
+                    try {
+                        sendIMEI(msg, numeroF, 0, 0, "surface");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "stationKeeping":
+                    try {
+                        sendIMEI(msg, numeroF, MainActivity.depth, MainActivity.speed, "sk");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "abort":
 
-            @Override
-            public void onClick(View view) {
-                switch (checked) {
-                    case "dive":
-                        try {
-                            sendIMEI(msg, numeroF, 0, 0, "dive");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case "surface":
-                        try {
-                            sendIMEI(msg, numeroF, 0, 0, "surface");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case "stationKeeping":
-                        try {
-                            sendIMEI(msg, numeroF, MainActivity.depth, MainActivity.speed, "sk");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case "abort":
-
-                        try {
-                            sendIMEI(msg, numeroF, 0, 0, "abort");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case "goTo":
-                        try {
-                            sendIMEI(msg, numeroF, MainActivity.depth, MainActivity.speed, "go");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                }
+                    try {
+                        sendIMEI(msg, numeroF, 0, 0, "abort");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "goTo":
+                    try {
+                        sendIMEI(msg, numeroF, MainActivity.depth, MainActivity.speed, "go");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
             }
         });
 
@@ -304,7 +268,7 @@ IMCMessage msg;
 
 
 
-    private boolean sendSMS(String phoneNumber, double depth, double vel, String smsText) {
+    private void sendSMS(String phoneNumber, double depth, double vel, String smsText) {
         try {
 
             Toast.makeText(getApplicationContext(), "Number: " + phoneNumber + "  #  Text: " + smsText, Toast.LENGTH_SHORT).show();
@@ -385,21 +349,18 @@ IMCMessage msg;
             } catch (Exception e) {
                 Log.i("SMS", "" + e);
             }
-            return true;
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "SMS failed, please try again later!", Toast.LENGTH_SHORT).show();
             Log.i("SMS", "" + e);
 
         }
 
-        return false;
     }
 
     public  static GeoPoint pontoSMS(){
-        //TODO enviar ponto para Main - ver se funciona
+        //TODO
         return pontoFinal;
 
-        //TODO dummy numero adicionar a lista (pode ser o meu!) e fazer
     }
 
     private boolean sendIMEI(IMCMessage message, String imeiNumber, double depth, double vel, String smsText) throws Exception {
@@ -413,8 +374,6 @@ IMCMessage msg;
             case "sk":
 
 
-//TODO conn.disconnect
-//TODO diferença entre default, sk e go, onde adicionar a vel, depth e imei
 
 
 
@@ -425,7 +384,6 @@ IMCMessage msg;
                 msg.setMsg(message);
 
                 byte[] data = msg.serialize();
-//TODO adicionar a data ?
          //       data = new String(DatatypeConverter.printHexBinary(data)).getBytes();
 
                 URL u = new URL(serverUrl);
@@ -457,7 +415,7 @@ IMCMessage msg;
                 else {
                     System.out.println(new String(incoming.toByteArray()));
                     conn.disconnect();
-                    //TODO
+
                 }
 
         }*/

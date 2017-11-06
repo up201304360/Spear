@@ -5,10 +5,10 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.preference.PreferenceScreen;
-import android.widget.Toast;
+
 
 /**
+ *
  * Created by ines on 6/1/17.
  */
 

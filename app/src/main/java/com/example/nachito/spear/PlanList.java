@@ -17,15 +17,16 @@ import pt.lsts.neptus.messages.listener.Periodic;
 
 
 /**
+ *
  * Created by nachito on 14/04/17.
  */
 
 public class PlanList {
-    static final LinkedHashMap<String, List<String>> planHashMap = new LinkedHashMap<>();
-    IMCGlobal imc = null;
-    static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, List<String>> planHashMap = new LinkedHashMap<>();
+    private IMCGlobal imc = null;
+    private static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
 
-    public PlanList(IMCGlobal ref) {
+    PlanList(IMCGlobal ref) {
         imc = ref;
     }
 
@@ -67,7 +68,7 @@ public class PlanList {
         }
     }
 
-    String planBeingExecuted = null;
+    private String planBeingExecuted = null;
 
     @Consume
     public void onMsg(PlanControlState msg) {
@@ -88,7 +89,7 @@ public class PlanList {
 
 
     @Periodic(60000)
-    public void askForPlan() {
+    private void askForPlan() {
 
         System.out.println("Requesting "+planBeingExecuted+" to vehicle "+imc.selectedvehicle);
         if (planBeingExecuted != null) {
@@ -110,13 +111,13 @@ public class PlanList {
     }
 
 
-    public List<String> ListaPlanos(String vehicle) {
+    List<String> ListaPlanos(String vehicle) {
         synchronized (planHashMap) {
             return planHashMap.get(vehicle);
         }
     }
 
-    public List<Maneuver> ListaManeuvers(String vehicle) {
+    List<Maneuver> ListaManeuvers(String vehicle) {
         synchronized (planExecuting) {
             return planExecuting.get(vehicle);
         }

@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 
 /**
+ *
  * Created by nachito on 25/04/17.
  */
 public interface ResourceProxy {

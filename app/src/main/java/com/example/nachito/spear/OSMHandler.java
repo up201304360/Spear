@@ -7,6 +7,7 @@ import android.os.Bundle;
 import org.osmdroid.util.GeoPoint;
 
 /**
+ *
  * Created by nachito on 25/04/17.
  */
 
@@ -15,7 +16,7 @@ public class OSMHandler  implements LocationListener
 
     private MainActivity mMapActivity;
 
-    public OSMHandler(MainActivity aMapActivity)
+    OSMHandler(MainActivity aMapActivity)
     {
         this.mMapActivity = aMapActivity;
 

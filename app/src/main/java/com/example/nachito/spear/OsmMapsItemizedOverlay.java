@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ *
  * Created by ines on 4/28/17.
  */
 
@@ -25,7 +26,7 @@ class OsmMapsItemizedOverlay extends ItemizedIconOverlay<OverlayItem> {
 
 
 
-    public void addOverlay(OverlayItem aOverlayItem) {
+    void addOverlay(OverlayItem aOverlayItem) {
         mItemList.add(aOverlayItem);
         populate();
     }

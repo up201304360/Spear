@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 import org.osmdroid.api.IMapController;
@@ -20,16 +19,15 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
-import org.osmdroid.views.overlay.ScaleBarOverlay;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import android.os.Handler;
 
 
 
 /**
+ *
  * Created by ines on 10/9/17.
  */
 
@@ -107,28 +105,20 @@ public class MapSMS extends AppCompatActivity {
                 System.out.println(numPontos + " - ");
 
 
-                //TODO TESTAR se envia a loc do q fica! e nao do 1o q ja foi apagado
+                eraseSMS.setOnClickListener(v -> {
 
-                eraseSMS.setOnClickListener(new View.OnClickListener() {
+                    for (int i = 0; i <=markers.size(); i++) {
 
-//TODO so elimina um de cada vez
-
-                    @Override
-                    public void onClick(View v) {
-
-                        for (int i = 0; i <=markers.size(); i++) {
-
-                            startMarker.remove(map);
-                            map.invalidate();
-
-                        }
-                        markers.clear();
-                        numPontos = 0;
+                        startMarker.remove(map);
                         map.invalidate();
+
+                    }
+                    markers.clear();
+                    numPontos = 0;
+                    map.invalidate();
 //TODO
 
-                        //      map.getOverlays().clear(); para este temos de fazer update ao mapa
-                    }
+
 
                 });
                 return true;
@@ -137,18 +127,15 @@ public class MapSMS extends AppCompatActivity {
 
         };
 //TODO
-        done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (numPontos == 1) {
-                    Intent i = new Intent(MapSMS.this, SendSms.class);
-                    startActivity(i);
-                } else if (numPontos == 0) {
-                    Toast.makeText(MapSMS.this, "Select one point", Toast.LENGTH_SHORT).show();
-                } else if (numPontos > 1)
-                    Toast.makeText(MapSMS.this, "Select ONLY one point", Toast.LENGTH_SHORT).show();
+        done.setOnClickListener(v -> {
+            if (numPontos == 1) {
+                Intent i = new Intent(MapSMS.this, SendSms.class);
+                startActivity(i);
+            } else if (numPontos == 0) {
+                Toast.makeText(MapSMS.this, "Select one point", Toast.LENGTH_SHORT).show();
+            } else if (numPontos > 1)
+                Toast.makeText(MapSMS.this, "Select ONLY one point", Toast.LENGTH_SHORT).show();
 
-            }
         });
 
         MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);

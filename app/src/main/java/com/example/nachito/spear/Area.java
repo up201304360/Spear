@@ -86,64 +86,54 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
 
 
-            done.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    doneClicked = true;
-                    if (markerPoints.size() <= 2) {
-                        if (imc.selectedvehicle == null) {
+            done.setOnClickListener(v -> {
+                doneClicked = true;
+                if (markerPoints.size() <= 2) {
+                    if (imc.selectedvehicle == null) {
 
-                            System.out.println("No vehicles");
-                            doneClicked=false;
+                        System.out.println("No vehicles");
+                        doneClicked=false;
 
-                        } else {
-                            Go(p);
-                        }
-
-
-                    } else if (markerPoints.size() > 2) {
-
-                        drawArea();
-
+                    } else {
+                        Go(p);
                     }
+
+
+                } else if (markerPoints.size() > 2) {
+
+                    drawArea();
+
                 }
             });
 
         }
 
-        erase.setOnClickListener(new View.OnClickListener() {
+        erase.setOnClickListener(v -> {
+
+            for (int i = 0; i < markerPoints.size(); i++) {
+                lineMarker.remove(map);
 
 
-            @Override
-            public void onClick(View v) {
+                map.invalidate();
+            }
+            markerPoints.clear();
 
-                for (int i = 0; i < markerPoints.size(); i++) {
-                    lineMarker.remove(map);
+            if (polyline != null)
+                polyline.setPoints(markerPoints);
+            if (circle != null)
+                circle.setPoints(markerPoints);
+            map.getOverlays().clear();
 
-
-                    map.invalidate();
-                }
-                markerPoints.clear();
-
-                if (polyline != null)
-                    polyline.setPoints(markerPoints);
-                if (circle != null)
-                    circle.setPoints(markerPoints);
-                map.getOverlays().clear();
-
-                if(doneClicked) {
-                    trans.setVisibility(View.INVISIBLE);
-                    doneClicked=false;
-
-                }
-                trans.setVisibility(View.VISIBLE);
-
-
-
-
-
+            if(doneClicked) {
+                trans.setVisibility(View.INVISIBLE);
+                doneClicked=false;
 
             }
+            trans.setVisibility(View.VISIBLE);
+
+
+
+
 
 
         });
@@ -202,7 +192,6 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
 
         for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
 
-//FollowPath
             area2 = new Goto();
             double lat = Math.toRadians(coord.latitudeDegs);
             double lon = Math.toRadians(coord.longitudeDegs);

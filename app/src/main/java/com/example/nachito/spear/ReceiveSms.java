@@ -7,19 +7,23 @@ import android.os.Bundle;
 import android.telephony.SmsMessage;
 
 /**
+ *
  * Created by ines on 10/4/17.
  */
 
 public class ReceiveSms extends BroadcastReceiver {
 
- String[] vehicleNumber;
+    String[] vehicleNumber;
     private static SmsListener mListener;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle data  = intent.getExtras();
 
-        Object[] pdus = (Object[]) data.get("pdus");
+        Object[] pdus = new Object[0];
+        if (data != null) {
+            pdus = (Object[]) data.get("pdus");
+        }
 
         assert pdus != null;
         for (Object pdu : pdus) {
@@ -32,7 +36,7 @@ public class ReceiveSms extends BroadcastReceiver {
             vehicleNumber = context.getResources().getStringArray(R.array.phonenumbers);
             for (String aVehicleNumber : vehicleNumber) {
 
-               if (aVehicleNumber.contains(sender)) {
+                if (aVehicleNumber.contains(sender)) {
 
                     if (messageBody != null)
                         mListener.messageReceived(messageBody);

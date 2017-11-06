@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
+ *
  * Created by nachito on 17/05/17.
  */
 
@@ -35,7 +36,7 @@ public class Decelerate extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int actionType = event.getAction();
-this.setBackgroundColor(pressed_color);
+        this.setBackgroundColor(pressed_color);
         if (listener != null)
             listener.dec();
 
@@ -47,7 +48,7 @@ this.setBackgroundColor(pressed_color);
 
     public void release(){
 
-this.setBackgroundColor(color);
+        this.setBackgroundColor(color);
         if (listener != null) {
             listener.OnReleaseDec();
         }

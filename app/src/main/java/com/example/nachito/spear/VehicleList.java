@@ -14,13 +14,14 @@ import pt.lsts.imc.VehicleState;
 import pt.lsts.imc.net.Consume;
 
 /**
+ *
  * Created by nachito on 26/03/17.
  */
 
 public class VehicleList {
-     final LinkedHashMap< String, Pair<Date, VehicleState>> connectedVehicles = new LinkedHashMap<>();
-     final LinkedHashMap<String, Pair<Date, String>> hashMapTime = new LinkedHashMap<>();
-    LinkedHashSet<String> withoutRepetitions;
+    private final LinkedHashMap< String, Pair<Date, VehicleState>> connectedVehicles = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Pair<Date, String>> hashMapTime = new LinkedHashMap<>();
+    private LinkedHashSet<String> withoutRepetitions;
 
     @Consume
     public void vehicle(VehicleState msg) {
@@ -35,7 +36,7 @@ public class VehicleList {
     }
 
 
-    public List<VehicleState> connectedVehicles(){
+    List<VehicleState> connectedVehicles(){
 
         ArrayList<VehicleState> ligados = new ArrayList<>();
         Date connectedTime = new Date(System.currentTimeMillis()-5000);
@@ -49,38 +50,38 @@ public class VehicleList {
         return ligados;
     }
 
-public LinkedHashSet<String> stillConnected(){
-    ArrayList<String> ligados = new ArrayList<>();
-    Date connectedTime = new Date(System.currentTimeMillis()-5000);
+    LinkedHashSet<String> stillConnected(){
+        ArrayList<String> ligados = new ArrayList<>();
+        Date connectedTime = new Date(System.currentTimeMillis()-5000);
 
-    synchronized (hashMapTime) {
-
-
-    for(Map.Entry<String, Pair<Date, String>> entry : hashMapTime.entrySet()) {
-        if (entry.getValue().first.after(connectedTime))
-
-            ligados.add(entry.getValue().second);
+        synchronized (hashMapTime) {
 
 
-         withoutRepetitions = new LinkedHashSet<>();
+            for(Map.Entry<String, Pair<Date, String>> entry : hashMapTime.entrySet()) {
+                if (entry.getValue().first.after(connectedTime))
 
-        Iterator< String> it = ligados.iterator();
+                    ligados.add(entry.getValue().second);
 
-        while(it.hasNext()) {
-             String val = it.next();
-            if (withoutRepetitions.contains(val)) {
-                it.remove();
+
+                withoutRepetitions = new LinkedHashSet<>();
+
+                Iterator< String> it = ligados.iterator();
+
+                while(it.hasNext()) {
+                    String val = it.next();
+                    if (withoutRepetitions.contains(val)) {
+                        it.remove();
+                    }
+                    else
+                        withoutRepetitions.add(val);
+                }
+
             }
-            else
-                withoutRepetitions.add(val);
+
+
         }
-
+        return withoutRepetitions;
     }
-
-
-}
-    return withoutRepetitions;
-}
 }
 
 

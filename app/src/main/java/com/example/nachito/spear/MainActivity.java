@@ -3,8 +3,6 @@ package com.example.nachito.spear;
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -132,7 +130,7 @@ public class MainActivity extends AppCompatActivity
     Button teleop;
     @ViewById(R.id.stop)
     Button stop;
-     CompassOverlay mCompassOverlay;
+    CompassOverlay mCompassOverlay;
     LocationManager locationManager;
     IMapController mapController;
     OverlayItem lastPosition = null;
@@ -258,7 +256,7 @@ public class MainActivity extends AppCompatActivity
 
         /* location manager */
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-         updateHandler = new OSMHandler(this);
+        updateHandler = new OSMHandler(this);
 
         for (String provider : locationManager.getProviders(true)) {
             location = locationManager.getLastKnownLocation(provider);
@@ -278,7 +276,7 @@ public class MainActivity extends AppCompatActivity
         mapController.setCenter(new GeoPoint(location));
 
 
-       scaleBarOverlay = new ScaleBarOverlay( map);
+        scaleBarOverlay = new ScaleBarOverlay( map);
         List<Overlay> overlays = map.getOverlays();
 
         overlays.add(scaleBarOverlay);
@@ -287,42 +285,42 @@ public class MainActivity extends AppCompatActivity
         ReceiveSms.bindListener(new SmsListener() {
             @Override
             public void messageReceived(String messageText) {
-                  Pattern p = Pattern.compile("\\((.)\\) \\((.*)\\) (.*) / (.*), (.*) / .*");
+                Pattern p = Pattern.compile(getString(R.string.patternMessageReceived));
 
 
 
-                    Matcher matcher = p.matcher(messageText);
-                    if (!matcher.matches()) {
-                        Logger.getLogger(getClass().getName()).log(Level.WARNING, "SMS message not understood: " + messageText);
+                Matcher matcher = p.matcher(messageText);
+                if (!matcher.matches()) {
+                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "SMS message not understood: " + messageText);
 
-                        return;
-                    }
-                    String type = matcher.group(1);
-                    String vehicle = matcher.group(2);
-                    String timeOfDay = matcher.group(3);
-                    String latMins = matcher.group(4);
-                    String lonMins = matcher.group(5);
-                    GregorianCalendar date = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-                    String[] timeParts = timeOfDay.split(":");
-                    date.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeParts[0]));
-                    date.set(Calendar.MINUTE, Integer.parseInt(timeParts[1]));
-                    date.set(Calendar.SECOND, Integer.parseInt(timeParts[2]));
-                    String latParts[] = latMins.split(" ");
-                    String lonParts[] = lonMins.split(" ");
+                    return;
+                }
+                String type = matcher.group(1);
+                String vehicle = matcher.group(2);
+                String timeOfDay = matcher.group(3);
+                String latMins = matcher.group(4);
+                String lonMins = matcher.group(5);
+                GregorianCalendar date = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+                String[] timeParts = timeOfDay.split(":");
+                date.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeParts[0]));
+                date.set(Calendar.MINUTE, Integer.parseInt(timeParts[1]));
+                date.set(Calendar.SECOND, Integer.parseInt(timeParts[2]));
+                String latParts[] = latMins.split(" ");
+                String lonParts[] = lonMins.split(" ");
 
-                    double lat = Double.parseDouble(latParts[0]);
-                    lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 60.0 : -Double.parseDouble(latParts[1]) / 60.0;
-                    double lon = Double.parseDouble(lonParts[0]);
-                    lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
+                double lat = Double.parseDouble(latParts[0]);
+                lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 60.0 : -Double.parseDouble(latParts[1]) / 60.0;
+                double lon = Double.parseDouble(lonParts[0]);
+                lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
 
-                    int source = IMCDefinition.getInstance().getResolver().resolve(vehicle);
+                int source = IMCDefinition.getInstance().getResolver().resolve(vehicle);
 
-                    if (source == -1) {
-                        System.err.println("Received report from unknown system name: " + vehicle);
-                        return;
-                    }
+                if (source == -1) {
+                    System.err.println("Received report from unknown system name: " + vehicle);
+                    return;
+                }
 
-                       GeoPoint coordSMS= new GeoPoint(lat, lon);
+                GeoPoint coordSMS= new GeoPoint(lat, lon);
 
                 System.out.println(coordSMS + " coordinates from sms");
 
@@ -395,6 +393,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onPause() {
+
         super.onPause();
     }
 
@@ -457,188 +456,143 @@ public class MainActivity extends AppCompatActivity
     @UiThread
     public void init() {
 
-        teleop.setOnClickListener(new View.OnClickListener() {
-
-            public void onClick(View v) {
-                if (imc.selectedvehicle == null) {
-                    warning();
-                } else {
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-                    alertDialogBuilder
-                            .setMessage("Connect to " + imc.selectedvehicle + "?")
-                            .setCancelable(false)
-                            .setPositiveButton("Yes", new OnClickListener() {
-
-                                public void onClick(DialogInterface dialog, int id) {
-                                    if (teleop2 == null)
-                                        teleop2 = new TeleOperation();
-                                    teleop2.setImc(imc);
-                                    Joystick joystick = (Joystick) findViewById(R.id.joystick);
-                                    joystick.setOnJoystickMovedListener(teleop2);
-                                    getSupportFragmentManager().beginTransaction()
-                                            .replace(R.id.activity_maps, teleop2).addToBackStack("tag").commit();
-                                    dive.setVisibility(View.INVISIBLE);
-                                    teleop.setVisibility(View.INVISIBLE);
-                                    start.setVisibility(View.INVISIBLE);
-                                    near.setVisibility(View.INVISIBLE);
-                                    keep.setVisibility(View.INVISIBLE);
-                                    Accelerate accelerate = (Accelerate) findViewById(R.id.accelerate);
-                                    accelerate.setVisibility(View.VISIBLE);
-                                    accelerate.setOnAccelerate(teleop2);
-                                    Decelerate decelerate = (Decelerate) findViewById(R.id.decelerate);
-                                    decelerate.setVisibility(View.VISIBLE);
-                                    decelerate.setOnDec(teleop2);
-                                    stop.setVisibility(View.INVISIBLE);
-                                    StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
-                                    stopTeleop.setVisibility(View.VISIBLE);
-                                    stopTeleop.setOnStop(teleop2);
-                                    timer.start();
-                                    joystick.setVisibility(View.VISIBLE);
-                                    PlanControl pc = new PlanControl();
-                                    Teleoperation teleoperationMsg = new Teleoperation();
-                                    teleoperationMsg.setCustom("src=" + imc.getLocalId());
-                                    pc.setArg(teleoperationMsg);
-                                    pc.setType(PlanControl.TYPE.REQUEST);
-                                    pc.setOp(PlanControl.OP.START);
-                                    pc.setFlags(0);
-                                    pc.setRequestId(0);
-                                    pc.setPlanId("SpearTeleoperation-" + imc.selectedvehicle);
-                                    imc.sendMessage(pc);
-                                    setEstadoVeiculo(" ");
-                                }
-                            })
-                            .setNegativeButton("No", new OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-
-                                    dialog.cancel();
-                                }
-                            });
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
-                }
-
+        teleop.setOnClickListener(v -> {
+            if (imc.selectedvehicle == null) {
+                warning();
+            } else {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                alertDialogBuilder
+                        .setMessage("Connect to " + imc.selectedvehicle + "?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", (dialog, id) -> {
+                            if (teleop2 == null)
+                                teleop2 = new TeleOperation();
+                            teleop2.setImc(imc);
+                            Joystick joystick = (Joystick) findViewById(R.id.joystick);
+                            joystick.setOnJoystickMovedListener(teleop2);
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.activity_maps, teleop2).addToBackStack("tag").commit();
+                            dive.setVisibility(View.INVISIBLE);
+                            teleop.setVisibility(View.INVISIBLE);
+                            start.setVisibility(View.INVISIBLE);
+                            near.setVisibility(View.INVISIBLE);
+                            keep.setVisibility(View.INVISIBLE);
+                            Accelerate accelerate = (Accelerate) findViewById(R.id.accelerate);
+                            accelerate.setVisibility(View.VISIBLE);
+                            accelerate.setOnAccelerate(teleop2);
+                            Decelerate decelerate = (Decelerate) findViewById(R.id.decelerate);
+                            decelerate.setVisibility(View.VISIBLE);
+                            decelerate.setOnDec(teleop2);
+                            stop.setVisibility(View.INVISIBLE);
+                            StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
+                            stopTeleop.setVisibility(View.VISIBLE);
+                            stopTeleop.setOnStop(teleop2);
+                            joystick.setVisibility(View.VISIBLE);
+                            PlanControl pc = new PlanControl();
+                            Teleoperation teleoperationMsg = new Teleoperation();
+                            teleoperationMsg.setCustom("src=" + imc.getLocalId());
+                            pc.setArg(teleoperationMsg);
+                            pc.setType(PlanControl.TYPE.REQUEST);
+                            pc.setOp(PlanControl.OP.START);
+                            pc.setFlags(0);
+                            pc.setRequestId(0);
+                            pc.setPlanId("SpearTeleoperation-" + imc.selectedvehicle);
+                            imc.sendMessage(pc);
+                            setEstadoVeiculo(" ");
+                        })
+                        .setNegativeButton("No", (dialog, id) -> dialog.cancel());
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
             }
+
         });
 
 
-        start.setOnClickListener(new View.OnClickListener() {
+        start.setOnClickListener(v -> {
+            start.setBackgroundColor(pressed_color);
 
-            @Override
-            public void onClick(View v) {
-                start.setBackgroundColor(pressed_color);
+            if (imc.selectedvehicle == null) {
+                warning();
+                start.setBackgroundColor(color);
 
-                if (imc.selectedvehicle == null) {
-                    warning();
-                    start.setBackgroundColor(color);
-
-                } else {
-                    requestPlans();
-                    start.setBackgroundColor(color);
-
-                }
+            } else {
+                requestPlans();
+                start.setBackgroundColor(color);
 
             }
 
         });
 
 
-        dive.setOnClickListener(new View.OnClickListener() {
+        dive.setOnClickListener(v -> {
+            dive.setBackgroundColor(pressed_color);
 
-            @Override
-            public void onClick(View v) {
-                dive.setBackgroundColor(pressed_color);
+            if (imc.selectedvehicle == null) {
+                warning();
+                dive.setBackgroundColor(color);
 
-                if (imc.selectedvehicle == null) {
-                    warning();
-                    dive.setBackgroundColor(color);
+            } else {
+                dive();
+                dive.setBackgroundColor(color);
 
-                } else {
-                    dive();
-                    dive.setBackgroundColor(color);
-
-                }
             }
         });
 
-        near.setOnClickListener(new View.OnClickListener() {
+        near.setOnClickListener(v -> {
+            near.setBackgroundColor(pressed_color);
 
-            @Override
-            public void onClick(View v) {
-                near.setBackgroundColor(pressed_color);
+            if (imc.selectedvehicle == null) {
+                warning();
+                near.setBackgroundColor(color);
 
-                if (imc.selectedvehicle == null) {
-                    warning();
-                    near.setBackgroundColor(color);
-
-                } else {
-                    near();
-                    near.setBackgroundColor(color);
-
-                }
+            } else {
+                near();
+                near.setBackgroundColor(color);
 
             }
 
         });
 
-        stop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        stop.setOnClickListener(v -> {
 
-                if (imc.selectedvehicle == null) {
-                    warning();
-                } else {
-                    stopPlan();
-                   updateMap();
-                    listaOutrosVeiculos.clear();
+            if (imc.selectedvehicle == null) {
+                warning();
+            } else {
+                stopPlan();
+                updateMap();
+                listaOutrosVeiculos.clear();
 
 
-                }
             }
-
-
         });
 
-        keep.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                keep.setBackgroundColor(pressed_color);
+        keep.setOnClickListener(v -> {
+            keep.setBackgroundColor(pressed_color);
 
-                if (imc.selectedvehicle == null) {
-                    warning();
-                    keep.setBackgroundColor(color);
+            if (imc.selectedvehicle == null) {
+                warning();
+                keep.setBackgroundColor(color);
 
-                } else {
-                    keepStation();
-                    keep.setBackgroundColor(color);
-                }
+            } else {
+                keepStation();
+                keep.setBackgroundColor(color);
             }
         });
 
 
 
-        centrarLoc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(posicao!=null)
+        centrarLoc.setOnClickListener(v -> {
+            if(posicao!=null)
                 mapController.setCenter(posicao);
-                else
-                    Toast.makeText(context, "Turn Location on", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(context, "Turn Location on", Toast.LENGTH_SHORT).show();
 
-        }
         });
 
 
-       minusZoom.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-mapController.zoomOut();           }
-       });
+        minusZoom.setOnClickListener(v -> mapController.zoomOut());
 
-        plusZoom.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mapController.zoomIn();           }
-        });
+        plusZoom.setOnClickListener(v -> mapController.zoomIn());
     }
 
 
@@ -668,7 +622,6 @@ mapController.zoomOut();           }
             map.getOverlayManager().add(mCompassOverlay);
         } else if (line != null) {
             line.finish();
-
             trans.setVisibility(View.INVISIBLE);
             bottom.setVisibility(View.VISIBLE);
 
@@ -680,7 +633,6 @@ mapController.zoomOut();           }
 
         } else if (area != null) {
             area.finish();
-
             done.setVisibility(View.INVISIBLE);
             erase.setVisibility(View.INVISIBLE);
             minusZoom.setVisibility(View.INVISIBLE);
@@ -699,7 +651,7 @@ mapController.zoomOut();           }
 
             imc.register(this);
             map.setMultiTouchControls(true);
-      } else
+        } else
             finish();
     }
 
@@ -741,54 +693,48 @@ mapController.zoomOut();           }
             alertDialogBuilder
                     .setMessage("Area or Line?")
                     .setCancelable(true)
-                    .setPositiveButton("Line", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Line", (dialog, which) -> {
+                        if (area != null)
+                            area.finish();
+                        line = new Line();
+                        bottom.setVisibility(View.INVISIBLE);
+                        done.setClickable(true);
+                        done.setOnClickListener(line);
+                        erase.setClickable(true);
+                        erase.setOnClickListener(line);
+                        trans.setonPress(line);
+                        trans.setVisibility(View.VISIBLE);
+                        Toast.makeText(MainActivity.this, "Click on the map to choose a point to follow", Toast.LENGTH_LONG).show();
+                        line.setImc(imc);
+                        minusZoom.setVisibility(View.VISIBLE);
+                        plusZoom.setVisibility(View.VISIBLE);
+                        done.setVisibility(View.VISIBLE);
+                        erase.setVisibility(View.VISIBLE);
+                        centrarLoc.setVisibility(View.INVISIBLE);
 
-                        public void onClick(DialogInterface dialog, int which) {
-                            if (area != null)
-                                area.finish();
-
-                            line = new Line();
-                            bottom.setVisibility(View.INVISIBLE);
-                            done.setClickable(true);
-                            done.setOnClickListener(line);
-                            erase.setClickable(true);
-                            erase.setOnClickListener(line);
-                            trans.setonPress(line);
-                            trans.setVisibility(View.VISIBLE);
-                          Toast.makeText(MainActivity.this, "Click on the map to choose a point to follow", Toast.LENGTH_LONG).show();
-                            line.setImc(imc);
-                            minusZoom.setVisibility(View.VISIBLE);
-                            plusZoom.setVisibility(View.VISIBLE);
-                            done.setVisibility(View.VISIBLE);
-                            erase.setVisibility(View.VISIBLE);
-                            centrarLoc.setVisibility(View.INVISIBLE);
-
-                        }
                     })
-                    .setNegativeButton("Area", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            if (line != null)
-                                line.finish();
-                            Toast.makeText(MainActivity.this, "Click on the map to choose an area to follow", Toast.LENGTH_LONG).show();
-                            bottom.setVisibility(View.INVISIBLE);
-                            area = new Area();
-                            minusZoom.setVisibility(View.VISIBLE);
-                            plusZoom.setVisibility(View.VISIBLE);
-                            done.setVisibility(View.VISIBLE);
-                            erase.setVisibility(View.VISIBLE);
+                    .setNegativeButton("Area", (dialog, id1) -> {
+                        if (line != null)
+                            line.finish();
+                        Toast.makeText(MainActivity.this, "Click on the map to choose an area to follow", Toast.LENGTH_LONG).show();
+                        bottom.setVisibility(View.INVISIBLE);
+                        area = new Area();
+                        minusZoom.setVisibility(View.VISIBLE);
+                        plusZoom.setVisibility(View.VISIBLE);
+                        done.setVisibility(View.VISIBLE);
+                        erase.setVisibility(View.VISIBLE);
 
-                            done.setClickable(true);
-                            done.setOnClickListener(area);
-                            erase.setClickable(true);
-                            centrarLoc.setVisibility(View.INVISIBLE);
-                            map.invalidate();
+                        done.setClickable(true);
+                        done.setOnClickListener(area);
+                        erase.setClickable(true);
+                        centrarLoc.setVisibility(View.INVISIBLE);
+                        map.invalidate();
 
-                            erase.setOnClickListener(area);
-                            trans.setonPress(area);
-                            trans.setVisibility(View.VISIBLE);
-                            area.setImc(imc);
+                        erase.setOnClickListener(area);
+                        trans.setonPress(area);
+                        trans.setVisibility(View.VISIBLE);
+                        area.setImc(imc);
 
-                        }
                     });
             AlertDialog alertDialog = alertDialogBuilder.create();
             alertDialog.show();
@@ -828,7 +774,7 @@ mapController.zoomOut();           }
     public void onLocationChanged(Location location) {
         latitude = Math.toRadians(location.getLatitude());
         longitude = Math.toRadians(location.getLongitude());
-       posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
+        posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
 
         final ArrayList<OverlayItem> items = new ArrayList<>();
 
@@ -836,7 +782,7 @@ mapController.zoomOut();           }
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker);
 
-       Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
+        Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
         Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
         ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
         map.getOverlays().add(markersOverlay);
@@ -875,14 +821,11 @@ mapController.zoomOut();           }
 
             if(imc.selectedvehicle!=null){
                 if(!(imc.stillConnected().contains(imc.selectedvehicle)))
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    runOnUiThread(() -> {
 
-                            servicebar.setText(" ");
-                            velocity.setText(" ");
+                        servicebar.setText(" ");
+                        velocity.setText(" ");
 
-                        }
                     });
             }
             if (imc.stillConnected().contains(vname)) {
@@ -891,11 +834,11 @@ mapController.zoomOut();           }
                 final ArrayList<OverlayItem> items2 = new ArrayList<>();
 
                 if (!vname.equals(imc.getSelectedvehicle()))
-                listaOutrosVeiculos.add(new GeoPoint(lld[0], lld[1]));
+                    listaOutrosVeiculos.add(new GeoPoint(lld[0], lld[1]));
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
                 marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
                 items2.add(marker2);
-                 orientation2 = (float) state.getPsi();
+                orientation2 = (float) state.getPsi();
                 int ori2 = (int) Math.round(Math.toDegrees(orientation2));
                 ori2 = ori2 - 180;
 
@@ -912,38 +855,32 @@ mapController.zoomOut();           }
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     vel = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     dept = df2.format(state.getDepth());
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            velocity.setText("Speed:" + " " + vel + " " + "m/s" + "\n" + "Depth:" + " " + dept + "\n" +  estadoVeiculo + "\n");
-
-                        }
-                    });
+                    runOnUiThread(() -> velocity.setText("Speed:" + " " + vel + " " + "m/s" + "\n" + "Depth:" + " " + dept + "\n" +  estadoVeiculo + "\n"));
 
                 }
 
 
-               Bitmap target = RotateMyBitmap(source2, ori2);
+                Bitmap target = RotateMyBitmap(source2, ori2);
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
-               ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
+                ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
                 map.getOverlays().add(markersOverlay2);
             }
         }
     }
 
-public static ArrayList<GeoPoint> drawPosicaoOutrosVeiculos(){
-    return listaOutrosVeiculos;
-}
+    public static ArrayList<GeoPoint> drawPosicaoOutrosVeiculos(){
+        return listaOutrosVeiculos;
+    }
 
-public  static float orientation(){
-    return orientation2;
+    public  static float orientation(){
+        return orientation2;
 
-}
+    }
     public void zoomVehicle(final EstimatedState state) {
         if (imc.getSelectedvehicle().equals(state.getSourceName())) {
             double[] lld = WGS84Utilities.toLatLonDepth(state);
 
-           GeoPoint posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
+            GeoPoint posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
             mapController.setZoom(16);
             mapController.setCenter(posicaoVeiculo2);
 
@@ -961,7 +898,7 @@ public  static float orientation(){
     @Periodic
     public void updateState() {
         map.setMultiTouchControls(true);
-         stateList = new ArrayList<>();
+        stateList = new ArrayList<>();
         states = imc.connectedVehicles();
         if (imc.connectedVehicles() == null)
             warning();
@@ -1008,7 +945,7 @@ public  static float orientation(){
                 }
             }
 
-            }
+        }
     }
     public static void  setEstadoVeiculo(String e){
 
@@ -1021,20 +958,12 @@ public  static float orientation(){
         map.getOverlays().clear();
         listaOutrosVeiculos.clear();
 
-//TODO escala mais peq
-
-        map.getOverlayManager().add(mCompassOverlay);
-        mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
-
-        mCompassOverlay.enableCompass();
-
-        scaleBarOverlay = new ScaleBarOverlay( map);
-        map.getOverlayManager().add(scaleBarOverlay);
-
-        scaleBarOverlay.enableScaleBar();
-        scaleBarOverlay.setAlignRight(true);
-        scaleBarOverlay.setScaleBarOffset(40,30);
-
+//TODO
+        if(!(area!=null || line !=null)){
+            //so desenhar quando nao esta na area ou no line
+            // drawWifiSignal();
+            // drawCompass();
+            System.out.println("--------");}
 
 
 
@@ -1052,6 +981,7 @@ public  static float orientation(){
             map.getOverlays().add(nodeMarkerWaypoints);
             if(mList!=null)
                 callWaypoint(mList);
+
 
         }
         if(SendSms.pontoSMS()!=null){
@@ -1100,6 +1030,21 @@ public  static float orientation(){
 
 
     }
+
+
+   /* public void drawCompass(){
+
+
+            map.getOverlayManager().add(mCompassOverlay);
+
+
+         map.getOverlayManager().add(scaleBarOverlay);
+
+            scaleBarOverlay.setAlignRight(true);
+            scaleBarOverlay.setScaleBarOffset(40, 30);
+
+
+    }*/
 
     public void dive() {
         Loiter dive = new Loiter();
@@ -1193,7 +1138,6 @@ public  static float orientation(){
 
     }
 
-//TODO velocity parado
     public void stopPlan() {
         PlanControl pc = new PlanControl();
         pc.setType(PlanControl.TYPE.REQUEST);
@@ -1203,6 +1147,7 @@ public  static float orientation(){
         pc.setPlanId("stopPlan-" + imc.selectedvehicle);
         imc.sendMessage(pc);
         setEstadoVeiculo("Plan Stopped");
+
         previous="S";
         if(nodeMarkerWaypoints!=null)
             map.getOverlays().remove(nodeMarkerWaypoints);
@@ -1211,25 +1156,19 @@ public  static float orientation(){
         map.invalidate();
         map.getOverlays().clear();
         mList.clear();
-        updateMap();
 
         //TODO
         if (line != null) {
             map.getOverlays().remove(lineMarker);
-            map.invalidate();
-            line = null;
-            updateMap();
             markerPoints.clear();
+            //   line.finish();
+            line = null;
 
-            imc.unregister(this);
         } else if (area != null) {
             map.getOverlays().remove(lineMarker);
-            map.invalidate();
             markerPoints.clear();
-
+            // area.finish();
             area = null;
-            updateMap();
-            imc.unregister(this);
 
         }
 
@@ -1247,7 +1186,6 @@ public  static float orientation(){
 
     @Override
     public void onStart() {
-        timer.start();
         super.onStart();
     }
 
@@ -1271,19 +1209,22 @@ public  static float orientation(){
     }
 
     //Set a timer to check if is connected to a Wifi Network
-    TimerWifi timer = new TimerWifi(new Runnable() {
-        @Override
-        public void run() {
-            // Check if is connected to a Wifi Network, if not popups a informative toast
+    public void drawWifiSignal() {
+        // Check if is connected to a Wifi Network, if not popups a informative toast
+        runOnUiThread(() -> {
             if (!isConnectedToWifi(MainActivity.this)) {
-                wifi.setVisibility(View.INVISIBLE);
-                nowifi.setVisibility(View.VISIBLE);
+                if(servicebar!=null){
+                    wifi.setVisibility(View.INVISIBLE);
+                    nowifi.setVisibility(View.VISIBLE);}
             } else {
-                nowifi.setVisibility(View.INVISIBLE);
-                wifi.setVisibility(View.VISIBLE);
+                if(servicebar!=null){
+                    nowifi.setVisibility(View.INVISIBLE);
+                    wifi.setVisibility(View.VISIBLE);}
             }
-        }
-    }, 3000);
+        });
+    }
+
+
 
 
     public void requestPlans() {
@@ -1303,7 +1244,7 @@ public  static float orientation(){
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         if (v.getId() == R.id.startplan) {
 
-         planList = new ArrayList<>();
+            planList = new ArrayList<>();
 
             if (imc.allPlans() == null) {
                 Toast.makeText(this, "No plans available", Toast.LENGTH_SHORT).show();
@@ -1323,7 +1264,7 @@ public  static float orientation(){
         } else if (v.getId() == R.id.servicebar) {
 
 
-           vehicleList = new ArrayList<>();
+            vehicleList = new ArrayList<>();
             mList = new ArrayList<>();
 
 
@@ -1363,25 +1304,22 @@ public  static float orientation(){
             imc.sendMessage(pc);
             setEstadoVeiculo("Plan:" + pc.getPlanId());
             final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (imc.allManeuvers() == null) {
-                        Toast.makeText(MainActivity.this, "No plan specification available", Toast.LENGTH_SHORT).show();
-                    } else {
+            handler.postDelayed(() -> {
+                if (imc.allManeuvers() == null) {
+                    Toast.makeText(MainActivity.this, "No plan specification available", Toast.LENGTH_SHORT).show();
+                } else {
 
 
-                        for (int i = 0; i < imc.allManeuvers().size(); i++) {
+                    for (int i = 0; i < imc.allManeuvers().size(); i++) {
 
-                            mList.addAll(imc.allManeuvers());
-
-                        }
-                        callWaypoint(mList);
+                        mList.addAll(imc.allManeuvers());
 
                     }
+                    callWaypoint(mList);
+
                 }
-                },3000);
-            }
+            },3000);
+        }
 
 
         else {
@@ -1446,4 +1384,6 @@ public  static float orientation(){
     }
 
 
+
 }
+

@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
+ *
  * Created by ines on 5/18/17.
  */
 
@@ -52,7 +53,7 @@ public class StopTeleop  extends View {
 
     public void release() {
 
-this.setBackgroundColor(color);
+        this.setBackgroundColor(color);
         if (listener != null) {
             listener.OnReleaseStop();
         }

@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
+ *
  * Created by nachito on 26/03/17.
  */
 import android.os.Handler;
@@ -20,7 +21,6 @@ public class Joystick extends View {
     // Private Members
     // =========================================
 
-    private final String TAG = "JoystickView";
     private Paint circlePaint;
     private Paint handlePaint;
     private double touchX, touchY;
@@ -132,6 +132,7 @@ public class Joystick extends View {
     public boolean onTouchEvent(MotionEvent event) {
         int actionType = event.getAction();
 
+        String TAG = "JoystickView";
         if (actionType == MotionEvent.ACTION_MOVE) {
             int px = getMeasuredWidth() / 2;
             int py = getMeasuredHeight() / 2;
@@ -170,13 +171,10 @@ public class Joystick extends View {
         final double intervalsY = (0 - touchY) / numberOfFrames;
 
         for (int i = 0; i < numberOfFrames; i++) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    touchX += intervalsX;
-                    touchY += intervalsY;
-                    invalidate();
-                }
+            handler.postDelayed(() -> {
+                touchX += intervalsX;
+                touchY += intervalsY;
+                invalidate();
             }, i * 40);
         }
 

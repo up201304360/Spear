@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
+ *
  * Created by nachito on 17/05/17.
  */
 
@@ -40,7 +41,7 @@ public class Accelerate  extends View {
 
         if (listener != null)
             listener.accelerate();
-            invalidate();
+        invalidate();
         if(actionType == MotionEvent.ACTION_UP) {
             release();}
         return true;

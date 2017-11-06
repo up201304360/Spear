@@ -19,6 +19,7 @@ import pt.lsts.util.PlanUtilities;
 
 
 /**
+ *
  * Created by ines on 8/14/17.
  */
 public class Line extends MainActivity implements  PressListener {
@@ -71,62 +72,53 @@ public class Line extends MainActivity implements  PressListener {
             done.setVisibility(View.VISIBLE);
             erase.setVisibility(View.VISIBLE);
 
-            done.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    doneClicked = true;
-                    if (markerPoints.size() <= 2) {
-                        if (imc.selectedvehicle == null) {
+            done.setOnClickListener(v -> {
+                doneClicked = true;
+                if (markerPoints.size() <= 2) {
+                    if (imc.selectedvehicle == null) {
 
-                            System.out.println("No vehicles");
-                        } else {
-                            Go(clickedLocation);
-
-                        }
-
-
-                    } else if (markerPoints.size() > 2) {
-
-                        GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
-                        GeoPoint dest = markerPoints.get(markerPoints.size() - 1);
-                        drawLine(origin, dest);
-                        trans.setVisibility(View.INVISIBLE);
+                        System.out.println("No vehicles");
+                    } else {
+                        Go(clickedLocation);
 
                     }
+
+
+                } else if (markerPoints.size() > 2) {
+
+                    GeoPoint origin = markerPoints.get(markerPoints.size() - 2);
+                    GeoPoint dest = markerPoints.get(markerPoints.size() - 1);
+                    drawLine(origin, dest);
+                    trans.setVisibility(View.INVISIBLE);
+
                 }
             });
 
         }
 
-        erase.setOnClickListener(new View.OnClickListener() {
+        erase.setOnClickListener(v -> {
+
+            for (int i = 0; i < markerPoints.size(); i++) {
+                lineMarker.remove(map);
 
 
-            @Override
-            public void onClick(View v) {
-
-                for (int i = 0; i < markerPoints.size(); i++) {
-                    lineMarker.remove(map);
+                map.invalidate();
+            }
+            markerPoints.clear();
 
 
-                    map.invalidate();
-                }
-                markerPoints.clear();
+            if (polyline != null)
+                polyline.setPoints(markerPoints);
+            if(circle!=null)
+                circle.setPoints(markerPoints);
+            map.getOverlays().clear();
 
-
-                if (polyline != null)
-                    polyline.setPoints(markerPoints);
-                if(circle!=null)
-                    circle.setPoints(markerPoints);
-                map.getOverlays().clear();
-
-                if(doneClicked) {
-                    trans.setVisibility(View.INVISIBLE);
-                    doneClicked=false;
-
-                }
-                trans.setVisibility(View.VISIBLE);
+            if(doneClicked) {
+                trans.setVisibility(View.INVISIBLE);
+                doneClicked=false;
 
             }
+            trans.setVisibility(View.VISIBLE);
 
         });
 
@@ -160,9 +152,8 @@ public class Line extends MainActivity implements  PressListener {
 
     public void followPoints() {
 
-        LinkedHashSet<String> noRepetitions = new LinkedHashSet<String>();
+        LinkedHashSet<String> noRepetitions = new LinkedHashSet<>();
         Iterator<GeoPoint> iterator = markerPoints.iterator();
-        System.out.println("entrei 1 ");
 
         while (iterator.hasNext()) {
             String val = iterator.next().toString();
@@ -171,7 +162,6 @@ public class Line extends MainActivity implements  PressListener {
             } else
                 noRepetitions.add(val);
         }
-        System.out.println("entrei 2 ");
 
         ArrayList<Maneuver> maneuvers = new ArrayList<>();
 
@@ -194,7 +184,6 @@ public class Line extends MainActivity implements  PressListener {
 
 
         }
-        System.out.println("entrei 3 ");
 
         startBehaviour("followPoints" + imc.selectedvehicle, PlanUtilities.createPlan("followPoints" + imc.selectedvehicle, maneuvers.toArray(new Maneuver[0])));
         previous = "M";
