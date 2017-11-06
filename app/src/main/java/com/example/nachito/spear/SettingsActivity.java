@@ -1,15 +1,10 @@
 package com.example.nachito.spear;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.support.v7.app.ActionBar;
+
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
-import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.PreferenceScreen;
 
 /**
  * Created by ines on 5/3/17.

@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion "27.0.0"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.example.nachito.spear"
         minSdkVersion 19
@@ -12,6 +12,30 @@ android {
         multiDexEnabled true
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        pickFirst  'META-INF/INDEX'
+    }
+
+        packagingOptions {
+            exclude 'META-INF/DEPENDENCIES.txt'
+            exclude 'META-INF/LICENSE.txt'
+            exclude 'META-INF/NOTICE.txt'
+            exclude 'META-INF/NOTICE'
+            exclude 'META-INF/LICENSE'
+            exclude 'META-INF/INDEX.LIST'
+            exclude 'META-INF/DEPENDENCIES'
+            exclude 'META-INF/notice.txt'
+            exclude 'META-INF/license.txt'
+            exclude 'META-INF/dependencies.txt'
+            exclude 'META-INF/LGPL2.1'
+        
     }
 
     buildTypes {
@@ -29,9 +53,12 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    compile 'com.android.support:multidex:1.0.1'
+
     compile 'com.android.support:support-annotations:25.3.1'
     compile 'org.androidannotations:androidannotations:4.3.0'
     compile 'com.android.support:design:25.3.1'
@@ -41,8 +68,7 @@ dependencies {
     compile 'com.android.support:support-v4:25.3.1'
     testCompile 'junit:junit:4.12'
     apply plugin: 'com.android.application'
-    apply plugin: 'android-apt'
-    apt 'org.androidannotations:androidannotations:4.3.0'
+    annotationProcessor 'org.androidannotations:androidannotations:4.3.0'
     compile 'org.androidannotations:androidannotations:4.3.0'
     compile 'org.androidannotations:androidannotations-roboguice:4.3.0'
     compile 'com.google.code.gson:gson:2.8.0'
@@ -52,6 +78,7 @@ dependencies {
     compile 'com.android.support:preference-v7:25.3.1'
     compile files('libs/AreaCoverage-v1.2.jar')
     compile files('libs/libimc.jar')
+    compile files('libs/msgsender.jar')
 }
 
 def AAVersion = '3.2'
@@ -68,23 +95,13 @@ buildscript {
 
 
 
-configurations {
-    apt
-}
 
-// Configure the annotation processor and tell it where the manifest and the generated sources are.
-apt {
-    arguments {
-        androidManifestFile variant.outputs[0].processResources.manifestFile
-    }
-}
 
 
 
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    apt "org.androidannotations:androidannotations:$AAVersion"
+    annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
     compile 'org.jetbrains:annotations-java5:15.0'
 }

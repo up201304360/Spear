@@ -8,14 +8,13 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
-import org.osmdroid.views.util.constants.MapViewConstants;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
-import pt.lsts.neptus.messages.listener.Periodic;
+import pt.lsts.imc.def.SpeedUnits;
+import pt.lsts.imc.def.ZUnits;
 import pt.lsts.util.PlanUtilities;
 
 
@@ -184,12 +183,12 @@ public class Line extends MainActivity implements  PressListener {
             follow.setLat(lat);
             follow.setLon(lon);
             follow.setZ(depth);
-            follow.setZUnits(Goto.Z_UNITS.DEPTH);
+            follow.setZUnits(ZUnits.DEPTH);
             follow.setSpeed(speed);
             if (!showrpm) {
-                follow.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+                follow.setSpeedUnits(SpeedUnits.METERS_PS);
             } else {
-                follow.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+                follow.setSpeedUnits(SpeedUnits.RPM);
             }
             maneuvers.add(follow);
 
@@ -211,12 +210,12 @@ public class Line extends MainActivity implements  PressListener {
         go.setLat(lat);
         go.setLon(lon);
         go.setZ(depth);
-        go.setZUnits(Goto.Z_UNITS.DEPTH);
+        go.setZUnits(ZUnits.DEPTH);
         go.setSpeed(speed);
         if (!showrpm) {
-            go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+            go.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
-            go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+            go.setSpeedUnits(SpeedUnits.RPM);
         }
         String planid = "SpearGoto";
         startBehaviour(planid, go);

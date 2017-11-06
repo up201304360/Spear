@@ -89,6 +89,8 @@ import pt.lsts.imc.PlanDB;
 import pt.lsts.imc.StationKeeping;
 import pt.lsts.imc.Teleoperation;
 import pt.lsts.imc.VehicleState;
+import pt.lsts.imc.def.SpeedUnits;
+import pt.lsts.imc.def.ZUnits;
 import pt.lsts.imc.net.Consume;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
@@ -1104,12 +1106,12 @@ public  static float orientation(){
         dive.setLon(lonVeiculo);
         dive.setLat(latVeiculo);
         dive.setZ(depth);
-        dive.setZUnits(Loiter.Z_UNITS.DEPTH);
+        dive.setZUnits(ZUnits.DEPTH);
         dive.setSpeed(speed);
         if (!showrpm) {
-            dive.setSpeedUnits(Loiter.SPEED_UNITS.METERS_PS);
+            dive.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
-            dive.setSpeedUnits(Loiter.SPEED_UNITS.RPM);
+            dive.setSpeedUnits(SpeedUnits.RPM);
         }
         dive.setRadius(radius);
         dive.setDuration(duration);
@@ -1128,14 +1130,14 @@ public  static float orientation(){
         stationKeepingmsg.setLon(lonVeiculo);
         stationKeepingmsg.setSpeed(speed);
         if (!showrpm) {
-            stationKeepingmsg.setSpeedUnits(StationKeeping.SPEED_UNITS.METERS_PS);
+            stationKeepingmsg.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
-            stationKeepingmsg.setSpeedUnits(StationKeeping.SPEED_UNITS.RPM);
+            stationKeepingmsg.setSpeedUnits(SpeedUnits.RPM);
         }
         stationKeepingmsg.setDuration(duration);
         stationKeepingmsg.setRadius(radius);
         stationKeepingmsg.setZ(depth);
-        stationKeepingmsg.setZUnits(StationKeeping.Z_UNITS.DEPTH);
+        stationKeepingmsg.setZUnits(ZUnits.DEPTH);
         String planid = " SpearStationKeeping-" + imc.selectedvehicle;
         startBehaviour(planid, stationKeepingmsg);
         wayPoints(stationKeepingmsg);
@@ -1152,12 +1154,12 @@ public  static float orientation(){
         go.setLat(latitude);
         go.setLon(longitude);
         go.setZ(0);
-        go.setZUnits(Goto.Z_UNITS.DEPTH);
+        go.setZUnits(ZUnits.DEPTH);
         go.setSpeed(speed);
         if (!showrpm) {
-            go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+            go.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
-            go.setSpeedUnits(Goto.SPEED_UNITS.RPM);
+            go.setSpeedUnits(SpeedUnits.RPM);
         }
         String planid = "SpearComeNear-" + imc.selectedvehicle;
         startBehaviour(planid, go);

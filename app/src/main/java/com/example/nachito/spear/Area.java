@@ -17,6 +17,8 @@ import java.util.LinkedHashSet;
 import pt.lsts.coverage.GeoCoord;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
+import pt.lsts.imc.def.SpeedUnits;
+import pt.lsts.imc.def.ZUnits;
 import pt.lsts.util.PlanUtilities;
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
 
@@ -207,13 +209,13 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
             area2.setLat(lat);
             area2.setLon(lon);
             area2.setZ(depth);
-            area2.setZUnits(Goto.Z_UNITS.DEPTH);
+            area2.setZUnits(ZUnits.DEPTH);
             area2.setSpeed(speed);
 
             if(!showrpm) {
-                area2.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+                area2.setSpeedUnits(SpeedUnits.METERS_PS);
             } else{
-                area2.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
+                area2.setSpeedUnits(SpeedUnits.RPM);}
 
             maneuvers.add(area2);
 
@@ -238,12 +240,12 @@ public class Area extends MainActivity implements  PressListener, MapViewConstan
         go.setLat(lat);
         go.setLon(lon);
         go.setZ(depth);
-        go.setZUnits(Goto.Z_UNITS.DEPTH);
+        go.setZUnits(ZUnits.DEPTH);
         go.setSpeed(speed);
         if(!showrpm) {
-            go.setSpeedUnits(Goto.SPEED_UNITS.METERS_PS);
+            go.setSpeedUnits(SpeedUnits.METERS_PS);
         } else{
-            go.setSpeedUnits(Goto.SPEED_UNITS.RPM);}
+            go.setSpeedUnits(SpeedUnits.RPM);}
         String planid = "SpearGoto-"+imc.selectedvehicle;
         startBehaviour(planid, go);
         setEstadoVeiculo(" ");

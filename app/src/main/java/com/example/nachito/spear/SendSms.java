@@ -24,6 +24,16 @@ import android.widget.Toast;
 import org.osmdroid.util.GeoPoint;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import pt.lsts.imc.IMCMessage;
+import pt.lsts.imc.sender.MessageEditor;
+import pt.lsts.ripples.model.iridium.ImcIridiumMessage;
+
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
 
@@ -53,7 +63,8 @@ public class SendSms extends AppCompatActivity {
     String[] vehicleNames;
     String numeroF;
     static GeoPoint pontoFinal;
-
+IMCMessage msg;
+    private MessageEditor editor = new MessageEditor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -251,21 +262,21 @@ public class SendSms extends AppCompatActivity {
                 switch (checked) {
                     case "dive":
                         try {
-                            sendIMEI(numeroF, 0, 0, "dive");
+                            sendIMEI(msg, numeroF, 0, 0, "dive");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                         break;
                     case "surface":
                         try {
-                            sendIMEI(numeroF, 0, 0, "surface");
+                            sendIMEI(msg, numeroF, 0, 0, "surface");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                         break;
                     case "stationKeeping":
                         try {
-                            sendIMEI(numeroF, MainActivity.depth, MainActivity.speed, "sk");
+                            sendIMEI(msg, numeroF, MainActivity.depth, MainActivity.speed, "sk");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -273,14 +284,14 @@ public class SendSms extends AppCompatActivity {
                     case "abort":
 
                         try {
-                            sendIMEI(numeroF, 0, 0, "abort");
+                            sendIMEI(msg, numeroF, 0, 0, "abort");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                         break;
                     case "goTo":
                         try {
-                            sendIMEI(numeroF, MainActivity.depth, MainActivity.speed, "go");
+                            sendIMEI(msg, numeroF, MainActivity.depth, MainActivity.speed, "go");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -391,42 +402,65 @@ public class SendSms extends AppCompatActivity {
         //TODO dummy numero adicionar a lista (pode ser o meu!) e fazer
     }
 
-    private boolean sendIMEI(String imeiNumber, double depth, double vel, String smsText) throws Exception {
-
+    private boolean sendIMEI(IMCMessage message, String imeiNumber, double depth, double vel, String smsText) throws Exception {
+      /*  String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
+        int timeoutMillis = 10000;
+        editor.validateMessage();
+        msg = editor.getMessage();
 //TODO
         switch (smsText) {
 
             case "sk":
-            /*    String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
-                int timeoutMillis = 10000;
 
 
-                IridiumMsgTx msg = new IridiumMsgTx();
-                msg.setDestination(imeiNumber);
+//TODO conn.disconnect
+//TODO diferença entre default, sk e go, onde adicionar a vel, depth e imei
+
+
+
+                ImcIridiumMessage msg = new ImcIridiumMessage();
+                msg.setDestination(message.getDst());
                 msg.setSource(message.getSrc());
                 msg.source = message.getSrc();
-                msg.setMsg(smsText);
+                msg.setMsg(message);
 
                 byte[] data = msg.serialize();
+//TODO adicionar a data ?
+         //       data = new String(DatatypeConverter.printHexBinary(data)).getBytes();
 
-                data = new String(DatatypeConverter.printHexBinary(data)).getBytes();
+                URL u = new URL(serverUrl);
+                HttpURLConnection conn = (HttpURLConnection) u.openConnection();
+                conn.setDoOutput(true);
+                conn.setRequestMethod( "POST" );
+                conn.setRequestProperty( "Content-Type", "application/hub" );
+                conn.setRequestProperty( "Content-Length", String.valueOf(data.length * 2) );
+                conn.setConnectTimeout(timeoutMillis);
 
+                OutputStream os = conn.getOutputStream();
+                os.write(data);
+                os.close();
 
+                InputStream is = conn.getInputStream();
+                ByteArrayOutputStream incoming = new ByteArrayOutputStream();
 
-        URL u = new URL(serverUrl);
-        HttpURLConnection conn = (HttpURLConnection) u.openConnection();
-        conn.setDoOutput(true);
-        conn.setRequestMethod( "POST" );
-        conn.setRequestProperty( "Content-Type", "application/hub" );
-        conn.setRequestProperty( "Content-Length", String.valueOf(data.length * 2) );
-        conn.setConnectTimeout(timeoutMillis);
-                break;
+                byte buff[] = new byte[1024];
+                int read = 0;
+                while ((read = is.read(buff)) > 0)
+                    incoming.write(buff, 0, read);
+                is.close();
 
+                System.out.println("Sent "+msg.getClass().getSimpleName()+" through HTTP: "+conn.getResponseCode()+" "+conn.getResponseMessage());
 
-*/
+                if (conn.getResponseCode() != 200) {
+                    throw new Exception("Server returned "+conn.getResponseCode()+": "+conn.getResponseMessage());
+                }
+                else {
+                    System.out.println(new String(incoming.toByteArray()));
+                    conn.disconnect();
+                    //TODO
+                }
 
-
-        }
+        }*/
         return false;
 
 
