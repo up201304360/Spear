@@ -21,7 +21,7 @@
     <uses-permission android:name="android.permission.WRITE_SMS"/>
     <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     <uses-permission android:name="android.permission.SEND_SMS"/>
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true"/>
@@ -91,10 +91,34 @@
             android:name="android.support.PARENT_ACTIVITY"
             android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
+        <activity
+            android:name="com.example.nachito.spear.Area_"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask"
+            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
 
+            android:parentActivityName="com.example.nachito.spear.MainActivity_">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.nachito.spear.MainActivity_" />
+        </activity>
+
+        <activity
+            android:name="com.example.nachito.spear.Line"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask"
+            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
+
+            android:parentActivityName="com.example.nachito.spear.MainActivity_">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.nachito.spear.MainActivity_" />
+        </activity>
         <activity android:name="com.example.nachito.spear.SendSms"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
+            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
+
             android:parentActivityName=".MainActivity_"  >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -104,29 +128,16 @@
         <activity
             android:name="com.example.nachito.spear.MapSMS"
             android:screenOrientation="portrait"
-            android:parentActivityName="com.example.nachito.spear.MainActivity_">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.nachito.spear.MainActivity_" />
-        </activity>
-        <activity
-            android:name=".Line"
-            android:screenOrientation="portrait"
-            android:parentActivityName="com.example.nachito.spear.MainActivity_">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.nachito.spear.MainActivity_" />
-        </activity>
+            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
 
-
-        <activity
-            android:name=".Area"
-            android:screenOrientation="portrait"
             android:parentActivityName="com.example.nachito.spear.MainActivity_">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
+        <activity android:name=".Area" />
+        <activity android:name=".MainActivity" />
+
 
         <receiver android:name="com.example.nachito.spear.ReceiveSms"
             android:permission="android.permission.BROADCAST_SMS">

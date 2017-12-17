@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 26
     buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.example.nachito.spear"
         minSdkVersion 19
-        targetSdkVersion 27
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -57,8 +57,8 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:multidex:1.0.1'
-
+    compile 'com.android.support:multidex:1.0.2'
+    compile 'com.google.android.gms:play-services-base:11.6.0'
     compile 'com.android.support:support-annotations:25.3.1'
     compile 'org.androidannotations:androidannotations:4.3.0'
     compile 'com.android.support:design:25.3.1'
@@ -76,6 +76,7 @@ dependencies {
     compile 'org.osmdroid:osmdroid-third-party:5.6.5'
     compile 'org.slf4j:slf4j-android:1.7.25'
     compile 'com.android.support:preference-v7:25.3.1'
+    compile 'commons-codec:commons-codec:1.6'
     compile files('libs/AreaCoverage-v1.2.jar')
     compile files('libs/libimc.jar')
     compile files('libs/msgsender.jar')

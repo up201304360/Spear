@@ -17,7 +17,9 @@
     <string name="dive">Dive</string>
     <string name="goTo">Goto</string>
     <string name="decelerate">Decelerate</string>
-    <string name="erase">Erase</string>
+    <string name="erase">Erase Last</string>
+    <string name="eraseAll">Erase All</string>
+
     <string name="done">Done</string>
     <string name="surface">Surface</string>
     <string name="station">Keep Station</string>
@@ -50,6 +52,8 @@
     <string name="vehicle_name">Vehicle Name</string>
     <string name="plus">+</string>
     <string name="minus">-</string>
+    <string name="area">Area to follow</string>
+    <string name="line">Line to follow</string>
     <string name="wifion">wifion</string>
     <string name="wifioff">wifioff</string>
     <string name="patternMessageReceived">\\((.)\\) \\((.*)\\) (.*) / (.*), (.*) / .*</string>

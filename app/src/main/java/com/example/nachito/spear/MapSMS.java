@@ -116,7 +116,7 @@ public class MapSMS extends AppCompatActivity {
                     markers.clear();
                     numPontos = 0;
                     map.invalidate();
-//TODO
+
 
 
 
@@ -126,7 +126,6 @@ public class MapSMS extends AppCompatActivity {
             }
 
         };
-//TODO
         done.setOnClickListener(v -> {
             if (numPontos == 1) {
                 Intent i = new Intent(MapSMS.this, SendSms.class);

@@ -10,9 +10,15 @@
         app:showAsAction="never"/>
 
     <item
-        android:id="@+id/edit"
+        android:id="@+id/area"
         android:orderInCategory="100"
-        android:title="@string/edit"
+        android:title="@string/area"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/line"
+        android:orderInCategory="100"
+        android:title="@string/line"
         app:showAsAction="never"/>
     <item
         android:id="@+id/sms"

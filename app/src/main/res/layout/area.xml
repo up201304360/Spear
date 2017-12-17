@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapArea"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:longClickable="true"
+        android:scrollbars="vertical" />
+
+
+
+
+
+    <Button
+        android:id="@+id/doneArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/done"
+        android:background="#50505010"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_alignParentEnd="true"
+
+
+        tools:ignore="RelativeOverlap" />
+
+
+    <Button
+        android:id="@+id/eraseArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/erase"
+        android:background="#50505010"
+        android:layout_marginTop="11dp"
+        android:layout_below="@+id/doneArea"
+        android:layout_alignStart="@+id/doneArea" />
+
+    <Button
+        android:id="@+id/eraseAllArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/eraseAll"
+        android:background="#50505010"
+        android:layout_marginTop="11dp"
+        android:layout_below="@+id/eraseArea"
+        android:layout_alignStart="@+id/eraseArea" />
+
+
+</RelativeLayout>

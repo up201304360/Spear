@@ -25,6 +25,10 @@ public class PlanList {
     private static final LinkedHashMap<String, List<String>> planHashMap = new LinkedHashMap<>();
     private IMCGlobal imc = null;
     private static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
+    public static boolean samePlan;
+    public static boolean firstLoad;
+    public static String previousPlan=".";
+    public static boolean callMethodWaypoints;
 
     PlanList(IMCGlobal ref) {
         imc = ref;
@@ -56,11 +60,23 @@ public class PlanList {
         else if (msg.getOp() == PlanDB.OP.GET && msg.getType() == PlanDB.TYPE.SUCCESS) {
             if (msg.getPlanId().equals(planBeingExecuted)) {
                 System.out.println("Received "+msg.getPlanId()+" from "+msg.getSourceName());
-                ArrayList<Maneuver> planExecutingArray;
+                if(msg.getPlanId().equals(previousPlan)){
+                    samePlan=true;
+                    firstLoad=false;
+                   callMethodWaypoints=false;
+                }else if( !(previousPlan.equals(msg.getPlanId()))) {
+                    samePlan=false;
+                    firstLoad=true;
+                    callMethodWaypoints=true;
+                    previousPlan=planBeingExecuted;
+                }
+                ArrayList<Maneuver> planExecutingArray;            previousPlan=planBeingExecuted;
+
                 planExecutingArray = new ArrayList<>();
                 for (PlanManeuver info : ((PlanSpecification)msg.getArg()).getManeuvers()) {
                     planExecutingArray.add(info.getData());
                 }
+
                 synchronized (planExecuting) {
                     planExecuting.put(msg.getSourceName(), planExecutingArray);
                 }
@@ -74,6 +90,7 @@ public class PlanList {
     public void onMsg(PlanControlState msg) {
 
         String previous = planBeingExecuted;
+
         if (!msg.getSourceName().equals(imc.selectedvehicle))
             return;
 
@@ -81,17 +98,36 @@ public class PlanList {
             planBeingExecuted = msg.getPlanId();
             if (previous == null || !previous.equals(planBeingExecuted))
                 askForPlan();
+
         }
-        else
+        else{
+            if(planBeingExecuted != null)
+                previousPlan=planBeingExecuted;
             planBeingExecuted = null;
+
+        }
+
     }
 
+    public static boolean sendSamePlan(){
+        return samePlan;
+    }
 
+    public static boolean sendFirstLoad(){
+        return firstLoad;
+    }
+    public static boolean call(){
+        return callMethodWaypoints;
+    }
 
     @Periodic(60000)
     private void askForPlan() {
 
         System.out.println("Requesting "+planBeingExecuted+" to vehicle "+imc.selectedvehicle);
+
+
+
+
         if (planBeingExecuted != null) {
             PlanDB pdbRequest = new PlanDB();
             pdbRequest.setPlanId(planBeingExecuted);

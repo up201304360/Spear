@@ -18,16 +18,23 @@ import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
+/*
+import org.apache.commons.codec.binary.BinaryCodec;
+import org.apache.commons.codec.binary.Hex;*/
 import org.osmdroid.util.GeoPoint;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.sender.MessageEditor;
+import pt.lsts.ripples.model.iridium.ImcIridiumMessage;
 
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
-
 
 /**
  *
@@ -55,8 +62,9 @@ public class SendSms extends AppCompatActivity {
     String[] vehicleNames;
     String numeroF;
     static GeoPoint pontoFinal;
-IMCMessage msg;
-    private MessageEditor editor = new MessageEditor();
+    IMCMessage msg;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +86,6 @@ IMCMessage msg;
                 ActivityCompat.requestPermissions(this,
                         mPermission, REQUEST_CODE_PERMISSION);
 
-                // If any permission above not allowed by user, this condition will execute every tim, else your else part will work
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -320,6 +327,8 @@ IMCMessage msg;
                         sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
                         pontoFinal=ponto;
                         checked=null;
+                        MainActivity.previous="M";
+
                         SendSms.super.onBackPressed();
 
                         break;
@@ -331,6 +340,7 @@ IMCMessage msg;
                         double longitude2=ponto2.getLongitude();
                         sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);
                         pontoFinal=ponto2;
+                        MainActivity.previous="M";
 
                         checked=null;
                         SendSms.super.onBackPressed();
@@ -341,6 +351,7 @@ IMCMessage msg;
                     default:
                         sms.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                         checked=null;
+                        MainActivity.previous="M";
                         SendSms.super.onBackPressed();
                         break;
                 }
@@ -358,17 +369,15 @@ IMCMessage msg;
     }
 
     public  static GeoPoint pontoSMS(){
-        //TODO
         return pontoFinal;
 
     }
 
     private boolean sendIMEI(IMCMessage message, String imeiNumber, double depth, double vel, String smsText) throws Exception {
-      /*  String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
+      /* String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
         int timeoutMillis = 10000;
         editor.validateMessage();
         msg = editor.getMessage();
-//TODO
         switch (smsText) {
 
             case "sk":
@@ -384,7 +393,17 @@ IMCMessage msg;
                 msg.setMsg(message);
 
                 byte[] data = msg.serialize();
-         //       data = new String(DatatypeConverter.printHexBinary(data)).getBytes();
+
+
+
+              //  data = DatatypeConverter.printHexBinary(data).getBytes();
+
+                //converts an array of bytes into a string
+                data = Hex.encodeHexString(data).getBytes();
+
+
+
+
 
                 URL u = new URL(serverUrl);
                 HttpURLConnection conn = (HttpURLConnection) u.openConnection();

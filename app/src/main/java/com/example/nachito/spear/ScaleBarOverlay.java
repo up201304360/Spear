@@ -469,7 +469,6 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
     private void rebuildBarPath(final Projection projection) {   //** modified to protected
         // We want the scale bar to be as long as the closest round-number miles/kilometers
         // to 1-inch at the latitude at the current center of the screen.
-//TODO mudar tamanho e escala
         // calculate dots per centimeter
         int xdpcm = (int) ( xdpi / 2.54);
         int ydpcm = (int) ( ydpi / 2.54);
@@ -544,7 +543,6 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
                 barPath.lineTo(barOriginX,  barOriginY +xTextHeight + xTextSpacing * 2);
             }
             latitudeBarRect.set(barOriginX, barOriginY, barToX, barOriginY +xTextHeight + xTextSpacing * 2);
-            //TODO
         }
 
         if (longitudeBar) {
@@ -556,7 +554,6 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
 
             barPath.lineTo(barOriginX, barToY);
             barPath.lineTo(barOriginX +yTextHeight + yTextSpacing * 2, barToY);
-//TODO
             longitudeBarRect.set(barOriginX, barOriginY, barOriginX +yTextHeight + yTextSpacing * 2, barToY);
         }
     }
