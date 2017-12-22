@@ -65,7 +65,6 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -96,9 +95,7 @@ import pt.lsts.util.PlanUtilities;
 import pt.lsts.util.WGS84Utilities;
 
 import static android.os.Build.VERSION_CODES.M;
-import static com.example.nachito.spear.Line.markers;
 import static com.example.nachito.spear.R.id.imageView;
-import static com.example.nachito.spear.R.id.line;
 
 
 @EActivity
@@ -161,7 +158,7 @@ public class MainActivity extends AppCompatActivity
     Marker pointsPlans;
     static Marker lineMarker;
     static  boolean showrpm;
-    //static - so Area and Line can pass the points clicked
+    //static - so Area and Line can pass the waypointsPlan clicked
     @SuppressLint("StaticFieldLeak")
     static String dept;
     static String estadoVeiculo;
@@ -182,13 +179,12 @@ public class MainActivity extends AppCompatActivity
     static float orientation2;
     SendSms sendsms;
     Marker markerSMS;
-    static boolean firstCall=true;
     ScaleBarOverlay scaleBarOverlay;
-    static Maneuver m;
+    static Maneuver maneuverFromPlan;
     @ViewById(R.id.localizacao)
     Button centrarLoc;
     ItemizedIconOverlay markersOverlay2;
-    static Collection<PlanUtilities.Waypoint> points;
+    static Collection<PlanUtilities.Waypoint> waypointsPlan;
     android.content.res.Resources res;
 
     static Bitmap source2;
@@ -204,10 +200,10 @@ public class MainActivity extends AppCompatActivity
     static ArrayList<GeoPoint> pointsLine= Line.getPointsLine();
     Marker markerArea;
     Marker markerLine;
-    Polyline lineConnect;
+    Polyline planWaypointPolyline;
     ArrayList<GeoPoint> pontosAreaMarker = new ArrayList<>();
-    static ArrayList<GeoPoint> pontosArray= new ArrayList<>();
-    ArrayList<GeoPoint> pontosDummy= new ArrayList<>();
+    static ArrayList<GeoPoint> planWaypoints = new ArrayList<>();
+    ArrayList<GeoPoint> nullArray = new ArrayList<>();
 
 
 
@@ -222,7 +218,7 @@ public class MainActivity extends AppCompatActivity
 
 
         setContentView(R.layout.activity_main);
-       map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setTileSource(TileSourceFactory.MAPNIK);
         android.app.ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);
@@ -231,7 +227,7 @@ public class MainActivity extends AppCompatActivity
 
         res= getResources();
         context = this;
-       PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
 
 
@@ -251,7 +247,7 @@ public class MainActivity extends AppCompatActivity
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
         init();
-        lineConnect = new Polyline();
+        planWaypointPolyline = new Polyline();
 
         Accelerate accelerate =(Accelerate)  findViewById(R.id.accelerate);
         accelerate.setVisibility(View.INVISIBLE);
@@ -893,18 +889,18 @@ public class MainActivity extends AppCompatActivity
 
                 map.getOverlays().remove(lineMarker);
                 map.getOverlays().remove(nodeMarkerWaypoints);
-                if(points!=null)
-                    points.clear();
-                points=null;
+                if(waypointsPlan !=null)
+                    waypointsPlan.clear();
+                waypointsPlan =null;
                 if(mList!=null)
                     mList.clear();
                 updateMap();
                 listaOutrosVeiculos.clear();
-                if(pontosArray!=null)
-                pontosArray.clear();
-                if(lineConnect!=null){
-                lineConnect.setPoints(pontosDummy);
-                map.getOverlays().remove(lineConnect);}
+                if(planWaypoints !=null)
+                    planWaypoints.clear();
+                if(planWaypointPolyline !=null){
+                    planWaypointPolyline.setPoints(nullArray);
+                    map.getOverlays().remove(planWaypointPolyline);}
 
 
             }
@@ -960,7 +956,7 @@ public class MainActivity extends AppCompatActivity
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
 
-            map.setMultiTouchControls(true);
+        map.setMultiTouchControls(true);
 
 
         if (context == MainActivity.this) {
@@ -1064,17 +1060,17 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        if (pontosArray.size() != 0) {
+        if (planWaypoints.size() != 0) {
 
-            for (int i = 0; i < pontosArray.size(); i++) {
+            for (int i = 0; i < planWaypoints.size(); i++) {
                 pointsPlans = new Marker(map);
                 if (!stopPressed)
-                    pointsPlans.setPosition(pontosArray.get(i));
+                    pointsPlans.setPosition(planWaypoints.get(i));
                 pointsPlans.setIcon(redIcon);
                 map.getOverlays().add(pointsPlans);
-                if(lineConnect!=null)
-                map.getOverlays().remove(lineConnect);
-                map.getOverlays().add(lineConnect);
+                if(planWaypointPolyline !=null)
+                    map.getOverlays().remove(planWaypointPolyline);
+                map.getOverlays().add(planWaypointPolyline);
 
             }
 
@@ -1083,16 +1079,16 @@ public class MainActivity extends AppCompatActivity
 
 
         }
-            if (SendSms.pontoSMS() != null) {
-                GeoPoint ponto = SendSms.pontoSMS();
+        if (SendSms.pontoSMS() != null) {
+            GeoPoint ponto = SendSms.pontoSMS();
 
 
-                markerSMS = new Marker(map);
-                markerSMS.setPosition(ponto);
-                markerSMS.setIcon(lineIcon);
-                map.getOverlays().add(markerSMS);
+            markerSMS = new Marker(map);
+            markerSMS.setPosition(ponto);
+            markerSMS.setIcon(lineIcon);
+            map.getOverlays().add(markerSMS);
 
-            }
+        }
 
 
 
@@ -1108,44 +1104,44 @@ public class MainActivity extends AppCompatActivity
         //}/*
         if (Area.sendmList() != null) {
 
-            for (int i = 0; i < Area.manList.size() - 1; i++) {
+            for (int i = 0; i < Area.maneuverArrayList.size() - 1; i++) {
 
 
-                points = PlanUtilities.computeWaypoints(Area.manList.get(i));
-                pontosArray = new ArrayList<>();
+                waypointsPlan = PlanUtilities.computeWaypoints(Area.maneuverArrayList.get(i));
+                planWaypoints = new ArrayList<>();
                 GeoPoint ponto;
 
-                if (points != null) {
+                if (waypointsPlan != null) {
 
-                    for (PlanUtilities.Waypoint point : points) {
+                    for (PlanUtilities.Waypoint point : waypointsPlan) {
 
 
                         valLat = point.getLatitude();
                         valLon = point.getLongitude();
 
                         ponto = new GeoPoint(valLat, valLon);
-                        pontosArray.add(ponto);
-                        if (pontosArray.size() != 0) {
-                            for (int k = 0; k <= pontosArray.size(); k++) {
+                        planWaypoints.add(ponto);
+                        if (planWaypoints.size() != 0) {
+                            for (int k = 0; k <= planWaypoints.size(); k++) {
                                 nodeMarkerWaypoints = new Marker(map);
-                                nodeMarkerWaypoints.setPosition(pontosArray.get(k));
+                                nodeMarkerWaypoints.setPosition(planWaypoints.get(k));
                                 nodeMarkerWaypoints.setIcon(nodeIcon);
                                 map.getOverlays().add(nodeMarkerWaypoints);
 
 
-                                if (!pontosAreaMarker.contains(pontosArray.get(k))) {
-                                    pontosAreaMarker.add(pontosArray.get(k));
+                                if (!pontosAreaMarker.contains(planWaypoints.get(k))) {
+                                    pontosAreaMarker.add(planWaypoints.get(k));
                                 }
 
 
-                                lineConnect = new Polyline();
-                                lineConnect.setWidth(7);
+                                planWaypointPolyline = new Polyline();
+                                planWaypointPolyline.setWidth(7);
 
-                                lineConnect.setPoints(pontosAreaMarker);
+                                planWaypointPolyline.setPoints(pontosAreaMarker);
                             }
 
 
-                            map.getOverlayManager().add(lineConnect);
+                            map.getOverlayManager().add(planWaypointPolyline);
 
 
                         }
@@ -1247,14 +1243,13 @@ public class MainActivity extends AppCompatActivity
 
 
         map.getOverlays().remove(nodeMarkerWaypoints);
-        if(points!=null)
-            points.clear();
-        points=null;
+        if(waypointsPlan !=null)
+            waypointsPlan.clear();
+        waypointsPlan =null;
         map.invalidate();
         map.getOverlays().clear();
         previous="M";
         stopPressed= false;
-        firstCall=true;
         imc.sendMessage(pc);
 
 
@@ -1273,7 +1268,6 @@ public class MainActivity extends AppCompatActivity
         setEstadoVeiculo("Plan Stopped");
         previous="S";
         stopPressed=true;
-        firstCall=true;
         polyDrawn=false;
         circleDrawn=false;
         if(nodeMarkerWaypoints!=null){
@@ -1281,11 +1275,11 @@ public class MainActivity extends AppCompatActivity
             nodeMarkerWaypoints.remove(map);
         }
 
-        if(pontosArray!=null)
-            pontosArray.clear();
+        if(planWaypoints !=null)
+            planWaypoints.clear();
 
-        if(points!=null) {
-            points.clear();
+        if(waypointsPlan !=null) {
+            waypointsPlan.clear();
         }
         if(pointsPlans!=null) {
             pointsPlans.remove(map);
@@ -1296,9 +1290,9 @@ public class MainActivity extends AppCompatActivity
             map.getOverlays().remove(markerArea);
             Area.getPointsArea().clear();
         }
-        if(pontosArray!=null){
+        if(planWaypoints !=null){
             map.getOverlays().remove(pointsPlans);
-           pontosArray.clear();
+            planWaypoints.clear();
         }
         if(Line.getPointsLine()!=null){
 
@@ -1308,9 +1302,9 @@ public class MainActivity extends AppCompatActivity
 
         if(Line.getPolyline()!=null){
             map.getOverlays().remove(polyline);
-            pontosDummy.clear();
-            polyline.setPoints(pontosDummy);
-            Line.getPolyline().setPoints(pontosDummy);
+            nullArray.clear();
+            polyline.setPoints(nullArray);
+            Line.getPolyline().setPoints(nullArray);
         }
         if(Area.getCircle()){
             circleDrawn=false;
@@ -1320,8 +1314,8 @@ public class MainActivity extends AppCompatActivity
         if(Line.getPoly()){
             polyDrawn=false;
             map.getOverlays().remove(polyline);
-            pontosDummy.clear();
-            polyline.setPoints(pontosDummy);
+            nullArray.clear();
+            polyline.setPoints(nullArray);
 
         }
         if(returnAreaPoints()!=null){
@@ -1334,9 +1328,9 @@ public class MainActivity extends AppCompatActivity
             pontosAreaMarker.clear();
 
         }
-        if(lineConnect!=null) {
-            map.getOverlayManager().remove(lineConnect);
-            lineConnect.setPoints(pontosAreaMarker);
+        if(planWaypointPolyline !=null) {
+            map.getOverlayManager().remove(planWaypointPolyline);
+            planWaypointPolyline.setPoints(pontosAreaMarker);
 
         }
 
@@ -1351,7 +1345,7 @@ public class MainActivity extends AppCompatActivity
 
         }
         if( Area.sendmList()!=null){
-            Area.manList.clear();
+            Area.maneuverArrayList.clear();
 
             if(manList!=null)
                 manList.clear();
@@ -1503,14 +1497,9 @@ public class MainActivity extends AppCompatActivity
                 if (imc.allManeuvers() == null) {
                     Toast.makeText(MainActivity.this, "No plan specification available", Toast.LENGTH_SHORT).show();
                 } else {
-
                     previous="M";
                     stopPressed= false;
-                    firstCall=true;
-
                     mList.addAll(imc.allManeuvers());
-
-
                     callWaypoint(mList);
 
                 }
@@ -1544,16 +1533,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void callWaypoint(List<Maneuver> maneuverList) {
-           for (int i = 0; i < maneuverList.size(); i++) {
-                //para cada Maneuver chamar o waypoints
-                wayPoints(maneuverList.get(i));
+        for (int i = 0; i < maneuverList.size(); i++) {
+            //para cada Maneuver chamar o waypoints
+            wayPoints(maneuverList.get(i));
 
-            }
+        }
     }
     public void wayPoints(final Maneuver maneuver) {
 
-m= maneuver;
-makePoints();
+        maneuverFromPlan= maneuver;
+        makePoints();
     }
 
 
@@ -1561,30 +1550,28 @@ makePoints();
     public void makePoints(){
 
         GeoPoint ponto;
-         points= PlanUtilities.computeWaypoints(m);
+        waypointsPlan = PlanUtilities.computeWaypoints(maneuverFromPlan);
 
-        for (PlanUtilities.Waypoint point : points) {
+        for (PlanUtilities.Waypoint point : waypointsPlan) {
 
 
-                    valLat = point.getLatitude();
-                    valLon = point.getLongitude();
+            valLat = point.getLatitude();
+            valLon = point.getLongitude();
 
-                    ponto = new GeoPoint(valLat, valLon);
+            ponto = new GeoPoint(valLat, valLon);
 
-                    if (!(pontosArray.contains(ponto))) {
+            if (!(planWaypoints.contains(ponto))) {
 
-                        if (pontosArray.size() != mList.size())
-                            pontosArray.add(ponto);
-                 
+                if (planWaypoints.size() != mList.size())
+                    planWaypoints.add(ponto);
 
-                    }
 
             }
-        lineConnect.setWidth(5);
-        lineConnect.setPoints(pontosArray);
+
+        }
+        planWaypointPolyline.setWidth(5);
+        planWaypointPolyline.setPoints(planWaypoints);
     }
-
-
 
     public void warning() {
         Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();

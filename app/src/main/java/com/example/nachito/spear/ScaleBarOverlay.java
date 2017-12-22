@@ -406,11 +406,11 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
         // get length in pixel
         int xLen = (int) (maxLength * xdpcm);
 
-        // Two points, xLen apart, at scale bar screen location
+        // Two waypointsPlan, xLen apart, at scale bar screen location
         IGeoPoint p1 = projection.fromPixels((screenWidth / 2) - (xLen / 2), yOffset, null);
         IGeoPoint p2 = projection.fromPixels((screenWidth / 2) + (xLen / 2), yOffset, null);
 
-        // get distance in meters between points
+        // get distance in meters between waypointsPlan
         final double xMeters = ((GeoPoint) p1).distanceTo(p2);
         // get adjusted distance, shortened to the next lower number starting with 1, 2 or 5
         final double xMetersAdjusted = this.adjustLength ? adjustScaleBarLength(xMeters) : xMeters;
@@ -437,13 +437,13 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
         // get length in pixel
         int yLen = (int) (maxLength * ydpcm);
 
-        // Two points, yLen apart, at scale bar screen location
+        // Two waypointsPlan, yLen apart, at scale bar screen location
         IGeoPoint p1 = projection
                 .fromPixels(screenWidth / 2, (screenHeight / 2) - (yLen / 2), null);
         IGeoPoint p2 = projection
                 .fromPixels(screenWidth / 2, (screenHeight / 2) + (yLen / 2), null);
 
-        // get distance in meters between points
+        // get distance in meters between waypointsPlan
         final double yMeters = ((GeoPoint) p1).distanceTo(p2);
         // get adjusted distance, shortened to the next lower number starting with 1, 2 or 5
         final double yMetersAdjusted = this.adjustLength ? adjustScaleBarLength(yMeters) : yMeters;
@@ -477,22 +477,22 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
         int xLen = (int) (maxLength * xdpcm);
         int yLen = (int) (maxLength * ydpcm);
 
-        // Two points, xLen apart, at scale bar screen location
+        // Two waypointsPlan, xLen apart, at scale bar screen location
         IGeoPoint p1 = projection.fromPixels((screenWidth / 2) - (xLen / 2), yOffset, null);
         IGeoPoint p2 = projection.fromPixels((screenWidth / 2) + (xLen / 2), yOffset, null);
 
-        // get distance in meters between points
+        // get distance in meters between waypointsPlan
         final double xMeters = ((GeoPoint) p1).distanceTo(p2);
         // get adjusted distance, shortened to the next lower number starting with 1, 2 or 5
         final double xMetersAdjusted = this.adjustLength ? adjustScaleBarLength(xMeters) : xMeters;
         // get adjusted length in pixels
         final int xBarLengthPixels = (int) (xLen * xMetersAdjusted / xMeters);
 
-        // Two points, yLen apart, at scale bar screen location
+        // Two waypointsPlan, yLen apart, at scale bar screen location
         p1 = projection.fromPixels(screenWidth / 2, (screenHeight / 2) - (yLen / 2), null);
         p2 = projection.fromPixels(screenWidth / 2, (screenHeight / 2) + (yLen / 2), null);
 
-        // get distance in meters between points
+        // get distance in meters between waypointsPlan
         final double yMeters = ((GeoPoint) p1).distanceTo(p2);
         // get adjusted distance, shortened to the next lower number starting with 1, 2 or 5
         final double yMetersAdjusted = this.adjustLength ? adjustScaleBarLength(yMeters) : yMeters;

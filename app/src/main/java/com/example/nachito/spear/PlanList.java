@@ -26,7 +26,6 @@ public class PlanList {
     private IMCGlobal imc = null;
     private static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
     public static boolean samePlan;
-    public static boolean firstLoad;
     public static String previousPlan=".";
     public static boolean callMethodWaypoints;
 
@@ -62,11 +61,9 @@ public class PlanList {
                 System.out.println("Received "+msg.getPlanId()+" from "+msg.getSourceName());
                 if(msg.getPlanId().equals(previousPlan)){
                     samePlan=true;
-                    firstLoad=false;
-                   callMethodWaypoints=false;
+                    callMethodWaypoints=false;
                 }else if( !(previousPlan.equals(msg.getPlanId()))) {
                     samePlan=false;
-                    firstLoad=true;
                     callMethodWaypoints=true;
                     previousPlan=planBeingExecuted;
                 }
@@ -109,16 +106,7 @@ public class PlanList {
 
     }
 
-    public static boolean sendSamePlan(){
-        return samePlan;
-    }
 
-    public static boolean sendFirstLoad(){
-        return firstLoad;
-    }
-    public static boolean call(){
-        return callMethodWaypoints;
-    }
 
     @Periodic(60000)
     private void askForPlan() {
