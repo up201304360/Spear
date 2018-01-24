@@ -95,7 +95,7 @@ import pt.lsts.util.PlanUtilities;
 import pt.lsts.util.WGS84Utilities;
 
 import static android.os.Build.VERSION_CODES.M;
-import static com.example.nachito.spear.R.id.imageView;
+import static com.example.nachito.spear.R.id.wifiImage;
 
 
 @EActivity
@@ -107,36 +107,34 @@ public class MainActivity extends AppCompatActivity
     @ViewById(R.id.dive)
     Button dive;
     @ViewById(R.id.near)
-    Button near;
+    Button comeNear;
     @ViewById(R.id.startplan)
-    Button start;
-    @ViewById(R.id.KeepStation)
-    Button keep;
+    Button startPlan;
+    @ViewById(R.id.keepStation)
+    Button keepStation;
     @ViewById(R.id.servicebar)
-    TextView servicebar;
+    TextView serviceBar;
     @Bean
     static IMCGlobal imc;
-    @ViewById(imageView)
-    ImageView wifi;
-    @ViewById(R.id.imageView2)
-    ImageView nowifi;
-    TeleOperation teleop2;
-    List<Maneuver> mList;
-    List<VehicleState> states;
+    @ViewById(wifiImage)
+    ImageView wifiDrawable;
+    @ViewById(R.id.noWifiImage)
+    ImageView noWifiImage;
+    TeleOperation teleOperation;
+    List<Maneuver> maneuverList;
+    List<VehicleState> vehicleStateList;
     @ViewById(R.id.map)
     static MapView map;
-    MyLocationNewOverlay mLocationOverlay;
-    @ViewById(R.id.teleop)
-    Button teleop;
+    MyLocationNewOverlay myLocationOverlay;
+    @ViewById(R.id.teleOperationButton)
+    Button teleOperationButton;
     @ViewById(R.id.stop)
-    Button stop;
+    Button stopPlan;
     CompassOverlay mCompassOverlay;
     LocationManager locationManager;
     IMapController mapController;
     OverlayItem lastPosition = null;
     OsmMapsItemizedOverlay mItemizedOverlay;
-    static double latVeiculo;
-    static double lonVeiculo;
     double latitude;
     double longitude;
     @ViewById(R.id.velocity)
@@ -158,43 +156,44 @@ public class MainActivity extends AppCompatActivity
     Marker pointsPlans;
     static Marker lineMarker;
     static  boolean showrpm;
-    //static - so Area and Line can pass the waypointsPlan clicked
+    //static - so Area and Line can pass the waypointsFromPlan clicked
     @SuppressLint("StaticFieldLeak")
-    static String dept;
-    static String estadoVeiculo;
-    static String vel;
+    static String depthString;
+    static String vehicleStateString;
+    static String velocityString;
     static Marker nodeMarkerWaypoints;
     Location location;
     static String previous=null;
-    Double valLat;
-    Double valLon;
+    Double valueOfLatitude;
+    Double valueOfLongitude;
     List<String> vehicleList;
     List<String> planList;
-    int tamanhoLista;
+    int listSize;
     OSMHandler updateHandler;
     List<String> stateList;
-    static GeoPoint posicaoVeiculo;
-    static GeoPoint posicao;
-    static  ArrayList<GeoPoint> listaOutrosVeiculos= new ArrayList<>();
-    static float orientation2;
+    static GeoPoint vehiclePosition;
+    static GeoPoint myPosition;
+    static  ArrayList<GeoPoint> otherVehiclesPositionList = new ArrayList<>();
+    static float vehicleOrientation;
     SendSms sendsms;
     Marker markerSMS;
     ScaleBarOverlay scaleBarOverlay;
     static Maneuver maneuverFromPlan;
     @ViewById(R.id.localizacao)
-    Button centrarLoc;
+    Button centerLocation;
     ItemizedIconOverlay markersOverlay2;
-    static Collection<PlanUtilities.Waypoint> waypointsPlan;
-    android.content.res.Resources res;
+    static Collection<PlanUtilities.Waypoint> waypointsFromPlan;
+    android.content.res.Resources resources;
 
-    static Bitmap source2;
+    static Bitmap bitmapArrow;
     ArrayList<GeoPoint> pointsArea= Area.getPointsArea();
 
     Polyline polyline = Line.getPolyline();
-    static Boolean circleDrawn = Area.getCircle();
-    static Boolean polyDrawn = Line.getPoly();
-    List<Maneuver> manList= Area.sendmList();
-
+    static Boolean isCircleDrawn = Area.getCircle();
+    static Boolean isPolylineDrawn = Line.getPoly();
+    List<Maneuver> maneuverListFromArea = Area.sendmList();
+static double latVeiculo;
+static double lonVeiculo;
     static boolean stopPressed=false;
     Polygon circle;
     static ArrayList<GeoPoint> pointsLine= Line.getPointsLine();
@@ -225,7 +224,7 @@ public class MainActivity extends AppCompatActivity
             actionBar.setDisplayShowHomeEnabled(false);
         }
 
-        res= getResources();
+        resources = getResources();
         context = this;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
@@ -233,9 +232,9 @@ public class MainActivity extends AppCompatActivity
 
         map.setMultiTouchControls(true);
         map.setClickable(true);
-        mLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
-        mLocationOverlay.enableMyLocation();
-        map.getOverlays().add(this.mLocationOverlay);
+        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
+        myLocationOverlay.enableMyLocation();
+        map.getOverlays().add(this.myLocationOverlay);
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
         map.getOverlays().add(mCompassOverlay);
@@ -255,7 +254,7 @@ public class MainActivity extends AppCompatActivity
         decelerate.setVisibility(View.INVISIBLE);
         Joystick joystick =  (Joystick)findViewById(R.id.joystick);
         joystick.setVisibility(View.INVISIBLE);
-        nowifi.setVisibility(View.INVISIBLE);
+        noWifiImage.setVisibility(View.INVISIBLE);
         StopTeleop stopTeleop =  (StopTeleop)findViewById(R.id.stopTeleop);
         stopTeleop.setVisibility(View.INVISIBLE);
 
@@ -284,8 +283,8 @@ public class MainActivity extends AppCompatActivity
         if (location == null) {
             location = new Location(LocationManager.GPS_PROVIDER);
         }
-        map.getOverlays().add(this.mLocationOverlay);
-        mLocationOverlay.enableMyLocation();
+        map.getOverlays().add(this.myLocationOverlay);
+        myLocationOverlay.enableMyLocation();
         map.invalidate();
         mapController = map.getController();
         mapController.setZoom(12);
@@ -348,7 +347,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static GeoPoint getVariables(){
-        return posicaoVeiculo;
+        return vehiclePosition;
     }
 
     public static String getPrevious(){return previous;}
@@ -380,7 +379,7 @@ public class MainActivity extends AppCompatActivity
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     permission.ACCESS_FINE_LOCATION)) {
                 // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user  timer.start()
+                // this thread waiting for the user's response! After the user  timer.startPlan()
                 // sees the explanation, try again to request the permission.
                 //Prompt the user once explanation has been shown
                 ActivityCompat.requestPermissions(this,
@@ -417,8 +416,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onClick(View v) {
-        registerForContextMenu(servicebar);
-        openContextMenu(servicebar);
+        registerForContextMenu(serviceBar);
+        openContextMenu(serviceBar);
     }
 
 
@@ -476,7 +475,7 @@ public class MainActivity extends AppCompatActivity
     @UiThread
     public void init() {
 
-        teleop.setOnClickListener(v -> {
+        teleOperationButton.setOnClickListener(v -> {
             if (imc.selectedvehicle == null) {
                 warning();
             } else {
@@ -485,28 +484,28 @@ public class MainActivity extends AppCompatActivity
                         .setMessage("Connect to " + imc.selectedvehicle + "?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", (dialog, id) -> {
-                            if (teleop2 == null)
-                                teleop2 = new TeleOperation();
-                            teleop2.setImc(imc);
+                            if (teleOperation == null)
+                                teleOperation = new TeleOperation();
+                            teleOperation.setImc(imc);
                             Joystick joystick = (Joystick) findViewById(R.id.joystick);
-                            joystick.setOnJoystickMovedListener(teleop2);
+                            joystick.setOnJoystickMovedListener(teleOperation);
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.activity_maps, teleop2).addToBackStack("tag").commit();
+                                    .replace(R.id.activity_maps, teleOperation).addToBackStack("tag").commit();
                             dive.setVisibility(View.INVISIBLE);
-                            teleop.setVisibility(View.INVISIBLE);
-                            start.setVisibility(View.INVISIBLE);
-                            near.setVisibility(View.INVISIBLE);
-                            keep.setVisibility(View.INVISIBLE);
+                            teleOperationButton.setVisibility(View.INVISIBLE);
+                            startPlan.setVisibility(View.INVISIBLE);
+                            comeNear.setVisibility(View.INVISIBLE);
+                            keepStation.setVisibility(View.INVISIBLE);
                             Accelerate accelerate = (Accelerate) findViewById(R.id.accelerate);
                             accelerate.setVisibility(View.VISIBLE);
-                            accelerate.setOnAccelerate(teleop2);
+                            accelerate.setOnAccelerate(teleOperation);
                             Decelerate decelerate = (Decelerate) findViewById(R.id.decelerate);
                             decelerate.setVisibility(View.VISIBLE);
-                            decelerate.setOnDec(teleop2);
-                            stop.setVisibility(View.INVISIBLE);
+                            decelerate.setOnDec(teleOperation);
+                            stopPlan.setVisibility(View.INVISIBLE);
                             StopTeleop stopTeleop = (StopTeleop) findViewById(R.id.stopTeleop);
                             stopTeleop.setVisibility(View.VISIBLE);
-                            stopTeleop.setOnStop(teleop2);
+                            stopTeleop.setOnStop(teleOperation);
                             joystick.setVisibility(View.VISIBLE);
                             PlanControl pc = new PlanControl();
                             Teleoperation teleoperationMsg = new Teleoperation();
@@ -518,7 +517,7 @@ public class MainActivity extends AppCompatActivity
                             pc.setRequestId(0);
                             pc.setPlanId("SpearTeleoperation-" + imc.selectedvehicle);
                             imc.sendMessage(pc);
-                            setEstadoVeiculo(" ");
+                            setVehicleStateString(" ");
                         })
                         .setNegativeButton("No", (dialog, id) -> dialog.cancel());
                 AlertDialog alertDialog = alertDialogBuilder.create();
@@ -528,16 +527,16 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        start.setOnClickListener(v -> {
-            start.setBackgroundColor(pressed_color);
+        startPlan.setOnClickListener(v -> {
+            startPlan.setBackgroundColor(pressed_color);
 
             if (imc.selectedvehicle == null) {
                 warning();
-                start.setBackgroundColor(color);
+                startPlan.setBackgroundColor(color);
 
             } else {
                 requestPlans();
-                start.setBackgroundColor(color);
+                startPlan.setBackgroundColor(color);
 
             }
 
@@ -558,52 +557,52 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        near.setOnClickListener(v -> {
-            near.setBackgroundColor(pressed_color);
+        comeNear.setOnClickListener(v -> {
+            comeNear.setBackgroundColor(pressed_color);
 
             if (imc.selectedvehicle == null) {
                 warning();
-                near.setBackgroundColor(color);
+                comeNear.setBackgroundColor(color);
 
             } else {
                 near();
-                near.setBackgroundColor(color);
+                comeNear.setBackgroundColor(color);
 
             }
 
         });
 
-        stop.setOnClickListener(v -> {
+        stopPlan.setOnClickListener(v -> {
 
             if (imc.selectedvehicle == null) {
                 warning();
             } else {
                 stopPlan();
                 updateMap();
-                listaOutrosVeiculos.clear();
+                otherVehiclesPositionList.clear();
 
 
             }
         });
 
-        keep.setOnClickListener(v -> {
-            keep.setBackgroundColor(pressed_color);
+        keepStation.setOnClickListener(v -> {
+            keepStation.setBackgroundColor(pressed_color);
 
             if (imc.selectedvehicle == null) {
                 warning();
-                keep.setBackgroundColor(color);
+                keepStation.setBackgroundColor(color);
 
             } else {
                 keepStation();
-                keep.setBackgroundColor(color);
+                keepStation.setBackgroundColor(color);
             }
         });
 
 
 
-        centrarLoc.setOnClickListener(v -> {
-            if(posicao!=null)
-                mapController.setCenter(posicao);
+        centerLocation.setOnClickListener(v -> {
+            if(myPosition !=null)
+                mapController.setCenter(myPosition);
             else
                 Toast.makeText(context, "Turn Location on", Toast.LENGTH_SHORT).show();
 
@@ -623,15 +622,15 @@ public class MainActivity extends AppCompatActivity
     public void onBackPressed() {
 
 
-        if (teleop2 != null) {
-            teleop2.finish();
+        if (teleOperation != null) {
+            teleOperation.finish();
             getFragmentManager().popBackStack();
             dive.setVisibility(View.VISIBLE);
-            teleop.setVisibility(View.VISIBLE);
-            start.setVisibility(View.VISIBLE);
-            near.setVisibility(View.VISIBLE);
-            keep.setVisibility(View.VISIBLE);
-            stop.setVisibility(View.VISIBLE);
+            teleOperationButton.setVisibility(View.VISIBLE);
+            startPlan.setVisibility(View.VISIBLE);
+            comeNear.setVisibility(View.VISIBLE);
+            keepStation.setVisibility(View.VISIBLE);
+            stopPlan.setVisibility(View.VISIBLE);
             Accelerate accelerate = (Accelerate) findViewById(R.id.accelerate);
             accelerate.setVisibility(View.INVISIBLE);
             Decelerate decelerate =(Decelerate) findViewById(R.id.decelerate);
@@ -640,7 +639,7 @@ public class MainActivity extends AppCompatActivity
             stopTeleop.setVisibility(View.INVISIBLE);
             Joystick joystick = (Joystick) findViewById(R.id.joystick);
             joystick.setVisibility(View.INVISIBLE);
-            teleop2=null;
+            teleOperation =null;
 
         } else if (sendsms != null) {
 //
@@ -734,11 +733,11 @@ public class MainActivity extends AppCompatActivity
     public void onLocationChanged(Location location) {
         latitude = Math.toRadians(location.getLatitude());
         longitude = Math.toRadians(location.getLongitude());
-        posicao = new GeoPoint(location.getLatitude(), location.getLongitude());
+        myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
 
         final ArrayList<OverlayItem> items = new ArrayList<>();
 
-        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", posicao);
+        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker);
 
@@ -751,7 +750,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static GeoPoint localizacao(){
-        return posicao;
+        return myPosition;
 
 
     }
@@ -783,7 +782,7 @@ public class MainActivity extends AppCompatActivity
                 if(!(imc.stillConnected().contains(imc.selectedvehicle)))
                     runOnUiThread(() -> {
 
-                        servicebar.setText(" ");
+                        serviceBar.setText(" ");
                         velocity.setText(" ");
                         //retirar icon
                         if(map.getOverlays().contains(markersOverlay2))
@@ -794,39 +793,45 @@ public class MainActivity extends AppCompatActivity
             if (imc.stillConnected().contains(vname)) {
 
                 double[] lld = WGS84Utilities.toLatLonDepth(state);
+
+
                 final ArrayList<OverlayItem> items2 = new ArrayList<>();
 
                 if (!vname.equals(imc.getSelectedvehicle()))
-                    listaOutrosVeiculos.add(new GeoPoint(lld[0], lld[1]));
+                    otherVehiclesPositionList.add(new GeoPoint(lld[0], lld[1]));
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
                 marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
                 items2.add(marker2);
-                orientation2 = (float) state.getPsi();
-                int ori2 = (int) Math.round(Math.toDegrees(orientation2));
+                vehicleOrientation = (float) state.getPsi();
+                int ori2 = (int) Math.round(Math.toDegrees(vehicleOrientation));
                 ori2 = ori2 - 180;
                 if(context==MainActivity.this)
-                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.downarrow), 70, 70, false);
+                    bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 70, 70, false);
 
 
                 if (vname.equals(imc.getSelectedvehicle())) {
 
-                    posicaoVeiculo = new GeoPoint(lld[0], lld[1]);
+                    vehiclePosition = new GeoPoint(lld[0], lld[1]);
+
+                    latVeiculo= vehiclePosition.getLatitude();
+                    lonVeiculo= vehiclePosition.getLongitude();
+                    System.out.println(latVeiculo + "lat");
 
                     if(context==MainActivity.this)
 
-                        source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, R.drawable.arrowgreen), 70, 70, false);
+                        bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 70, 70, false);
 
                     DecimalFormat df2 = new DecimalFormat("#.##");
-                    vel = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
-                    dept = df2.format(state.getDepth());
+                    velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
+                    depthString = df2.format(state.getDepth());
                     if(velocity!=null)
-                        runOnUiThread(() -> velocity.setText("Speed:" + " " + vel + " " + "m/s" + "\n" + "Depth:" + " " + dept + "\n" +  estadoVeiculo + "\n"));
+                        runOnUiThread(() -> velocity.setText("Speed:" + " " + velocityString + " " + "m/s" + "\n" + "Depth:" + " " + depthString + "\n" + vehicleStateString + "\n"));
 
                 }
 
 
-                Bitmap target = RotateMyBitmap(source2, ori2);
-                Drawable marker_ = new BitmapDrawable(res, target);
+                Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
+                Drawable marker_ = new BitmapDrawable(resources, target);
                 markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
                 map.getOverlays().add(markersOverlay2);
             }
@@ -835,12 +840,12 @@ public class MainActivity extends AppCompatActivity
 
     @Contract(pure = true)
     public static ArrayList<GeoPoint> drawPosicaoOutrosVeiculos(){
-        return listaOutrosVeiculos;
+        return otherVehiclesPositionList;
     }
 
     @Contract(pure = true)
     public  static float orientation(){
-        return orientation2;
+        return vehicleOrientation;
 
     }
     public void zoomVehicle(final EstimatedState state) {
@@ -858,7 +863,7 @@ public class MainActivity extends AppCompatActivity
     public static Bitmap RotateMyBitmap(Bitmap source, float angle) {
         Matrix matrix = new Matrix();
         matrix.postRotate(angle);
-        if(source2!=null)
+        if(bitmapArrow!=null)
             return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
         else
             return null;
@@ -869,10 +874,10 @@ public class MainActivity extends AppCompatActivity
     @Periodic
     public void updateState() {
         stateList = new ArrayList<>();
-        states = imc.connectedVehicles();
+        vehicleStateList = imc.connectedVehicles();
 
 
-        for (VehicleState state : states) {
+        for (VehicleState state : vehicleStateList) {
             if(imc.selectedvehicle!=null)
                 if(imc.selectedvehicle.equals(state.getSourceName()))
                     stateList.add(state.getOpModeStr());
@@ -889,13 +894,13 @@ public class MainActivity extends AppCompatActivity
 
                 map.getOverlays().remove(lineMarker);
                 map.getOverlays().remove(nodeMarkerWaypoints);
-                if(waypointsPlan !=null)
-                    waypointsPlan.clear();
-                waypointsPlan =null;
-                if(mList!=null)
-                    mList.clear();
+                if(waypointsFromPlan !=null)
+                    waypointsFromPlan.clear();
+                waypointsFromPlan =null;
+                if(maneuverList !=null)
+                    maneuverList.clear();
                 updateMap();
-                listaOutrosVeiculos.clear();
+                otherVehiclesPositionList.clear();
                 if(planWaypoints !=null)
                     planWaypoints.clear();
                 if(planWaypointPolyline !=null){
@@ -910,9 +915,9 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    public static void  setEstadoVeiculo(String e){
+    public static void setVehicleStateString(String e){
 
-        estadoVeiculo=e;
+        vehicleStateString =e;
     }
 
     @Nullable
@@ -922,11 +927,11 @@ public class MainActivity extends AppCompatActivity
 
     }
     public static boolean returnCircle(){
-        return circleDrawn;
+        return isCircleDrawn;
 
     }
     public static boolean returnPoly(){
-        return polyDrawn;
+        return isPolylineDrawn;
 
     }
     @Nullable
@@ -952,9 +957,10 @@ public class MainActivity extends AppCompatActivity
     @Background
     @Periodic(500)
     public  void updateMap() {
-        listaOutrosVeiculos.clear();
+        otherVehiclesPositionList.clear();
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
+        System.out.println(latVeiculo + "lat");
 
         map.setMultiTouchControls(true);
 
@@ -985,7 +991,7 @@ public class MainActivity extends AppCompatActivity
                 circle.setStrokeWidth(7);
                 circle.setPoints(pointsArea);
                 map.getOverlays().add(circle);
-                circleDrawn = true;
+                isCircleDrawn = true;
             }
         }
 
@@ -994,7 +1000,7 @@ public class MainActivity extends AppCompatActivity
                 polyline = new Polyline();
                 polyline.setPoints(pointsLine);
                 map.getOverlays().add(polyline);
-                polyDrawn = true;
+                isPolylineDrawn = true;
             }
         }
 
@@ -1002,8 +1008,8 @@ public class MainActivity extends AppCompatActivity
             onLocationChanged(location);
 
 
-
-
+        if(Area.sendmList()!=null || Line.sendmList()!=null)
+             updateWaypoints();
 
 
 
@@ -1071,7 +1077,6 @@ public class MainActivity extends AppCompatActivity
                 if(planWaypointPolyline !=null)
                     map.getOverlays().remove(planWaypointPolyline);
                 map.getOverlays().add(planWaypointPolyline);
-
             }
 
 
@@ -1094,65 +1099,23 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    public  void updateWaypoints(ArrayList<GeoPoint> pointsofManeuver) {
+    public  void updateWaypoints() {
 
 
-      /*
-
-             //   }
-
-        //}/*
         if (Area.sendmList() != null) {
 
             for (int i = 0; i < Area.maneuverArrayList.size() - 1; i++) {
-
-
-                waypointsPlan = PlanUtilities.computeWaypoints(Area.maneuverArrayList.get(i));
-                planWaypoints = new ArrayList<>();
-                GeoPoint ponto;
-
-                if (waypointsPlan != null) {
-
-                    for (PlanUtilities.Waypoint point : waypointsPlan) {
-
-
-                        valLat = point.getLatitude();
-                        valLon = point.getLongitude();
-
-                        ponto = new GeoPoint(valLat, valLon);
-                        planWaypoints.add(ponto);
-                        if (planWaypoints.size() != 0) {
-                            for (int k = 0; k <= planWaypoints.size(); k++) {
-                                nodeMarkerWaypoints = new Marker(map);
-                                nodeMarkerWaypoints.setPosition(planWaypoints.get(k));
-                                nodeMarkerWaypoints.setIcon(nodeIcon);
-                                map.getOverlays().add(nodeMarkerWaypoints);
-
-
-                                if (!pontosAreaMarker.contains(planWaypoints.get(k))) {
-                                    pontosAreaMarker.add(planWaypoints.get(k));
-                                }
-
-
-                                planWaypointPolyline = new Polyline();
-                                planWaypointPolyline.setWidth(7);
-
-                                planWaypointPolyline.setPoints(pontosAreaMarker);
-                            }
-
-
-                            map.getOverlayManager().add(planWaypointPolyline);
-
-
-                        }
-                    }
-                }
+                callWaypoint(Area.maneuverArrayList);
             }
 
 
         }
-*/
+        else if(Line.sendmList()!=null){
 
+            for (int i = 0; i < Line.lineListManeuvers.size() - 1; i++) {
+                callWaypoint(Line.lineListManeuvers);
+            }
+        }
     }
 
 
@@ -1161,44 +1124,53 @@ public class MainActivity extends AppCompatActivity
 
     public void dive() {
         Loiter dive = new Loiter();
-        dive.setLon(lonVeiculo);
-        dive.setLat(latVeiculo);
-        dive.setZ(depth);
+            dive.setLon(lonVeiculo);
+            dive.setLat(latVeiculo);
+            System.out.println(dive.getLat() + "dive " + latVeiculo);
+            dive.setZ(depth);
+        System.out.println(dive.getZ() + "depth " + depth);
+
         dive.setZUnits(ZUnits.DEPTH);
-        dive.setSpeed(speed);
+            dive.setSpeed(speed);
+        System.out.println(dive.getSpeed() + "speed " + speed);
+
         if (!showrpm) {
-            dive.setSpeedUnits(SpeedUnits.METERS_PS);
-        } else {
-            dive.setSpeedUnits(SpeedUnits.RPM);
-        }
-        dive.setRadius(radius);
-        dive.setDuration(duration);
-        dive.setBearing(0);
-        String planid = "SpearDive-" + imc.selectedvehicle;
-        startBehaviour(planid, dive);
-        setEstadoVeiculo("Dive");
-        wayPoints(dive);
+                dive.setSpeedUnits(SpeedUnits.METERS_PS);
+            } else {
+                dive.setSpeedUnits(SpeedUnits.RPM);
+            }
+            dive.setRadius(radius);
+            dive.setDuration(duration);
+            dive.setBearing(0);
+            String planid = "SpearDive-" + imc.selectedvehicle;
+        if(lonVeiculo!=0&&latVeiculo!=0){
+
+            startBehaviour(planid, dive);}
+            setVehicleStateString("Dive");
+            wayPoints(dive);
 
     }
 
     public void keepStation() {
         StationKeeping stationKeepingmsg = new StationKeeping();
-        stationKeepingmsg.setLat(latVeiculo);
-        stationKeepingmsg.setLon(lonVeiculo);
-        stationKeepingmsg.setSpeed(speed);
-        if (!showrpm) {
-            stationKeepingmsg.setSpeedUnits(SpeedUnits.METERS_PS);
-        } else {
-            stationKeepingmsg.setSpeedUnits(SpeedUnits.RPM);
-        }
-        stationKeepingmsg.setDuration(duration);
-        stationKeepingmsg.setRadius(radius);
-        stationKeepingmsg.setZ(depth);
-        stationKeepingmsg.setZUnits(ZUnits.DEPTH);
-        String planid = " SpearStationKeeping-" + imc.selectedvehicle;
-        startBehaviour(planid, stationKeepingmsg);
-        wayPoints(stationKeepingmsg);
-        setEstadoVeiculo("StationKeeping");
+
+            stationKeepingmsg.setLat(latVeiculo);
+            stationKeepingmsg.setLon(lonVeiculo);
+            stationKeepingmsg.setSpeed(speed);
+            if (!showrpm) {
+                stationKeepingmsg.setSpeedUnits(SpeedUnits.METERS_PS);
+            } else {
+                stationKeepingmsg.setSpeedUnits(SpeedUnits.RPM);
+            }
+            stationKeepingmsg.setDuration(duration);
+            stationKeepingmsg.setRadius(radius);
+            stationKeepingmsg.setZ(depth);
+            stationKeepingmsg.setZUnits(ZUnits.DEPTH);
+            String planid = " SpearStationKeeping-" + imc.selectedvehicle;
+            startBehaviour(planid, stationKeepingmsg);
+            wayPoints(stationKeepingmsg);
+            setVehicleStateString("StationKeeping");
+
 
     }
 
@@ -1220,7 +1192,7 @@ public class MainActivity extends AppCompatActivity
         String planid = "SpearComeNear-" + imc.selectedvehicle;
         startBehaviour(planid, go);
         wayPoints(go);
-        setEstadoVeiculo("Come near");
+        setVehicleStateString("Come comeNear");
 
 
     }
@@ -1243,9 +1215,9 @@ public class MainActivity extends AppCompatActivity
 
 
         map.getOverlays().remove(nodeMarkerWaypoints);
-        if(waypointsPlan !=null)
-            waypointsPlan.clear();
-        waypointsPlan =null;
+        if(waypointsFromPlan !=null)
+            waypointsFromPlan.clear();
+        waypointsFromPlan =null;
         map.invalidate();
         map.getOverlays().clear();
         previous="M";
@@ -1265,11 +1237,11 @@ public class MainActivity extends AppCompatActivity
         pc.setFlags(0);
         pc.setPlanId("stopPlan-" + imc.selectedvehicle);
         imc.sendMessage(pc);
-        setEstadoVeiculo("Plan Stopped");
+        setVehicleStateString("Plan Stopped");
         previous="S";
         stopPressed=true;
-        polyDrawn=false;
-        circleDrawn=false;
+        isPolylineDrawn =false;
+        isCircleDrawn =false;
         if(nodeMarkerWaypoints!=null){
             map.getOverlays().remove(nodeMarkerWaypoints);
             nodeMarkerWaypoints.remove(map);
@@ -1278,8 +1250,8 @@ public class MainActivity extends AppCompatActivity
         if(planWaypoints !=null)
             planWaypoints.clear();
 
-        if(waypointsPlan !=null) {
-            waypointsPlan.clear();
+        if(waypointsFromPlan !=null) {
+            waypointsFromPlan.clear();
         }
         if(pointsPlans!=null) {
             pointsPlans.remove(map);
@@ -1307,12 +1279,12 @@ public class MainActivity extends AppCompatActivity
             Line.getPolyline().setPoints(nullArray);
         }
         if(Area.getCircle()){
-            circleDrawn=false;
+            isCircleDrawn =false;
             map.getOverlays().remove(circle);
 
         }
         if(Line.getPoly()){
-            polyDrawn=false;
+            isPolylineDrawn =false;
             map.getOverlays().remove(polyline);
             nullArray.clear();
             polyline.setPoints(nullArray);
@@ -1340,15 +1312,15 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        if(mList!=null) {
-            mList.clear();
+        if(maneuverList !=null) {
+            maneuverList.clear();
 
         }
         if( Area.sendmList()!=null){
             Area.maneuverArrayList.clear();
 
-            if(manList!=null)
-                manList.clear();
+            if(maneuverListFromArea !=null)
+                maneuverListFromArea.clear();
 
 
             Area.sendmList().clear();
@@ -1377,7 +1349,7 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
     }
 
-    //if there is wifi show an imageview, when the wifi is off change it to another
+    //if there is wifiDrawable show an imageview, when the wifiDrawable is off change it to another
     private boolean isConnectedToWifi(Context context) {
 
         boolean connectedWifi = false;
@@ -1401,13 +1373,13 @@ public class MainActivity extends AppCompatActivity
         // Check if is connected to a Wifi Network, if not popups a informative toast
         runOnUiThread(() -> {
             if (!isConnectedToWifi(MainActivity.this)) {
-                if(servicebar!=null){
-                    wifi.setVisibility(View.INVISIBLE);
-                    nowifi.setVisibility(View.VISIBLE);}
+                if(serviceBar !=null){
+                    wifiDrawable.setVisibility(View.INVISIBLE);
+                    noWifiImage.setVisibility(View.VISIBLE);}
             } else {
-                if(servicebar!=null){
-                    nowifi.setVisibility(View.INVISIBLE);
-                    wifi.setVisibility(View.VISIBLE);}
+                if(serviceBar !=null){
+                    noWifiImage.setVisibility(View.INVISIBLE);
+                    wifiDrawable.setVisibility(View.VISIBLE);}
             }
         });
     }
@@ -1423,8 +1395,8 @@ public class MainActivity extends AppCompatActivity
             PlanDB pdb = new PlanDB();
             pdb.setOp(PlanDB.OP.GET_INFO);
             imc.sendMessage(pdb);
-            registerForContextMenu(start);
-            openContextMenu(start);
+            registerForContextMenu(startPlan);
+            openContextMenu(startPlan);
         }
     }
 
@@ -1448,18 +1420,18 @@ public class MainActivity extends AppCompatActivity
             }
 
 
-            tamanhoLista = planList.size();
+            listSize = planList.size();
         } else if (v.getId() == R.id.servicebar) {
 
 
             vehicleList = new ArrayList<>();
-            mList = new ArrayList<>();
+            maneuverList = new ArrayList<>();
 
 
-            states = imc.connectedVehicles();
+            vehicleStateList = imc.connectedVehicles();
             if (imc.connectedVehicles() == null)
                 warning();
-            for (VehicleState state : states) {
+            for (VehicleState state : vehicleStateList) {
                 vehicleList.add(state.getSourceName() + ":" + state.getOpMode());
             }
             for (int i = 0; i < vehicleList.size(); i++) {
@@ -1490,7 +1462,7 @@ public class MainActivity extends AppCompatActivity
             pc.setRequestId(0);
             pc.setPlanId(item.toString());
             imc.sendMessage(pc);
-            setEstadoVeiculo("Plan:" + pc.getPlanId());
+            setVehicleStateString("Plan:" + pc.getPlanId());
 
             final Handler handler = new Handler();
             handler.postDelayed(() -> {
@@ -1499,8 +1471,8 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     previous="M";
                     stopPressed= false;
-                    mList.addAll(imc.allManeuvers());
-                    callWaypoint(mList);
+                    maneuverList.addAll(imc.allManeuvers());
+                    callWaypoint(maneuverList);
 
                 }
             },3000);
@@ -1511,9 +1483,9 @@ public class MainActivity extends AppCompatActivity
             String selected = item.toString();
             String[] getName2 = selected.split(":");
             String selectedName2 = getName2[0];
-            setEstadoVeiculo( getName2[1]);
+            setVehicleStateString( getName2[1]);
             imc.setSelectedvehicle(selectedName2.trim());
-            servicebar.setText(selectedName2);
+            serviceBar.setText(selectedName2);
             previous=null;
 
 
@@ -1525,8 +1497,8 @@ public class MainActivity extends AppCompatActivity
 
             }
         }
-        if (teleop2 != null) {
-            teleop2.finish();
+        if (teleOperation != null) {
+            teleOperation.finish();
         }
 
         return super.onContextItemSelected(item);
@@ -1550,19 +1522,19 @@ public class MainActivity extends AppCompatActivity
     public void makePoints(){
 
         GeoPoint ponto;
-        waypointsPlan = PlanUtilities.computeWaypoints(maneuverFromPlan);
+        waypointsFromPlan = PlanUtilities.computeWaypoints(maneuverFromPlan);
 
-        for (PlanUtilities.Waypoint point : waypointsPlan) {
+        for (PlanUtilities.Waypoint point : waypointsFromPlan) {
 
 
-            valLat = point.getLatitude();
-            valLon = point.getLongitude();
+            valueOfLatitude = point.getLatitude();
+            valueOfLongitude = point.getLongitude();
 
-            ponto = new GeoPoint(valLat, valLon);
+            ponto = new GeoPoint(valueOfLatitude, valueOfLongitude);
 
             if (!(planWaypoints.contains(ponto))) {
 
-                if (planWaypoints.size() != mList.size())
+                if (planWaypoints.size() != maneuverList.size())
                     planWaypoints.add(ponto);
 
 
@@ -1571,7 +1543,8 @@ public class MainActivity extends AppCompatActivity
         }
         planWaypointPolyline.setWidth(5);
         planWaypointPolyline.setPoints(planWaypoints);
-    }
+
+System.out.println(planWaypoints.toString() + " -------------main");    }
 
     public void warning() {
         Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();

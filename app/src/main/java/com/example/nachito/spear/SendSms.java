@@ -374,6 +374,9 @@ public class SendSms extends AppCompatActivity {
     }
 
     private boolean sendIMEI(IMCMessage message, String imeiNumber, double depth, double vel, String smsText) throws Exception {
+
+
+
       /* String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
         int timeoutMillis = 10000;
         editor.validateMessage();

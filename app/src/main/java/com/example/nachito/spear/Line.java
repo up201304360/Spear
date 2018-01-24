@@ -38,7 +38,7 @@ import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 import static com.example.nachito.spear.MainActivity.depth;
-import static com.example.nachito.spear.MainActivity.setEstadoVeiculo;
+import static com.example.nachito.spear.MainActivity.setVehicleStateString;
 import static com.example.nachito.spear.MainActivity.showrpm;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
@@ -244,7 +244,7 @@ public class Line extends AppCompatActivity{
     public static  boolean getPoly(){
         return isPolylineDrawn;
     }
-    @NonNull
+
     public void getIntentSelected(){
         Intent intent = getIntent();
         selected = intent.getExtras().getString("selected");
@@ -345,10 +345,11 @@ public class Line extends AppCompatActivity{
                 follow.setSpeedUnits(SpeedUnits.RPM);
             }
             maneuvers.add(follow);
-        }
+            lineListManeuvers = new ArrayList<>();
+            lineListManeuvers.addAll( maneuvers);        }
         startBehaviour("followPoints" + selected, PlanUtilities.createPlan("followPoints" + selected, maneuvers.toArray(new Maneuver[0])));
         previous = "M";
-        setEstadoVeiculo(" ");
+        setVehicleStateString(" ");
         onBackPressed();
     }
 
@@ -372,7 +373,7 @@ public class Line extends AppCompatActivity{
             go.setSpeedUnits(SpeedUnits.RPM);}
         String planid = "SpearGoto-"+selected;
         startBehaviour(planid, go);
-        setEstadoVeiculo(" ");
+        setVehicleStateString(" ");
         previous="M";
         onBackPressed();
 

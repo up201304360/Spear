@@ -34,16 +34,16 @@
 
 
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/wifiImage"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:background="@drawable/wifi"
-            android:layout_alignStart="@+id/imageView2"
+            android:layout_alignStart="@+id/noWifiImage"
             android:layout_alignBottom="@+id/servicebar"
             android:contentDescription="@string/wifion" />
 
         <ImageView
-            android:id="@+id/imageView2"
+            android:id="@+id/noWifiImage"
             android:layout_width="35dp"
             android:layout_height="35dp"
             android:layout_marginEnd="31dp"
@@ -62,7 +62,7 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/teleop"
+            android:id="@+id/teleOperationButton"
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:background="@drawable/teleopbutton"
@@ -124,7 +124,7 @@
             android:textSize="12sp" />
 
         <Button
-            android:id="@+id/KeepStation"
+            android:id="@+id/keepStation"
             android:layout_width="100dp"
             android:layout_height="50dp"
             android:background="@drawable/commandbutton"

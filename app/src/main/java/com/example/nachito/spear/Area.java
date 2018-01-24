@@ -42,7 +42,7 @@ import pt.lsts.util.PlanUtilities;
 
 import static com.example.nachito.spear.MainActivity.depth;
 import static com.example.nachito.spear.MainActivity.returnAreaPoints;
-import static com.example.nachito.spear.MainActivity.setEstadoVeiculo;
+import static com.example.nachito.spear.MainActivity.setVehicleStateString;
 import static com.example.nachito.spear.MainActivity.showrpm;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
@@ -346,11 +346,13 @@ public class Area  extends AppCompatActivity {
         }
         startBehaviour("SpearArea-"+selected , PlanUtilities.createPlan("SpearArea-"+selected, maneuvers.toArray(new Maneuver[0])));
         onBackPressed();
-        setEstadoVeiculo(" ");
+        setVehicleStateString(" ");
         previous="M";
+
     }
 
     public static List<Maneuver> sendmList(){
+
         return maneuverArrayList;
     }
 
@@ -371,7 +373,7 @@ public class Area  extends AppCompatActivity {
             go.setSpeedUnits(SpeedUnits.RPM);}
         String planid = "SpearGoto-"+selected;
         startBehaviour(planid, go);
-        setEstadoVeiculo(" ");
+        setVehicleStateString(" ");
         previous="M";
         onBackPressed();
     }
