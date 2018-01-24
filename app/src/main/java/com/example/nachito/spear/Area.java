@@ -87,11 +87,11 @@ public class Area  extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.area);
 
-        map = (MapView) findViewById(R.id.mapArea);
-        done = (Button) findViewById(R.id.doneArea);
+        map =  findViewById(R.id.mapArea);
+        done = findViewById(R.id.doneArea);
         nodeIcon = getResources().getDrawable(R.drawable.orangeled);
-        erase = (Button) findViewById(R.id.eraseArea);
-        eraseAll = (Button) findViewById(R.id.eraseAllArea);
+        erase =   findViewById(R.id.eraseArea);
+        eraseAll =  findViewById(R.id.eraseAllArea);
         map.setMultiTouchControls(true);
         Toast.makeText(this, " Long click on the map to choose an area", Toast.LENGTH_SHORT).show();
         getIntentSelected();

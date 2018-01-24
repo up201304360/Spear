@@ -813,8 +813,8 @@ static double lonVeiculo;
 
                     vehiclePosition = new GeoPoint(lld[0], lld[1]);
 
-                    latVeiculo= vehiclePosition.getLatitude();
-                    lonVeiculo= vehiclePosition.getLongitude();
+                    latVeiculo= Math.toRadians(vehiclePosition.getLatitude());
+                    lonVeiculo= Math.toRadians(vehiclePosition.getLongitude());
                     System.out.println(latVeiculo + "lat");
 
                     if(context==MainActivity.this)
@@ -1121,13 +1121,14 @@ static double lonVeiculo;
 
 
 
-
     public void dive() {
         Loiter dive = new Loiter();
             dive.setLon(lonVeiculo);
             dive.setLat(latVeiculo);
             System.out.println(dive.getLat() + "dive " + latVeiculo);
             dive.setZ(depth);
+            dive.setType(Loiter.TYPE.CIRCULAR);
+
         System.out.println(dive.getZ() + "depth " + depth);
 
         dive.setZUnits(ZUnits.DEPTH);
@@ -1175,7 +1176,7 @@ static double lonVeiculo;
     }
 
     public void near() {
-        if (latitude == 0 & longitude == 0) {
+        if (latitude == 0 && longitude == 0) {
             return;
         }
         final Goto go = new Goto();
@@ -1222,6 +1223,7 @@ static double lonVeiculo;
         map.getOverlays().clear();
         previous="M";
         stopPressed= false;
+
         imc.sendMessage(pc);
 
 
