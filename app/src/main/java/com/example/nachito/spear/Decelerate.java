@@ -13,8 +13,8 @@ import android.view.View;
  */
 
 public class Decelerate extends View {
-    private DecListener listener;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
+    private DecListener listener;
 
 
     public Decelerate(Context context) {
@@ -30,7 +30,14 @@ public class Decelerate extends View {
     }
 
     public void setOnDec(DecListener listener) {
-        this .listener = listener;
+        this.listener = listener;
+    }
+
+
+    @Override
+    public boolean performClick() {
+        super.performClick();
+        return true;
     }
 
     @Override
@@ -41,12 +48,19 @@ public class Decelerate extends View {
             listener.dec();
 
         invalidate();
-        if(actionType == MotionEvent.ACTION_UP) {
-            release();}
+        if (actionType == MotionEvent.ACTION_UP) {
+            release();
+        }
+        switch (event.getAction()){
+            case MotionEvent.ACTION_UP:
+                performClick();
+                return true;
+        }
         return true;
     }
 
-    public void release(){
+
+    public void release() {
 
         this.setBackgroundColor(color);
         if (listener != null) {

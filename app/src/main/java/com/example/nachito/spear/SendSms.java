@@ -42,6 +42,8 @@ import static android.Manifest.permission.SEND_SMS;
  */
 
 public class SendSms extends AppCompatActivity {
+    private static final int REQUEST_CODE_PERMISSION = 2;
+    static GeoPoint pontoFinal;
     RadioButton dive;
     RadioButton surface;
     RadioButton abort;
@@ -55,16 +57,17 @@ public class SendSms extends AppCompatActivity {
     BroadcastReceiver mBroadcastTime;
     String checked;
     String[] mPermission = {READ_SMS, SEND_SMS};
-    private static final int REQUEST_CODE_PERMISSION = 2;
     Button sms;
     Button iridium;
     String[] imeiNumb;
     String[] vehicleNames;
     String numeroF;
-    static GeoPoint pontoFinal;
     IMCMessage msg;
 
+    public static GeoPoint pontoSMS() {
+        return pontoFinal;
 
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +95,7 @@ public class SendSms extends AppCompatActivity {
         }
 
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -105,39 +109,29 @@ public class SendSms extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Log.e("Req Code", "" + requestCode);
-        if (requestCode == REQUEST_CODE_PERMISSION) {
-            if (grantResults.length == 4 &&
-                    grantResults[0] == MockPackageManager.PERMISSION_GRANTED &&
-                    grantResults[1] == MockPackageManager.PERMISSION_GRANTED) {
-                // Success Stuff here
-
-            }
-        }
 
     }
 
-
     public void addListenerOnButton() {
-        dive = (RadioButton) findViewById(R.id.diveRadioButton);
-        surface = (RadioButton) findViewById(R.id.surfaceRadioButton);
-        abort = (RadioButton) findViewById(R.id.abortRadioButton);
-        goTo = (RadioButton) findViewById(R.id.gotoRadioButton);
-        pos = (RadioButton) findViewById(R.id.pos);
-        stationKeeping = (RadioButton) findViewById(R.id.stationKeepingRadioButton);
-        nomeVeiculo = (TextView) findViewById(R.id.nomeVeiculo);
-        sms= (Button) findViewById(R.id.button3);
-        iridium=(Button) findViewById(R.id.button2);
-//sms
+        dive =  findViewById(R.id.diveRadioButton);
+        surface =  findViewById(R.id.surfaceRadioButton);
+        abort =  findViewById(R.id.abortRadioButton);
+        goTo =  findViewById(R.id.gotoRadioButton);
+        pos =  findViewById(R.id.pos);
+        stationKeeping =  findViewById(R.id.stationKeepingRadioButton);
+        nomeVeiculo =  findViewById(R.id.nomeVeiculo);
+        sms =  findViewById(R.id.button3);
+        iridium =  findViewById(R.id.button2);
+        //sms
         vehicleNumber = getApplicationContext().getResources().getStringArray(R.array.phonenumbers);
         nomes = getApplicationContext().getResources().getStringArray(R.array.names);
 
         //iridium
-        imeiNumb=getApplicationContext().getResources().getStringArray(R.array.imei);
-        vehicleNames= getApplicationContext().getResources().getStringArray(R.array.namesIMEI);
+        imeiNumb = getApplicationContext().getResources().getStringArray(R.array.imei);
+        vehicleNames = getApplicationContext().getResources().getStringArray(R.array.namesIMEI);
 
 
-        //
+
         Intent intent = getIntent();
         final String selected = intent.getExtras().getString("selected");
         for (int i = 0; i < nomes.length; i++) {
@@ -147,34 +141,36 @@ public class SendSms extends AppCompatActivity {
                 if (nomes[i].contains(selected)) {
                     numeroFinal = vehicleNumber[i];
                 }
-                if(vehicleNames[i].contains(selected)){
-                    numeroF= imeiNumb[i];
+                if (vehicleNames[i].contains(selected)) {
+                    numeroF = imeiNumb[i];
                 }
 
             }
         }
         pos.setOnCheckedChangeListener((compoundButton, b) -> {
-            if(selected==null)
+            if (selected == null)
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
-                checked=("pos");}
+                checked = ("pos");
+            }
         });
 
         dive.setOnCheckedChangeListener((compoundButton, b) -> {
-            if(selected==null)
+            if (selected == null)
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
-                checked=("dive");}
+                checked = ("dive");
+            }
         });
 
 
-        surface.setOnCheckedChangeListener((compoundButton, b) -> checked="surface");
+        surface.setOnCheckedChangeListener((compoundButton, b) -> checked = "surface");
 
         stationKeeping.setOnCheckedChangeListener((compoundButton, b) -> {
 
-            if(selected==null)
+            if (selected == null)
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
@@ -186,7 +182,7 @@ public class SendSms extends AppCompatActivity {
             }
         });
         goTo.setOnCheckedChangeListener((compoundButton, b) -> {
-            if(selected==null)
+            if (selected == null)
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
@@ -198,11 +194,12 @@ public class SendSms extends AppCompatActivity {
         });
 
         abort.setOnCheckedChangeListener((compoundButton, b) -> {
-            if(selected==null)
+            if (selected == null)
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
-                checked="abort";}
+                checked = "abort";
+            }
         });
 
 
@@ -273,8 +270,6 @@ public class SendSms extends AppCompatActivity {
 
     }
 
-
-
     private void sendSMS(String phoneNumber, double depth, double vel, String smsText) {
         try {
 
@@ -315,19 +310,18 @@ public class SendSms extends AppCompatActivity {
             try {
 
 
-
                 SmsManager sms = SmsManager.getDefault();
                 switch (smsText) {
 
                     case "sk":
 
-                        GeoPoint ponto= MapSMS.resultado();
-                        double latitude= ponto.getLatitude();
-                        double longitude=ponto.getLongitude();
-                        sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude  +";lon=" + longitude +";speed="+vel, sentPI, null);
-                        pontoFinal=ponto;
-                        checked=null;
-                        MainActivity.previous="M";
+                        GeoPoint ponto = MapSMS.resultado();
+                        double latitude = ponto.getLatitude();
+                        double longitude = ponto.getLongitude();
+                        sms.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude + ";lon=" + longitude + ";speed=" + vel, sentPI, null);
+                        pontoFinal = ponto;
+                        checked = null;
+                        MainActivity.previous = "M";
 
                         SendSms.super.onBackPressed();
 
@@ -335,14 +329,14 @@ public class SendSms extends AppCompatActivity {
 
                     case "go":
 
-                        GeoPoint ponto2= MapSMS.resultado();
-                        double latitude2= ponto2.getLatitude();
-                        double longitude2=ponto2.getLongitude();
-                        sms.sendTextMessage(phoneNumber, null, smsText + " "+"lat=" + latitude2  +";lon=" + longitude2 +";speed="+vel, sentPI, null);
-                        pontoFinal=ponto2;
-                        MainActivity.previous="M";
+                        GeoPoint ponto2 = MapSMS.resultado();
+                        double latitude2 = ponto2.getLatitude();
+                        double longitude2 = ponto2.getLongitude();
+                        sms.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude2 + ";lon=" + longitude2 + ";speed=" + vel, sentPI, null);
+                        pontoFinal = ponto2;
+                        MainActivity.previous = "M";
 
-                        checked=null;
+                        checked = null;
                         SendSms.super.onBackPressed();
 
                         break;
@@ -350,8 +344,8 @@ public class SendSms extends AppCompatActivity {
 
                     default:
                         sms.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
-                        checked=null;
-                        MainActivity.previous="M";
+                        checked = null;
+                        MainActivity.previous = "M";
                         SendSms.super.onBackPressed();
                         break;
                 }
@@ -365,11 +359,6 @@ public class SendSms extends AppCompatActivity {
             Log.i("SMS", "" + e);
 
         }
-
-    }
-
-    public  static GeoPoint pontoSMS(){
-        return pontoFinal;
 
     }
 
@@ -454,11 +443,10 @@ public class SendSms extends AppCompatActivity {
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
 
         unregisterBroadcast();
-
 
 
     }
@@ -471,14 +459,13 @@ public class SendSms extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
         unregisterBroadcast();
     }
 
-    public  void unregisterBroadcast(){
-        if(mBroadcastTime != null) {
+    public void unregisterBroadcast() {
+        if (mBroadcastTime != null) {
             try {
                 unregisterReceiver(mBroadcastTime);
             } catch (Exception ignored) {

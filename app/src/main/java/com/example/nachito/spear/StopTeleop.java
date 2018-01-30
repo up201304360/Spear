@@ -12,10 +12,9 @@ import android.view.View;
  * Created by ines on 5/18/17.
  */
 
-public class StopTeleop  extends View {
-    private StopListener listener;
-
+public class StopTeleop extends View {
     int color = Color.parseColor("#ff0000"), pressed_color = Color.parseColor("#568203");
+    private StopListener listener;
 
     public StopTeleop(Context context) {
         super(context);
@@ -46,6 +45,11 @@ public class StopTeleop  extends View {
         invalidate();
         if (actionType == MotionEvent.ACTION_UP) {
             release();
+        }
+        switch (event.getAction()){
+            case MotionEvent.ACTION_UP:
+                performClick();
+                return true;
         }
         return true;
     }

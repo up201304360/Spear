@@ -13,12 +13,16 @@ import android.telephony.SmsMessage;
 
 public class ReceiveSms extends BroadcastReceiver {
 
-    String[] vehicleNumber;
     private static SmsListener mListener;
+    String[] vehicleNumber;
+
+    public static void bindListener(SmsListener listener) {
+        mListener = listener;
+    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Bundle data  = intent.getExtras();
+        Bundle data = intent.getExtras();
 
         Object[] pdus = new Object[0];
         if (data != null) {
@@ -45,11 +49,5 @@ public class ReceiveSms extends BroadcastReceiver {
 
         }
 
-    }
-
-
-
-    public static void bindListener(SmsListener listener) {
-        mListener = listener;
     }
 }

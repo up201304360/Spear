@@ -8,10 +8,6 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-/**
- *
- * Created by nachito on 26/03/17.
- */
 import android.os.Handler;
 import android.util.Log;
 
@@ -35,18 +31,18 @@ public class Joystick extends View {
     // =========================================
 
     public Joystick(Context context) {
-        super (context);
+        super(context);
         initJoystickView();
     }
 
     public Joystick(Context context, AttributeSet attrs) {
-        super (context, attrs);
+        super(context, attrs);
         initJoystickView();
     }
 
     public Joystick(Context context, AttributeSet attrs,
                     int defStyle) {
-        super (context, attrs, defStyle);
+        super(context, attrs, defStyle);
         initJoystickView();
     }
 
@@ -76,7 +72,7 @@ public class Joystick extends View {
     // =========================================
 
     public void setOnJoystickMovedListener(JoystickMovedListener listener) {
-        this .listener = listener;
+        this.listener = listener;
     }
 
 
@@ -112,10 +108,11 @@ public class Joystick extends View {
         }
         return result;
     }
+
     @Override
     protected void onDraw(Canvas canvas) {
-        float px = (float) (getMeasuredWidth() /2);
-        float py = (float) (getMeasuredHeight() /2);
+        float px = (float) (getMeasuredWidth() / 2);
+        float py = (float) (getMeasuredHeight() / 2);
         float radius = Math.min(px, py);
 
         // Draw the background
@@ -123,7 +120,7 @@ public class Joystick extends View {
 
         // Draw the handle
         canvas.drawCircle((int) touchX + px, (int) touchY + py,
-                handleRadius , handlePaint);
+                handleRadius, handlePaint);
 
         canvas.save();
     }
@@ -157,6 +154,7 @@ public class Joystick extends View {
 
         } else if (actionType == MotionEvent.ACTION_UP) {
             returnHandleToCenter();
+            performClick();
             Log.d(TAG, "X:" + touchX + "|Y:" + touchY);
         }
         return true;

@@ -13,8 +13,8 @@ import android.view.View;
  */
 
 public class Accelerate  extends View {
-    private AccelListener listener;
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
+    private AccelListener listener;
 
     public Accelerate(Context context) {
         super(context);
@@ -43,6 +43,7 @@ public class Accelerate  extends View {
             listener.accelerate();
         invalidate();
         if(actionType == MotionEvent.ACTION_UP) {
+            performClick();
             release();}
         return true;
     }

@@ -19,15 +19,28 @@ import pt.lsts.neptus.messages.listener.MessageInfo;
  */
 
 
-@EBean(scope= Scope.Singleton)
-public class IMCGlobal extends IMCProtocol  {
+@EBean(scope = Scope.Singleton)
+public class IMCGlobal extends IMCProtocol {
 
+    String selectedvehicle = null;
     private VehicleList veiculos;
-    String selectedvehicle= null;
-
-
     private PlanList planos;
     private PlanList maneuvers;
+
+    IMCGlobal() {
+        super();
+        setAutoConnect(ConnectFilter.VEHICLES_ONLY);
+        veiculos = new VehicleList();
+        register(veiculos);
+
+        planos = new PlanList(this);
+        register(planos);
+        maneuvers = new PlanList(this);
+        register(maneuvers);
+
+
+    }
+
     @Override
     public void onMessage(MessageInfo messageInfo, IMCMessage imcMessage) {
         super.onMessage(messageInfo, imcMessage);
@@ -38,39 +51,26 @@ public class IMCGlobal extends IMCProtocol  {
         return selectedvehicle;
     }
 
-
-
     void setSelectedvehicle(String selectedvehicle) {
         this.selectedvehicle = selectedvehicle;
 
     }
 
-
-
-    IMCGlobal() {
-        super();
-        setAutoConnect(ConnectFilter.VEHICLES_ONLY);
-        veiculos= new VehicleList();
-        register(veiculos);
-
-        planos = new PlanList(this);
-        register(planos);
-        maneuvers= new PlanList(this);
-        register(maneuvers);
-
-
+    List<VehicleState> connectedVehicles() {
+        return veiculos.connectedVehicles();
     }
 
-    List<VehicleState> connectedVehicles()
-    {
-        return  veiculos.connectedVehicles();
+    LinkedHashSet<String> stillConnected() {
+        return veiculos.stillConnected();
     }
 
-    LinkedHashSet<String> stillConnected(){ return  veiculos.stillConnected();}
+    List<String> allPlans() {
+        return planos.ListaPlanos(selectedvehicle);
+    }
 
-    List<String> allPlans(){return planos.ListaPlanos(selectedvehicle);}
-
-    List<Maneuver> allManeuvers(){return  maneuvers.ListaManeuvers(selectedvehicle);}
+    List<Maneuver> allManeuvers() {
+        return maneuvers.ListaManeuvers(selectedvehicle);
+    }
 
     void sendMessage(IMCMessage imcMessage) {
         sendMessage(getSelectedvehicle(), imcMessage);

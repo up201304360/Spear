@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.Toast;
+
 import org.osmdroid.api.IMapController;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.util.GeoPoint;
@@ -19,11 +20,11 @@ import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 
 
 /**
@@ -33,9 +34,10 @@ import java.util.Set;
 
 public class MapSMS extends AppCompatActivity {
 
-    IMapController mapController;
     static double lat;
     static double lon;
+    static ArrayList<GeoPoint> markers = new ArrayList<>();
+    IMapController mapController;
     Button done;
     MapView map;
     Button eraseSMS;
@@ -44,21 +46,25 @@ public class MapSMS extends AppCompatActivity {
     Marker startMarker;
     ArrayList<GeoPoint> posicaoOutrosVeiculos;
     GeoPoint centro;
+    final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centro);
     com.example.nachito.spear.ScaleBarOverlay scaleBarOverlay;
-    static ArrayList<GeoPoint> markers = new ArrayList<>();
+
+    public static GeoPoint resultado() {
+        return new GeoPoint(lat, lon);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sms);
-        map = (MapView) findViewById(R.id.mapSMS);
-        done = (Button) findViewById(R.id.doneSMS);
+        map =  findViewById(R.id.mapSMS);
+        done =  findViewById(R.id.doneSMS);
         nodeIcon = getResources().getDrawable(R.drawable.orangeled);
-        eraseSMS= (Button)findViewById(R.id.eraseSMS);
+        eraseSMS =  findViewById(R.id.eraseSMS);
         map.setMultiTouchControls(true);
-        scaleBarOverlay = new com.example.nachito.spear.ScaleBarOverlay( map);
+        scaleBarOverlay = new com.example.nachito.spear.ScaleBarOverlay(map);
         List<Overlay> overlays = map.getOverlays();
-        Toast.makeText(this,"Long Click on the map to choose a location for the vehicle to go", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Long Click on the map to choose a location for the vehicle to go", Toast.LENGTH_SHORT).show();
         overlays.add(scaleBarOverlay);
 
 
@@ -107,7 +113,7 @@ public class MapSMS extends AppCompatActivity {
 
                 eraseSMS.setOnClickListener(v -> {
 
-                    for (int i = 0; i <=markers.size(); i++) {
+                    for (int i = 0; i <= markers.size(); i++) {
 
                         startMarker.remove(map);
                         map.invalidate();
@@ -116,8 +122,6 @@ public class MapSMS extends AppCompatActivity {
                     markers.clear();
                     numPontos = 0;
                     map.invalidate();
-
-
 
 
                 });
@@ -145,13 +149,6 @@ public class MapSMS extends AppCompatActivity {
 
     }
 
-    final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centro);
-
-
-    public static GeoPoint resultado() {
-        return new GeoPoint(lat, lon);
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -161,7 +158,6 @@ public class MapSMS extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
 
 
     public void drawRed() {
@@ -178,9 +174,9 @@ public class MapSMS extends AppCompatActivity {
         Bitmap newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
         float orientation2 = MainActivity.orientation();
         int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-        ori2 = ori2-180;
+        ori2 = ori2 - 180;
 
-        Bitmap target = MainActivity.RotateMyBitmap(newMarker2,ori2);
+        Bitmap target = MainActivity.RotateMyBitmap(newMarker2, ori2);
 
 
         Drawable markerLoc = new BitmapDrawable(getResources(), target);
@@ -188,12 +184,9 @@ public class MapSMS extends AppCompatActivity {
         map.getOverlays().add(markersOverlay2);
 
 
-
-
-
-
     }
-    public void drawBlue(){
+
+    public void drawBlue() {
         posicaoOutrosVeiculos = MainActivity.drawPosicaoOutrosVeiculos();
 
         Set<GeoPoint> hs = new HashSet<>();
@@ -201,9 +194,9 @@ public class MapSMS extends AppCompatActivity {
         posicaoOutrosVeiculos.clear();
         posicaoOutrosVeiculos.addAll(hs);
 
-        for(int i = 0 ; i<posicaoOutrosVeiculos.size();i++) {
+        for (int i = 0; i < posicaoOutrosVeiculos.size(); i++) {
 
-            if(posicaoOutrosVeiculos.get(i)!=centro) {
+            if (posicaoOutrosVeiculos.get(i) != centro) {
 
                 final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
                 OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", posicaoOutrosVeiculos.get(i));
@@ -213,8 +206,8 @@ public class MapSMS extends AppCompatActivity {
                 Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
                 float orientation2 = MainActivity.orientation();
                 int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-                ori2 = ori2-180;
-                Bitmap target = MainActivity.RotateMyBitmap(source2,ori2);
+                ori2 = ori2 - 180;
+                Bitmap target = MainActivity.RotateMyBitmap(source2, ori2);
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
                 map.getOverlays().add(markersOverlay_);
@@ -233,15 +226,16 @@ public class MapSMS extends AppCompatActivity {
             Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowgreen), 70, 70, false);
             float orientation2 = MainActivity.orientation();
             int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-            ori2 = ori2-180;
+            ori2 = ori2 - 180;
 
-            Bitmap target = MainActivity.RotateMyBitmap(newMarker,ori2);
+            Bitmap target = MainActivity.RotateMyBitmap(newMarker, ori2);
             Drawable markerLoc = new BitmapDrawable(getResources(), target);
             final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, markerLoc, null, this);
             map.getOverlays().add(markersOverlay2);
 
         }
     }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -250,10 +244,8 @@ public class MapSMS extends AppCompatActivity {
 
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
-
-
 
 
     }
@@ -265,8 +257,7 @@ public class MapSMS extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
 
     }

@@ -40,12 +40,10 @@ public class SettingsFragment extends PreferenceFragmentCompat implements
     }
 
 
-    private void setPreferenceSummary(android.support.v7.preference.Preference  preference, String value) {
+    private void setPreferenceSummary(android.support.v7.preference.Preference preference, String value) {
         preference.setSummary(value);
 
     }
-
-
 
 
     @Override

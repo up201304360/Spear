@@ -18,12 +18,11 @@ import java.util.List;
 
 
 class OsmMapsItemizedOverlay extends ItemizedIconOverlay<OverlayItem> {
-    private ArrayList<OverlayItem> mItemList = new ArrayList<OverlayItem>();
+    private ArrayList<OverlayItem> mItemList = new ArrayList<>();
 
     public OsmMapsItemizedOverlay(List<OverlayItem> pList, Drawable pDefaultMarker, OnItemGestureListener<OverlayItem> pOnItemGestureListener, Context pContext) {
         super(pList, pDefaultMarker, pOnItemGestureListener, pContext);
     }
-
 
 
     void addOverlay(OverlayItem aOverlayItem) {

@@ -19,29 +19,30 @@ import pt.lsts.imc.net.Consume;
  */
 
 public class VehicleList {
-    private final LinkedHashMap< String, Pair<Date, VehicleState>> connectedVehicles = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Pair<Date, VehicleState>> connectedVehicles = new LinkedHashMap<>();
     private final LinkedHashMap<String, Pair<Date, String>> hashMapTime = new LinkedHashMap<>();
     private LinkedHashSet<String> withoutRepetitions;
 
     @Consume
     public void vehicle(VehicleState msg) {
-        String nome=msg.getSourceName();
+        String nome = msg.getSourceName();
 
         synchronized (connectedVehicles) {
             connectedVehicles.put(nome, new Pair<>(new Date(), msg));
         }
         synchronized (hashMapTime) {
-            hashMapTime.put( nome, new Pair<>(new Date(), nome));
+            hashMapTime.put(nome, new Pair<>(new Date(), nome));
         }
     }
 
 
-    List<VehicleState> connectedVehicles(){
+    List<VehicleState> connectedVehicles() {
 
         ArrayList<VehicleState> ligados = new ArrayList<>();
-        Date connectedTime = new Date(System.currentTimeMillis()-5000);
+        Date connectedTime = new Date(System.currentTimeMillis() - 5000);
         synchronized (connectedVehicles) {
             for (Map.Entry<String, Pair<Date, VehicleState>> entry : connectedVehicles.entrySet()) {
+                assert entry.getValue().first != null;
                 if (entry.getValue().first.after(connectedTime))
                     ligados.add(entry.getValue().second);
 
@@ -50,14 +51,15 @@ public class VehicleList {
         return ligados;
     }
 
-    LinkedHashSet<String> stillConnected(){
+    LinkedHashSet<String> stillConnected() {
         ArrayList<String> ligados = new ArrayList<>();
-        Date connectedTime = new Date(System.currentTimeMillis()-5000);
+        Date connectedTime = new Date(System.currentTimeMillis() - 5000);
 
         synchronized (hashMapTime) {
 
 
-            for(Map.Entry<String, Pair<Date, String>> entry : hashMapTime.entrySet()) {
+            for (Map.Entry<String, Pair<Date, String>> entry : hashMapTime.entrySet()) {
+                assert entry.getValue().first != null;
                 if (entry.getValue().first.after(connectedTime))
 
                     ligados.add(entry.getValue().second);
@@ -65,14 +67,13 @@ public class VehicleList {
 
                 withoutRepetitions = new LinkedHashSet<>();
 
-                Iterator< String> it = ligados.iterator();
+                Iterator<String> it = ligados.iterator();
 
-                while(it.hasNext()) {
+                while (it.hasNext()) {
                     String val = it.next();
                     if (withoutRepetitions.contains(val)) {
                         it.remove();
-                    }
-                    else
+                    } else
                         withoutRepetitions.add(val);
                 }
 

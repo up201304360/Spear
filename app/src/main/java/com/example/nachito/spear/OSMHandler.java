@@ -11,20 +11,17 @@ import org.osmdroid.util.GeoPoint;
  * Created by nachito on 25/04/17.
  */
 
-public class OSMHandler  implements LocationListener
-{
+public class OSMHandler implements LocationListener {
 
     private MainActivity mMapActivity;
 
-    OSMHandler(MainActivity aMapActivity)
-    {
+    OSMHandler(MainActivity aMapActivity) {
         this.mMapActivity = aMapActivity;
 
     }
 
     @Override
-    public void onLocationChanged(Location location)
-    {
+    public void onLocationChanged(Location location) {
 
 
         int latitude = (int) (location.getLatitude() * 1E6);
@@ -35,20 +32,17 @@ public class OSMHandler  implements LocationListener
     }
 
     @Override
-    public void onProviderDisabled(String provider)
-    {
+    public void onProviderDisabled(String provider) {
 
     }
 
     @Override
-    public void onProviderEnabled(String provider)
-    {
+    public void onProviderEnabled(String provider) {
 
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras)
-    {
+    public void onStatusChanged(String provider, int status, Bundle extras) {
 
     }
 
