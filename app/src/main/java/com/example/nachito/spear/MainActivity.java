@@ -186,19 +186,17 @@ public class MainActivity extends AppCompatActivity
     android.content.res.Resources resources;
 
     static Bitmap bitmapArrow;
-    ArrayList<GeoPoint> pointsArea= Area.getPointsArea();
 
     Polyline polyline = Line.getPolyline();
     static Boolean isCircleDrawn = Area.getCircle();
     static Boolean isPolylineDrawn = Line.getPoly();
-    List<Maneuver> maneuverListFromArea = Area.sendmList();
+    List<Maneuver> maneuverListFromArea;
+
 static double latVeiculo;
 static double lonVeiculo;
     static boolean stopPressed=false;
     Polygon circle;
-    static ArrayList<GeoPoint> pointsLine= Line.getPointsLine();
-    Marker markerArea;
-    Marker markerLine;
+   Boolean updateWaypointsBoolean=false;
     Polyline planWaypointPolyline;
     ArrayList<GeoPoint> pontosAreaMarker = new ArrayList<>();
     static ArrayList<GeoPoint> planWaypoints = new ArrayList<>();
@@ -815,7 +813,6 @@ static double lonVeiculo;
 
                     latVeiculo= Math.toRadians(vehiclePosition.getLatitude());
                     lonVeiculo= Math.toRadians(vehiclePosition.getLongitude());
-                    System.out.println(latVeiculo + "lat");
 
                     if(context==MainActivity.this)
 
@@ -826,7 +823,7 @@ static double lonVeiculo;
                     depthString = df2.format(state.getDepth());
                     if(velocity!=null)
                         runOnUiThread(() -> velocity.setText("Speed:" + " " + velocityString + " " + "m/s" + "\n" + "Depth:" + " " + depthString + "\n" + vehicleStateString + "\n"));
-
+//TODO state
                 }
 
 
@@ -960,7 +957,6 @@ static double lonVeiculo;
         otherVehiclesPositionList.clear();
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
-        System.out.println(latVeiculo + "lat");
 
         map.setMultiTouchControls(true);
 
@@ -979,41 +975,22 @@ static double lonVeiculo;
         }
 
 
-
         if (Line.getPolyline() != null) {
             map.getOverlays().add(polyline);
         }
 
 
-        if (Area.getCircle()) {
-            if (pointsArea.size() != 0) {
-                circle = new Polygon();
-                circle.setStrokeWidth(7);
-                circle.setPoints(pointsArea);
-                map.getOverlays().add(circle);
-                isCircleDrawn = true;
-            }
-        }
-
-        if (Line.getPoly()) {
-            if (pointsLine.size() != 0) {
-                polyline = new Polyline();
-                polyline.setPoints(pointsLine);
-                map.getOverlays().add(polyline);
-                isPolylineDrawn = true;
-            }
-        }
-
         if (location != null)
             onLocationChanged(location);
 
+        if (!updateWaypointsBoolean) {
+            if (Area.sendmList() != null || Line.sendmList() != null) {
 
-        if(Area.sendmList()!=null || Line.sendmList()!=null)
-             updateWaypoints();
+                updateWaypoints();
+            }
 
 
-
-
+        }
     }
 
     public void drawCompass() {
@@ -1042,28 +1019,6 @@ static double lonVeiculo;
         }
 
 
-        if (pointsArea.size() != 0) {
-
-
-            for (int i = 0; i < pointsArea.size(); i++) {
-                markerArea = new Marker(map);
-
-                markerArea.setPosition(pointsArea.get(i));
-                markerArea.setIcon(lineIcon);
-                map.getOverlays().add(markerArea);
-
-            }
-        }
-
-        if (pointsLine.size() != 0) {
-            for (int i = 0; i < pointsLine.size(); i++) {
-                markerLine = new Marker(map);
-
-                markerLine.setPosition(pointsLine.get(i));
-                markerLine.setIcon(lineIcon);
-                map.getOverlays().add(markerLine);
-            }
-        }
 
 
         if (planWaypoints.size() != 0) {
@@ -1101,11 +1056,13 @@ static double lonVeiculo;
 
     public  void updateWaypoints() {
 
+        updateWaypointsBoolean=true;
 
         if (Area.sendmList() != null) {
-
+            maneuverListFromArea= Area.sendmList();
             for (int i = 0; i < Area.maneuverArrayList.size() - 1; i++) {
                 callWaypoint(Area.maneuverArrayList);
+
             }
 
 
@@ -1125,15 +1082,12 @@ static double lonVeiculo;
         Loiter dive = new Loiter();
             dive.setLon(lonVeiculo);
             dive.setLat(latVeiculo);
-            System.out.println(dive.getLat() + "dive " + latVeiculo);
             dive.setZ(depth);
             dive.setType(Loiter.TYPE.CIRCULAR);
 
-        System.out.println(dive.getZ() + "depth " + depth);
 
         dive.setZUnits(ZUnits.DEPTH);
             dive.setSpeed(speed);
-        System.out.println(dive.getSpeed() + "speed " + speed);
 
         if (!showrpm) {
                 dive.setSpeedUnits(SpeedUnits.METERS_PS);
@@ -1261,7 +1215,6 @@ static double lonVeiculo;
         }
         if(Area.getPointsArea()!=null){
 
-            map.getOverlays().remove(markerArea);
             Area.getPointsArea().clear();
         }
         if(planWaypoints !=null){
@@ -1270,7 +1223,6 @@ static double lonVeiculo;
         }
         if(Line.getPointsLine()!=null){
 
-            map.getOverlays().remove(markerLine);
             Line.getPointsLine().clear();
         }
 
@@ -1524,6 +1476,7 @@ static double lonVeiculo;
     public void makePoints(){
 
         GeoPoint ponto;
+
         waypointsFromPlan = PlanUtilities.computeWaypoints(maneuverFromPlan);
 
         for (PlanUtilities.Waypoint point : waypointsFromPlan) {
@@ -1533,20 +1486,28 @@ static double lonVeiculo;
             valueOfLongitude = point.getLongitude();
 
             ponto = new GeoPoint(valueOfLatitude, valueOfLongitude);
-
             if (!(planWaypoints.contains(ponto))) {
+                    if(maneuverList.size()!=0) {
+                        if (planWaypoints.size() != maneuverList.size()) {
+                            planWaypoints.add(ponto);
 
-                if (planWaypoints.size() != maneuverList.size())
-                    planWaypoints.add(ponto);
+                        }
+                    }
+                    else
+                        if(planWaypoints.size() != maneuverListFromArea.size()){
+                            planWaypoints.add(ponto);
+
+                        }
 
 
             }
 
         }
+
         planWaypointPolyline.setWidth(5);
         planWaypointPolyline.setPoints(planWaypoints);
 
-System.out.println(planWaypoints.toString() + " -------------main");    }
+    }
 
     public void warning() {
         Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();

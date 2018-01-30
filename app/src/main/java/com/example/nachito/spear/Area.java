@@ -449,7 +449,6 @@ public class Area  extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        stopRepeatingTask();
         super.onBackPressed();
     }
 
