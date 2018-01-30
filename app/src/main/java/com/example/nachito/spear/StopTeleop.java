@@ -48,7 +48,7 @@ public class StopTeleop extends View {
         }
         switch (event.getAction()){
             case MotionEvent.ACTION_UP:
-                performClick();
+               // performClick();
                 return true;
         }
         return true;
