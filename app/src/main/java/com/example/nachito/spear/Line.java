@@ -7,7 +7,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.Toast;
@@ -57,6 +56,7 @@ public class Line extends AppCompatActivity {
     static Polyline polyline;
     static ArrayList<GeoPoint> markers = new ArrayList<>();
     static Polygon circle;
+    static ArrayList<Maneuver> lineListManeuvers;
     IMapController mapController;
     Button done;
     MapView map;
@@ -66,12 +66,12 @@ public class Line extends AppCompatActivity {
     ArrayList<ArrayList<GeoPoint>> points;
     Goto follow;
     Marker startMarker;
-    ArrayList<GeoPoint> posicaoOutrosVeiculos;
+    ArrayList<GeoPoint> otherVehiclesPosition;
     ArrayList<GeoPoint> areaPoints = MainActivity.returnAreaPoints();
     ArrayList<GeoPoint> linePoints = MainActivity.returnLinePoints();
     Marker nodeMarkers = MainActivity.getPointsMain();
-    GeoPoint selectedVehiclesPosition;
-    final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", selectedVehiclesPosition);
+    GeoPoint selectedVehiclePosition;
+    final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", selectedVehiclePosition);
     Button eraseAll;
     boolean isDoneClicked = false;
     String selected;
@@ -129,6 +129,12 @@ public class Line extends AppCompatActivity {
         return isPolylineDrawn;
     }
 
+    public static List<Maneuver> sendmList() {
+        return lineListManeuvers;
+
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,8 +150,8 @@ public class Line extends AppCompatActivity {
         getIntentSelected();
         mapController = map.getController();
         mapController.setZoom(16);
-        selectedVehiclesPosition = MainActivity.getVariables();
-        mapController.setCenter(selectedVehiclesPosition);
+        selectedVehiclePosition = MainActivity.getVariables();
+        mapController.setCenter(selectedVehiclePosition);
         drawRed();
         drawBlue();
         drawGreen();
@@ -180,9 +186,7 @@ public class Line extends AppCompatActivity {
             map.getOverlays().add(nodeMarkers);
         }
 
-        if (polyline != null) {
-            map.getOverlays().add(polyline);
-        }
+
         if (MainActivity.returnCircle()) {
             circle = new Polygon();
             circle.setPoints(markers);
@@ -341,6 +345,7 @@ public class Line extends AppCompatActivity {
             }
             maneuvers.add(follow);
         }
+
         startBehaviour("followPoints" + selected, PlanUtilities.createPlan("followPoints" + selected, maneuvers.toArray(new Maneuver[0])));
         previous = "M";
         setVehicleStateString(" ");
@@ -389,15 +394,15 @@ public class Line extends AppCompatActivity {
 
     @Periodic
     public void drawBlue() {
-        posicaoOutrosVeiculos = MainActivity.drawPosicaoOutrosVeiculos();
+        otherVehiclesPosition = MainActivity.drawPosicaoOutrosVeiculos();
         Set<GeoPoint> hs = new HashSet<>();
-        hs.addAll(posicaoOutrosVeiculos);
-        posicaoOutrosVeiculos.clear();
-        posicaoOutrosVeiculos.addAll(hs);
-        for (int i = 0; i < posicaoOutrosVeiculos.size(); i++) {
-            if (posicaoOutrosVeiculos.get(i) != selectedVehiclesPosition) {
+        hs.addAll(otherVehiclesPosition);
+        otherVehiclesPosition.clear();
+        otherVehiclesPosition.addAll(hs);
+        for (int i = 0; i < otherVehiclesPosition.size(); i++) {
+            if (otherVehiclesPosition.get(i) != selectedVehiclePosition) {
                 final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
-                OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", posicaoOutrosVeiculos.get(i));
+                OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", otherVehiclesPosition.get(i));
                 markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
                 itemsPoints.add(markerPoints);
                 Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
@@ -415,9 +420,9 @@ public class Line extends AppCompatActivity {
     @Periodic
     public void drawGreen() {
         System.out.println("green");
-        if (selectedVehiclesPosition != null) {
+        if (selectedVehiclePosition != null) {
             final ArrayList<OverlayItem> items = new ArrayList<>();
-            final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", selectedVehiclesPosition);
+            final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", selectedVehiclePosition);
             marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
             items.add(marker);
             Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowgreen), 70, 70, false);

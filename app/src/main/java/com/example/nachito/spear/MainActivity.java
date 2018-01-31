@@ -338,14 +338,14 @@ public class MainActivity extends AppCompatActivity
         init();
         planWaypointPolyline = new Polyline();
 
-        Accelerate accelerate =  findViewById(R.id.accelerate);
+        Accelerate accelerate = findViewById(R.id.accelerate);
         accelerate.setVisibility(View.INVISIBLE);
-        Decelerate decelerate =  findViewById(R.id.decelerate);
+        Decelerate decelerate = findViewById(R.id.decelerate);
         decelerate.setVisibility(View.INVISIBLE);
-        Joystick joystick =  findViewById(R.id.joystick);
+        Joystick joystick = findViewById(R.id.joystick);
         joystick.setVisibility(View.INVISIBLE);
         noWifiImage.setVisibility(View.INVISIBLE);
-        StopTeleop stopTeleop =  findViewById(R.id.stopTeleop);
+        StopTeleop stopTeleop = findViewById(R.id.stopTeleop);
         stopTeleop.setVisibility(View.INVISIBLE);
 
 
@@ -919,33 +919,112 @@ public class MainActivity extends AppCompatActivity
             String stateconncected;
             stateconncected = stateList.toString();
 
+            if (!stopPressed) {
+                if (previous != null && stateconncected.charAt(1) == 'S') {
+                    setVehicleStateString("SERVICE");
 
-            if (previous != null && stateconncected.charAt(1) == 'S') {
+                    previous = "S";
+                    updateWaypointsBoolean = false;
+                    isPolylineDrawn = false;
+                    isCircleDrawn = false;
+                    otherVehiclesPositionList.clear();
 
-                map.getOverlays().remove(lineMarker);
-                map.getOverlays().remove(nodeMarkerWaypoints);
-                //TODO
-                updateWaypointsBoolean = false;
 
-                Line.getPointsLine().clear();
-                Area.getPointsArea().clear();
-                if (waypointsFromPlan != null)
-                    waypointsFromPlan.clear();
-                waypointsFromPlan = null;
-                if (maneuverList != null)
-                    maneuverList.clear();
-                updateMap();
-                otherVehiclesPositionList.clear();
-                if (planWaypoints != null)
-                    planWaypoints.clear();
-                if (planWaypointPolyline != null) {
-                    planWaypointPolyline.setPoints(nullArray);
-                    map.getOverlays().remove(planWaypointPolyline);
+                    if (planWaypointPolyline != null) {
+                        planWaypointPolyline.setPoints(nullArray);
+                        map.getOverlays().remove(planWaypointPolyline);
+                    }
+
+
+                    if (planWaypoints != null) {
+                        planWaypoints.clear();
+                        if (pointsLine != null)
+                            pointsLine.clear();
+                    }
+
+                    if (waypointsFromPlan != null) {
+                        waypointsFromPlan.clear();
+                    }
+
+
+                    if (pontosAreaMarker != null) {
+                        pontosAreaMarker.clear();
+
+                    }
+
+
+                    if (Area.getPointsArea() != null) {
+                        Area.getPointsArea().clear();
+                    }
+
+
+                    if (pointsPlans != null) {
+                        pointsPlans.remove(map);
+                        map.getOverlays().remove(pointsPlans);
+                    }
+
+
+                    if (maneuverList != null) {
+                        maneuverList.clear();
+
+                    }
+
+
+                    if (Line.getPoly()) {
+                        isPolylineDrawn = false;
+                        map.getOverlays().remove(polyline);
+                        nullArray.clear();
+                        polyline.setPoints(nullArray);
+
+                    }
+
+
+                    if (Area.getCircle()) {
+                        isCircleDrawn = false;
+                        map.getOverlays().remove(circle);
+
+                    }
+
+
+                    if (Line.getPointsLine() != null) {
+                        map.getOverlays().remove(markerLine);
+                        Line.getPointsLine().clear();
+                        pointsLine.clear();
+                    }
+                    if (returnAreaPoints() != null) {
+                        Area.getPointsArea().clear();
+                    }
+
+
+                    if (Area.sendmList() != null) {
+                        Area.maneuverArrayList.clear();
+
+                        if (maneuverListFromArea != null)
+                            maneuverListFromArea.clear();
+
+
+                        Area.sendmList().clear();
+                    }
+
+
+                    if (Line.sendmList() != null) {
+                        Line.lineListManeuvers.clear();
+                        Line.sendmList().clear();
+                    }
+
+
+                    if (SendSms.pontoSMS() != null) {
+                        map.getOverlays().remove(markerSMS);
+                        updateMap();
+
+
+                    }
+                    updateMap();
+
+
                 }
 
-
             }
-
         }
     }
 
@@ -972,27 +1051,26 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-
-        if (Line.getPolyline() != null) {
-            map.getOverlays().add(polyline);
-        }
-        if (Line.getPoly()) {
-            if (pointsLine.size() != 0) {
-                polyline = new Polyline();
-                polyline.setPoints(pointsLine);
-                map.getOverlays().add(polyline);
-                isPolylineDrawn = true;
+        if (!stopPressed) {
+            if (Line.getPointsLine().size() != 0) {
+                for (int i = 0; i < Line.getPointsLine().size(); i++) {
+                    markerLine = new Marker(map);
+//java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
+                    if (markerLine != null && Line.getPointsLine().size() != 0) {
+                        markerLine.setPosition(Line.getPointsLine().get(i));
+                        markerLine.setIcon(lineIcon);
+                        map.getOverlays().add(markerLine);
+                    }
+                }
             }
+
         }
-
-
         if (location != null)
             onLocationChanged(location);
 
         if (!updateWaypointsBoolean) {
 
             if (Area.sendmList() != null) {
-                System.out.println("main " + Area.sendmList());
 
                 updateWaypoints();
             }
@@ -1027,30 +1105,37 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        if (pointsLine.size() != 0) {
-            for (int i = 0; i < pointsLine.size(); i++) {
-                markerLine = new Marker(map);
-                markerLine.setPosition(pointsLine.get(i));
-                markerLine.setIcon(lineIcon);
-                map.getOverlays().add(markerLine);
+
+        if (Line.getPoly()) {
+            if (pointsLine.size() != 0) {
+                polyline = new Polyline();
+                if (polyline != null) {
+                    polyline.setPoints(pointsLine);
+
+                    map.getOverlays().add(polyline);
+                    isPolylineDrawn = true;
+                }
             }
         }
 
 
-        if (planWaypoints.size() != 0) {
+        if (!stopPressed) {
 
-            for (int i = 0; i < planWaypoints.size(); i++) {
-                pointsPlans = new Marker(map);
-                if (!stopPressed)
-                    pointsPlans.setPosition(planWaypoints.get(i));
-                pointsPlans.setIcon(redIcon);
-                map.getOverlays().add(pointsPlans);
-                if (planWaypointPolyline != null)
-                    map.getOverlays().remove(planWaypointPolyline);
-                map.getOverlays().add(planWaypointPolyline);
+            if (planWaypoints.size() != 0) {
+
+                for (int i = 0; i < planWaypoints.size(); i++) {
+                    pointsPlans = new Marker(map);
+                    if (!stopPressed)
+                        pointsPlans.setPosition(planWaypoints.get(i));
+                    pointsPlans.setIcon(redIcon);
+                    map.getOverlays().add(pointsPlans);
+                    if (planWaypointPolyline != null)
+                        map.getOverlays().remove(planWaypointPolyline);
+                    map.getOverlays().add(planWaypointPolyline);
+                }
+
+
             }
-
-
         }
         if (SendSms.pontoSMS() != null) {
             GeoPoint ponto = SendSms.pontoSMS();
@@ -1165,7 +1250,7 @@ public class MainActivity extends AppCompatActivity
         pc.setFlags(0);
         pc.setPlanId("stopPlan-" + imc.selectedvehicle);
         imc.sendMessage(pc);
-        //TODO
+
         setVehicleStateString("Plan Stopped");
 
         previous = "S";
@@ -1173,71 +1258,40 @@ public class MainActivity extends AppCompatActivity
         updateWaypointsBoolean = false;
         isPolylineDrawn = false;
         isCircleDrawn = false;
-        if (nodeMarkerWaypoints != null) {
-            map.getOverlays().remove(nodeMarkerWaypoints);
-            nodeMarkerWaypoints.remove(map);
+        otherVehiclesPositionList.clear();
+
+
+        if (planWaypointPolyline != null) {
+            planWaypointPolyline.setPoints(nullArray);
+            map.getOverlays().remove(planWaypointPolyline);
         }
 
-        if (planWaypoints != null)
+
+        if (planWaypoints != null) {
             planWaypoints.clear();
+            if (pointsLine != null)
+                pointsLine.clear();
+        }
 
         if (waypointsFromPlan != null) {
             waypointsFromPlan.clear();
         }
-        if (pointsPlans != null) {
-            pointsPlans.remove(map);
-            map.getOverlays().remove(pointsPlans);
-        }
-        if (Area.getPointsArea() != null) {
 
-            Area.getPointsArea().clear();
-        }
-        if (planWaypoints != null) {
-            map.getOverlays().remove(pointsPlans);
-            planWaypoints.clear();
-        }
-        if (Line.getPointsLine() != null) {
-            map.getOverlays().remove(markerLine);
-            Line.getPointsLine().clear();
-        }
-
-        if (Line.getPolyline() != null) {
-            map.getOverlays().remove(polyline);
-            nullArray.clear();
-            if (polyline != null)
-                polyline.setPoints(nullArray);
-            Line.getPolyline().setPoints(nullArray);
-        }
-        if (Area.getCircle()) {
-            isCircleDrawn = false;
-            map.getOverlays().remove(circle);
-
-        }
-        if (Line.getPoly()) {
-            isPolylineDrawn = false;
-            map.getOverlays().remove(polyline);
-            nullArray.clear();
-            polyline.setPoints(nullArray);
-
-        }
-        if (returnAreaPoints() != null) {
-            Area.getPointsArea().clear();
-
-
-        }
 
         if (pontosAreaMarker != null) {
             pontosAreaMarker.clear();
 
         }
-        if (planWaypointPolyline != null) {
-            map.getOverlayManager().remove(planWaypointPolyline);
-            planWaypointPolyline.setPoints(pontosAreaMarker);
 
+
+        if (Area.getPointsArea() != null) {
+            Area.getPointsArea().clear();
         }
 
-        if (returnLinePoints() != null) {
-            Line.getPointsLine().clear();
+
+        if (pointsPlans != null) {
+            pointsPlans.remove(map);
+            map.getOverlays().remove(pointsPlans);
         }
 
 
@@ -1245,6 +1299,34 @@ public class MainActivity extends AppCompatActivity
             maneuverList.clear();
 
         }
+
+
+        if (Line.getPoly()) {
+            isPolylineDrawn = false;
+            map.getOverlays().remove(polyline);
+            nullArray.clear();
+            polyline.setPoints(nullArray);
+
+        }
+
+
+        if (Area.getCircle()) {
+            isCircleDrawn = false;
+            map.getOverlays().remove(circle);
+
+        }
+
+
+        if (Line.getPointsLine() != null) {
+            map.getOverlays().remove(markerLine);
+            Line.getPointsLine().clear();
+            pointsLine.clear();
+        }
+        if (returnAreaPoints() != null) {
+            Area.getPointsArea().clear();
+        }
+
+
         if (Area.sendmList() != null) {
             Area.maneuverArrayList.clear();
 
@@ -1256,6 +1338,12 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+        if (Line.sendmList() != null) {
+            Line.lineListManeuvers.clear();
+            Line.sendmList().clear();
+        }
+
+
         if (SendSms.pontoSMS() != null) {
             map.getOverlays().remove(markerSMS);
             updateMap();
@@ -1264,7 +1352,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         map.invalidate();
-        map.getOverlays().clear();
+        //map.getOverlays().clear();
         updateMap();
     }
 
@@ -1462,6 +1550,7 @@ public class MainActivity extends AppCompatActivity
         planWaypointPolyline.setWidth(5);
         planWaypointPolyline.setPoints(planWaypoints);
     }
+
     public void warning() {
         Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
     }

@@ -7,7 +7,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.Toast;
@@ -98,7 +97,6 @@ public class Area extends AppCompatActivity {
                         map.getOverlays().add(startMarker);
                     }
                     if (circle != null) {
-//TODO
                         circle = new Polygon();
                         circle.setPoints(markers);
                         circle.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
@@ -131,8 +129,8 @@ public class Area extends AppCompatActivity {
         return iscircleDrawn;
     }
 
+
     public static List<Maneuver> sendmList() {
-        System.out.println("area " + maneuverArrayList);
         return maneuverArrayList;
 
     }
@@ -188,9 +186,6 @@ public class Area extends AppCompatActivity {
             map.getOverlays().add(nodeMarkers);
         }
 
-        if (polyline != null) {
-            map.getOverlays().add(polyline);
-        }
 
         if (MainActivity.returnCircle()) {
             circle = new Polygon();
@@ -352,7 +347,6 @@ public class Area extends AppCompatActivity {
 
             maneuvers.add(area2);
             maneuverArrayList = new ArrayList<>();
-
             maneuverArrayList.addAll(maneuvers);
 
         }
