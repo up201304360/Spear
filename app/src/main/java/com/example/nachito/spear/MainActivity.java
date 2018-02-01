@@ -58,7 +58,6 @@ import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
-
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
@@ -119,7 +118,6 @@ public class MainActivity extends AppCompatActivity
     static Drawable redIcon;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.blueled)
     static Drawable lineIcon;
-    static Marker lineMarker;
     static boolean showrpm;
     //static - so Area and Line can pass the waypointsFromPlan clicked
     @SuppressLint("StaticFieldLeak")
@@ -202,14 +200,12 @@ public class MainActivity extends AppCompatActivity
     ArrayList<GeoPoint> pontosAreaMarker = new ArrayList<>();
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
     private Context context;
+    static Boolean enteredServiceMode = false;
 
     public static GeoPoint getVariables() {
         return vehiclePosition;
     }
 
-    public static String getPrevious() {
-        return previous;
-    }
 
     public static GeoPoint localizacao() {
         return myPosition;
@@ -294,9 +290,12 @@ public class MainActivity extends AppCompatActivity
         waypointsFromPlan = null;
         map.invalidate();
         map.getOverlays().clear();
-        previous = "M";
+
         stopPressed = false;
+        MainActivity.previous = "M";
+        MainActivity.enteredServiceMode = false;
         imc.sendMessage(pc);
+
 
     }
 
@@ -914,116 +913,28 @@ public class MainActivity extends AppCompatActivity
                     stateList.add(state.getOpModeStr());
 
         }
+        if (stateList.size() != 0) {
+            for (int i = 0; i < stateList.size(); i++) {
+                String stateconncected;
+                stateconncected = stateList.toString();
 
-        for (int i = 0; i < stateList.size(); i++) {
-            String stateconncected;
-            stateconncected = stateList.toString();
-
-            if (!stopPressed) {
-                if (previous != null && stateconncected.charAt(1) == 'S') {
-                    setVehicleStateString("SERVICE");
-
-                    previous = "S";
-                    updateWaypointsBoolean = false;
-                    isPolylineDrawn = false;
-                    isCircleDrawn = false;
-                    otherVehiclesPositionList.clear();
-
-
-                    if (planWaypointPolyline != null) {
-                        planWaypointPolyline.setPoints(nullArray);
-                        map.getOverlays().remove(planWaypointPolyline);
-                    }
-
-
-                    if (planWaypoints != null) {
-                        planWaypoints.clear();
-                        if (pointsLine != null)
-                            pointsLine.clear();
-                    }
-
-                    if (waypointsFromPlan != null) {
-                        waypointsFromPlan.clear();
-                    }
-
-
-                    if (pontosAreaMarker != null) {
-                        pontosAreaMarker.clear();
-
-                    }
-
-
-                    if (Area.getPointsArea() != null) {
-                        Area.getPointsArea().clear();
-                    }
-
-
-                    if (pointsPlans != null) {
-                        pointsPlans.remove(map);
-                        map.getOverlays().remove(pointsPlans);
-                    }
-
-
-                    if (maneuverList != null) {
-                        maneuverList.clear();
-
-                    }
-
-
-                    if (Line.getPoly()) {
+                if (!stopPressed) {
+                    if (previous != null && stateconncected.charAt(1) == 'S') {
+                        setVehicleStateString("SERVICE");
+                        enteredServiceMode = true;
+                        previous = "S";
+                        updateWaypointsBoolean = false;
                         isPolylineDrawn = false;
-                        map.getOverlays().remove(polyline);
-                        nullArray.clear();
-                        polyline.setPoints(nullArray);
-
-                    }
-
-
-                    if (Area.getCircle()) {
                         isCircleDrawn = false;
-                        map.getOverlays().remove(circle);
-
-                    }
+                        otherVehiclesPositionList.clear();
 
 
-                    if (Line.getPointsLine() != null) {
-                        map.getOverlays().remove(markerLine);
-                        Line.getPointsLine().clear();
-                        pointsLine.clear();
-                    }
-                    if (returnAreaPoints() != null) {
-                        Area.getPointsArea().clear();
-                    }
-
-
-                    if (Area.sendmList() != null) {
-                        Area.maneuverArrayList.clear();
-
-                        if (maneuverListFromArea != null)
-                            maneuverListFromArea.clear();
-
-
-                        Area.sendmList().clear();
-                    }
-
-
-                    if (Line.sendmList() != null) {
-                        Line.lineListManeuvers.clear();
-                        Line.sendmList().clear();
-                    }
-
-
-                    if (SendSms.pontoSMS() != null) {
-                        map.getOverlays().remove(markerSMS);
-                        updateMap();
+                        cleanMap();
 
 
                     }
-                    updateMap();
-
 
                 }
-
             }
         }
     }
@@ -1051,20 +962,6 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        if (!stopPressed) {
-            if (Line.getPointsLine().size() != 0) {
-                for (int i = 0; i < Line.getPointsLine().size(); i++) {
-                    markerLine = new Marker(map);
-//java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
-                    if (markerLine != null && Line.getPointsLine().size() != 0) {
-                        markerLine.setPosition(Line.getPointsLine().get(i));
-                        markerLine.setIcon(lineIcon);
-                        map.getOverlays().add(markerLine);
-                    }
-                }
-            }
-
-        }
         if (location != null)
             onLocationChanged(location);
 
@@ -1106,20 +1003,31 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        if (Line.getPoly()) {
+        if (!stopPressed && !enteredServiceMode) {
+            if (Line.getPointsLine().size() != 0) {
+                for (int i = 0; i < Line.getPointsLine().size(); i++) {
+                    markerLine = new Marker(map);
+//java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
+                    if (markerLine != null && Line.getPointsLine().size() != 0) {
+                        markerLine.setPosition(Line.getPointsLine().get(i));
+                        markerLine.setIcon(lineIcon);
+                        map.getOverlays().add(markerLine);
+                    }
+                }
+            }
+
+        }
+        if (!stopPressed && Line.getPoly() && !enteredServiceMode) {
             if (pointsLine.size() != 0) {
                 polyline = new Polyline();
-                if (polyline != null) {
-                    polyline.setPoints(pointsLine);
+                polyline.setPoints(pointsLine);
+                map.getOverlays().add(polyline);
+                isPolylineDrawn = true;
 
-                    map.getOverlays().add(polyline);
-                    isPolylineDrawn = true;
-                }
             }
         }
 
-
-        if (!stopPressed) {
+        if (!stopPressed && !enteredServiceMode) {
 
             if (planWaypoints.size() != 0) {
 
@@ -1254,13 +1162,18 @@ public class MainActivity extends AppCompatActivity
         setVehicleStateString("Plan Stopped");
 
         previous = "S";
+        enteredServiceMode = true;
         stopPressed = true;
         updateWaypointsBoolean = false;
         isPolylineDrawn = false;
         isCircleDrawn = false;
         otherVehiclesPositionList.clear();
 
+        cleanMap();
 
+    }
+
+    public void cleanMap() {
         if (planWaypointPolyline != null) {
             planWaypointPolyline.setPoints(nullArray);
             map.getOverlays().remove(planWaypointPolyline);
@@ -1305,7 +1218,8 @@ public class MainActivity extends AppCompatActivity
             isPolylineDrawn = false;
             map.getOverlays().remove(polyline);
             nullArray.clear();
-            polyline.setPoints(nullArray);
+            if (polyline != null)
+                polyline.setPoints(nullArray);
 
         }
 
@@ -1350,10 +1264,11 @@ public class MainActivity extends AppCompatActivity
 
 
         }
-
-        map.invalidate();
-        //map.getOverlays().clear();
-        updateMap();
+        runOnUiThread(() -> {
+            map.invalidate();
+            //map.getOverlays().clear();
+            updateMap();
+        });
     }
 
 
@@ -1547,8 +1462,11 @@ public class MainActivity extends AppCompatActivity
             }
 
         }
-        planWaypointPolyline.setWidth(5);
-        planWaypointPolyline.setPoints(planWaypoints);
+        if (planWaypointPolyline != null) {
+            planWaypointPolyline.setWidth(5);
+            if (planWaypoints.size() != 0)
+                planWaypointPolyline.setPoints(planWaypoints);
+        }
     }
 
     public void warning() {

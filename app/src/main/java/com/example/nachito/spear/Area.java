@@ -79,7 +79,6 @@ public class Area extends AppCompatActivity {
     boolean doneClicked = false;
     Button eraseAll;
     String selected;
-    String previousState = MainActivity.getPrevious();
     private Handler mHandler;
     Runnable mStatusChecker = new Runnable() {
         @Override
@@ -350,9 +349,11 @@ public class Area extends AppCompatActivity {
             maneuverArrayList.addAll(maneuvers);
 
         }
-        setVehicleStateString(" ");
+        MainActivity.enteredServiceMode = false;
+
+        setVehicleStateString(" Area ");
+        MainActivity.previous = "M";
         MainActivity.updateWaypointsBoolean = false;
-        previousState = "M";
         startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
         sendmList();
         onBackPressed();
@@ -375,8 +376,9 @@ public class Area extends AppCompatActivity {
         }
         String planid = "SpearGoto-" + selected;
         startBehaviour(planid, go);
+        MainActivity.previous = "M";
+
         setVehicleStateString(" ");
-        previousState = "M";
         onBackPressed();
     }
 

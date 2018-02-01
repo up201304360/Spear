@@ -75,7 +75,6 @@ public class Line extends AppCompatActivity {
     Button eraseAll;
     boolean isDoneClicked = false;
     String selected;
-    String previous = MainActivity.getPrevious();
     private Handler mHandler;
     Runnable mStatusChecker = new Runnable() {
         @Override
@@ -346,10 +345,15 @@ public class Line extends AppCompatActivity {
             maneuvers.add(follow);
         }
 
+
+        MainActivity.previous = "M";
+        isPolylineDrawn = true;
+        MainActivity.enteredServiceMode = false;
+        setVehicleStateString(" Line ");
         startBehaviour("followPoints" + selected, PlanUtilities.createPlan("followPoints" + selected, maneuvers.toArray(new Maneuver[0])));
-        previous = "M";
-        setVehicleStateString(" ");
         onBackPressed();
+
+
     }
 
     public void Go(GeoPoint p) {
@@ -367,10 +371,11 @@ public class Line extends AppCompatActivity {
             go.setSpeedUnits(SpeedUnits.RPM);
         }
         String planid = "SpearGoto-" + selected;
-        startBehaviour(planid, go);
+        MainActivity.previous = "M";
         setVehicleStateString(" ");
-        previous = "M";
+        startBehaviour(planid, go);
         onBackPressed();
+
 
     }
 
