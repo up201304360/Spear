@@ -304,6 +304,7 @@ public class MainActivity extends AppCompatActivity
 
 
         setContentView(R.layout.activity_main);
+       // map.setUseDataConnection(false);
         map.setTileSource(TileSourceFactory.MAPNIK);
         android.app.ActionBar actionBar = getActionBar();
         if (actionBar != null) {
@@ -435,7 +436,7 @@ public class MainActivity extends AppCompatActivity
     @Periodic()
     public void changePlans() {
         if ((!isStopPressed && PlanList.planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(PlanList.planBeingExecuted)) || (!isStopPressed && PlanList.planBeingExecuted != null && wasPlanChanged)) {
-            System.out.println("mudou" + wasPlanChanged);
+//wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
             cleanMap();
             updateMap();
             setVehicleStateString(PlanList.planBeingExecuted);
@@ -930,7 +931,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (!isStopPressed) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
-                    if ((previous != null) && stateconncected.charAt(1) == 'S') {
+                    if ((previous != null) && !hasEnteredServiceMode &&stateconncected.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
                         previous = null;
                         areNewWaypointsFromAreaUpdated = false;
@@ -1105,8 +1106,6 @@ public class MainActivity extends AppCompatActivity
         dive.setBearing(0);
         String planid = "SpearDive-" + imc.selectedvehicle;
         startBehaviour(planid, dive);
-
-
     }
 
     public void keepStation() {
@@ -1387,7 +1386,6 @@ public class MainActivity extends AppCompatActivity
             pc.setRequestId(0);
             pc.setPlanId(item.toString());
             imc.sendMessage(pc);
-            setVehicleStateString("Plan:" + pc.getPlanId());
             wasPlanChanged = true;
 
             final Handler handler = new Handler();
@@ -1398,7 +1396,7 @@ public class MainActivity extends AppCompatActivity
                     previous = "M";
                     isStopPressed = false;
                     hasEnteredServiceMode = false;
-
+                    setVehicleStateString("Plan:" + pc.getPlanId());
                     maneuverList.addAll(imc.allManeuvers());
                     callWaypoint(maneuverList);
 
