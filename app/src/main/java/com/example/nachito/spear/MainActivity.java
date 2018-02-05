@@ -106,41 +106,50 @@ public class MainActivity extends AppCompatActivity
     @Bean
     static IMCGlobal imc;
     @ViewById(R.id.map)
+    //Setting values
     static MapView map;
     static double speed;
     static int duration;
     static double radius;
     static double depth;
     static double swath_width;
+    //Drawables
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.orangeled)
     static Drawable nodeIcon;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.reddot)
-    static Drawable redIcon;
+    static Drawable areaIcon;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.blueled)
     static Drawable lineIcon;
-    static boolean showrpm;
-    //static - so Area and Line can pass the waypointsFromPlan clicked
+    //Determine if speed is in RPM or meters
+    static boolean isRPMSelected;
+    //Strings for the panel
     @SuppressLint("StaticFieldLeak")
     static String depthString;
     static String vehicleStateString;
     static String velocityString;
-    static Marker nodeMarkerWaypoints;
+    //Markers of the map
+    static Marker pointsSelectedOnMap;
+    //previous- when Spear starts it doesn't enter the updateState() method
     static String previous = null;
+    //points we choose in Activity Line
     static ArrayList<GeoPoint> pointsLine = Line.getPointsLine();
-    static GeoPoint vehiclePosition;
+    static GeoPoint selectedVehiclePosition;
     static GeoPoint myPosition;
     static ArrayList<GeoPoint> otherVehiclesPositionList = new ArrayList<>();
     static float vehicleOrientation;
     static Maneuver maneuverFromPlan;
     static Collection<PlanUtilities.Waypoint> waypointsFromPlan;
     static Bitmap bitmapArrow;
-    static Boolean isCircleDrawn = Area.getCircle();
-    static Boolean isPolylineDrawn = Line.getPoly();
-    static double latVeiculo;
-    static double lonVeiculo;
-    static boolean stopPressed = false;
-    static Boolean updateWaypointsBoolean = false;
+    static boolean isCircleDrawn = Area.getCircle();
+    static boolean isPolylineDrawn = Line.getPoly();
+    static double latVehicle;
+    static double lonVehicle;
+    static boolean isStopPressed = false;
+
+    static boolean areNewWaypointsFromAreaUpdated = false;
     static ArrayList<GeoPoint> planWaypoints = new ArrayList<>();
+    static boolean hasEnteredServiceMode = false;
+    static boolean wasPlanChanged = false;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
     @ViewById(R.id.dive)
     Button dive;
@@ -176,20 +185,20 @@ public class MainActivity extends AppCompatActivity
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
-    Marker pointsPlans;
+    Marker pointsFromPlan;
     Location location;
-    Double valueOfLatitude;
-    Double valueOfLongitude;
+    double valueOfLatitude;
+    double valueOfLongitude;
     List<String> vehicleList;
     List<String> planList;
     int listSize;
-    Marker markerLine;
+    Marker markerFromLine;
     OSMHandler updateHandler;
     List<String> stateList;
-    SendSms sendsms;
+    SendSms sendSms;
     Marker markerSMS;
     ScaleBarOverlay scaleBarOverlay;
-    @ViewById(R.id.localizacao)
+    @ViewById(R.id.location)
     Button centerLocation;
     ItemizedIconOverlay markersOverlay2;
     android.content.res.Resources resources;
@@ -197,13 +206,12 @@ public class MainActivity extends AppCompatActivity
     List<Maneuver> maneuverListFromArea;
     Polygon circle;
     Polyline planWaypointPolyline;
-    ArrayList<GeoPoint> pontosAreaMarker = new ArrayList<>();
+    ArrayList<GeoPoint> pointsForAreaMarker = new ArrayList<>();
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
     private Context context;
-    static Boolean enteredServiceMode = false;
 
     public static GeoPoint getVariables() {
-        return vehiclePosition;
+        return selectedVehiclePosition;
     }
 
 
@@ -214,7 +222,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Contract(pure = true)
-    public static ArrayList<GeoPoint> drawPosicaoOutrosVeiculos() {
+    public static ArrayList<GeoPoint> drawOtherVehicles() {
         return otherVehiclesPositionList;
     }
 
@@ -241,8 +249,8 @@ public class MainActivity extends AppCompatActivity
 
     @Nullable
     @Contract(pure = true)
-    public static Marker getPointsMain() {
-        return nodeMarkerWaypoints;
+    public static Marker getPointsFromMain() {
+        return pointsSelectedOnMap;
 
     }
 
@@ -261,21 +269,17 @@ public class MainActivity extends AppCompatActivity
         Line.markers.addAll(Line.getPointsLine());
         Area.markers.addAll(Line.getPointsLine());
         return Line.getPointsLine();
-
-
     }
 
     @Nullable
     public static ArrayList<GeoPoint> returnAreaPoints() {
         Line.markers.addAll(Area.getPointsArea());
         Area.markers.addAll(Area.getPointsArea());
-
         return Area.getPointsArea();
-
-
     }
 
     public static void startBehaviour(String planid, IMCMessage what) {
+        System.out.println("startBehaviour");
         PlanControl pc = new PlanControl();
         pc.setArg(what);
         pc.setType(PlanControl.TYPE.REQUEST);
@@ -284,19 +288,12 @@ public class MainActivity extends AppCompatActivity
         pc.setRequestId(0);
         pc.setPlanId(planid);
 
-        map.getOverlays().remove(nodeMarkerWaypoints);
-        if (waypointsFromPlan != null)
-            waypointsFromPlan.clear();
-        waypointsFromPlan = null;
-        map.invalidate();
-        map.getOverlays().clear();
-
-        stopPressed = false;
-        MainActivity.previous = "M";
-        MainActivity.enteredServiceMode = false;
+        isStopPressed = false;
+        wasPlanChanged = false;
+        previous = "S";
+        MainActivity.hasEnteredServiceMode = false;
         imc.sendMessage(pc);
-
-
+        setVehicleStateString(planid);
     }
 
     @Override
@@ -349,6 +346,7 @@ public class MainActivity extends AppCompatActivity
 
 
         imc.register(this);
+
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
         }
@@ -398,7 +396,6 @@ public class MainActivity extends AppCompatActivity
 
                     return;
                 }
-                String type = matcher.group(1);
                 String vehicle = matcher.group(2);
                 String timeOfDay = matcher.group(3);
                 String latMins = matcher.group(4);
@@ -433,6 +430,19 @@ public class MainActivity extends AppCompatActivity
 
         });
     }
+
+    //if a plan is changed without stopping the plan that was executing
+    @Periodic()
+    public void changePlans() {
+        if ((!isStopPressed && PlanList.planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(PlanList.planBeingExecuted)) || (!isStopPressed && PlanList.planBeingExecuted != null && wasPlanChanged)) {
+            System.out.println("mudou" + wasPlanChanged);
+            cleanMap();
+            updateMap();
+            setVehicleStateString(PlanList.planBeingExecuted);
+            wasPlanChanged = false;
+        }
+    }
+
 
     public void updatePosition(GeoPoint aPoint) {
         if (mItemizedOverlay == null) {
@@ -520,7 +530,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void setShowRPM(boolean showrpm) {
-        MainActivity.showrpm = showrpm;
+        MainActivity.isRPMSelected = showrpm;
 
     }
 
@@ -708,7 +718,7 @@ public class MainActivity extends AppCompatActivity
             joystick.setVisibility(View.INVISIBLE);
             teleOperation = null;
 
-        } else if (sendsms != null) {
+        } else if (sendSms != null) {
 //
 
 
@@ -863,10 +873,10 @@ public class MainActivity extends AppCompatActivity
 
                 if (vname.equals(imc.getSelectedvehicle())) {
 
-                    vehiclePosition = new GeoPoint(lld[0], lld[1]);
+                    selectedVehiclePosition = new GeoPoint(lld[0], lld[1]);
 
-                    latVeiculo = Math.toRadians(vehiclePosition.getLatitude());
-                    lonVeiculo = Math.toRadians(vehiclePosition.getLongitude());
+                    latVehicle = Math.toRadians(selectedVehiclePosition.getLatitude());
+                    lonVehicle = Math.toRadians(selectedVehiclePosition.getLongitude());
 
                     if (context == MainActivity.this)
 
@@ -877,7 +887,7 @@ public class MainActivity extends AppCompatActivity
                     depthString = df2.format(state.getDepth());
                     if (velocity != null)
                         runOnUiThread(() -> velocity.setText("Speed:" + " " + velocityString + " " + "m/s" + "\n" + "Depth:" + " " + depthString + "\n" + vehicleStateString + "\n"));
-//TODO state
+
                 }
 
 
@@ -918,17 +928,17 @@ public class MainActivity extends AppCompatActivity
                 String stateconncected;
                 stateconncected = stateList.toString();
 
-                if (!stopPressed) {
-                    if (previous != null && stateconncected.charAt(1) == 'S') {
-                        setVehicleStateString("SERVICE");
-                        enteredServiceMode = true;
-                        previous = "S";
-                        updateWaypointsBoolean = false;
+                if (!isStopPressed) {
+                    //Se o veiculo entrar em service mode sem ser por parar o plano
+                    if ((previous != null) && stateconncected.charAt(1) == 'S') {
+                        hasEnteredServiceMode = true;
+                        previous = null;
+                        areNewWaypointsFromAreaUpdated = false;
                         isPolylineDrawn = false;
                         isCircleDrawn = false;
                         otherVehiclesPositionList.clear();
-
-
+                        setVehicleStateString("Plan finished");
+                        wasPlanChanged = false;
                         cleanMap();
 
 
@@ -948,7 +958,6 @@ public class MainActivity extends AppCompatActivity
 
         map.setMultiTouchControls(true);
 
-
         if (context == MainActivity.this) {
             drawWifiSignal();
             drawCompass();
@@ -965,7 +974,51 @@ public class MainActivity extends AppCompatActivity
         if (location != null)
             onLocationChanged(location);
 
-        if (!updateWaypointsBoolean) {
+        if (!isStopPressed && !hasEnteredServiceMode) {
+            if (Line.getPointsLine().size() != 0) {
+                for (int i = 0; i < Line.getPointsLine().size(); i++) {
+                    markerFromLine = new Marker(map);
+//java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
+                    if (markerFromLine != null && Line.getPointsLine().size() != 0) {
+                        markerFromLine.setPosition(Line.getPointsLine().get(i));
+                        markerFromLine.setIcon(lineIcon);
+                        map.getOverlays().add(markerFromLine);
+                    }
+                }
+            }
+
+        }
+        if (!isStopPressed && Line.getPoly() && !hasEnteredServiceMode) {
+            if (pointsLine.size() != 0) {
+                polyline = new Polyline();
+                polyline.setPoints(pointsLine);
+                map.getOverlays().add(polyline);
+                isPolylineDrawn = true;
+
+            }
+        }
+
+        if (!isStopPressed && !hasEnteredServiceMode) {
+
+            if (planWaypoints.size() != 0) {
+
+                for (int i = 0; i < planWaypoints.size(); i++) {
+                    pointsFromPlan = new Marker(map);
+                    if (pointsFromPlan != null && planWaypoints.size() != 0) {
+                        pointsFromPlan.setPosition(planWaypoints.get(i));
+                        pointsFromPlan.setIcon(areaIcon);
+                        map.getOverlays().add(pointsFromPlan);
+                    }
+                    if (planWaypointPolyline != null)
+                        map.getOverlays().remove(planWaypointPolyline);
+                    map.getOverlays().add(planWaypointPolyline);
+                }
+
+
+            }
+        }
+
+        if (!areNewWaypointsFromAreaUpdated) {
 
             if (Area.sendmList() != null) {
 
@@ -1003,48 +1056,6 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        if (!stopPressed && !enteredServiceMode) {
-            if (Line.getPointsLine().size() != 0) {
-                for (int i = 0; i < Line.getPointsLine().size(); i++) {
-                    markerLine = new Marker(map);
-//java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
-                    if (markerLine != null && Line.getPointsLine().size() != 0) {
-                        markerLine.setPosition(Line.getPointsLine().get(i));
-                        markerLine.setIcon(lineIcon);
-                        map.getOverlays().add(markerLine);
-                    }
-                }
-            }
-
-        }
-        if (!stopPressed && Line.getPoly() && !enteredServiceMode) {
-            if (pointsLine.size() != 0) {
-                polyline = new Polyline();
-                polyline.setPoints(pointsLine);
-                map.getOverlays().add(polyline);
-                isPolylineDrawn = true;
-
-            }
-        }
-
-        if (!stopPressed && !enteredServiceMode) {
-
-            if (planWaypoints.size() != 0) {
-
-                for (int i = 0; i < planWaypoints.size(); i++) {
-                    pointsPlans = new Marker(map);
-                    if (!stopPressed)
-                        pointsPlans.setPosition(planWaypoints.get(i));
-                    pointsPlans.setIcon(redIcon);
-                    map.getOverlays().add(pointsPlans);
-                    if (planWaypointPolyline != null)
-                        map.getOverlays().remove(planWaypointPolyline);
-                    map.getOverlays().add(planWaypointPolyline);
-                }
-
-
-            }
-        }
         if (SendSms.pontoSMS() != null) {
             GeoPoint ponto = SendSms.pontoSMS();
 
@@ -1061,7 +1072,7 @@ public class MainActivity extends AppCompatActivity
 
     public void updateWaypoints() {
 
-        updateWaypointsBoolean = true;
+        areNewWaypointsFromAreaUpdated = true;
 
         if (Area.sendmList() != null) {
             maneuverListFromArea = Area.sendmList();
@@ -1077,16 +1088,14 @@ public class MainActivity extends AppCompatActivity
 
     public void dive() {
         Loiter dive = new Loiter();
-        dive.setLon(lonVeiculo);
-        dive.setLat(latVeiculo);
+        dive.setLon(lonVehicle);
+        dive.setLat(latVehicle);
         dive.setZ(depth);
         dive.setType(Loiter.TYPE.CIRCULAR);
-
-
         dive.setZUnits(ZUnits.DEPTH);
         dive.setSpeed(speed);
 
-        if (!showrpm) {
+        if (!isRPMSelected) {
             dive.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
             dive.setSpeedUnits(SpeedUnits.RPM);
@@ -1095,22 +1104,17 @@ public class MainActivity extends AppCompatActivity
         dive.setDuration(duration);
         dive.setBearing(0);
         String planid = "SpearDive-" + imc.selectedvehicle;
-        if (lonVeiculo != 0 && latVeiculo != 0) {
+        startBehaviour(planid, dive);
 
-            startBehaviour(planid, dive);
-        }
-        setVehicleStateString("Dive");
-        wayPoints(dive);
 
     }
 
     public void keepStation() {
         StationKeeping stationKeepingmsg = new StationKeeping();
-
-        stationKeepingmsg.setLat(latVeiculo);
-        stationKeepingmsg.setLon(lonVeiculo);
+        stationKeepingmsg.setLat(latVehicle);
+        stationKeepingmsg.setLon(lonVehicle);
         stationKeepingmsg.setSpeed(speed);
-        if (!showrpm) {
+        if (!isRPMSelected) {
             stationKeepingmsg.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
             stationKeepingmsg.setSpeedUnits(SpeedUnits.RPM);
@@ -1121,31 +1125,24 @@ public class MainActivity extends AppCompatActivity
         stationKeepingmsg.setZUnits(ZUnits.DEPTH);
         String planid = " SpearStationKeeping-" + imc.selectedvehicle;
         startBehaviour(planid, stationKeepingmsg);
-        wayPoints(stationKeepingmsg);
-        setVehicleStateString("StationKeeping");
 
 
     }
 
     public void near() {
-        if (latitude == 0 && longitude == 0) {
-            return;
-        }
         final Goto go = new Goto();
         go.setLat(latitude);
         go.setLon(longitude);
         go.setZ(0);
         go.setZUnits(ZUnits.DEPTH);
         go.setSpeed(speed);
-        if (!showrpm) {
+        if (!isRPMSelected) {
             go.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
             go.setSpeedUnits(SpeedUnits.RPM);
         }
         String planid = "SpearComeNear-" + imc.selectedvehicle;
         startBehaviour(planid, go);
-        wayPoints(go);
-        setVehicleStateString("Come comeNear");
 
 
     }
@@ -1160,14 +1157,14 @@ public class MainActivity extends AppCompatActivity
         imc.sendMessage(pc);
 
         setVehicleStateString("Plan Stopped");
-
-        previous = "S";
-        enteredServiceMode = true;
-        stopPressed = true;
-        updateWaypointsBoolean = false;
+        MainActivity.previous = "S";
+        hasEnteredServiceMode = true;
+        isStopPressed = true;
+        areNewWaypointsFromAreaUpdated = false;
         isPolylineDrawn = false;
         isCircleDrawn = false;
         otherVehiclesPositionList.clear();
+        wasPlanChanged = false;
 
         cleanMap();
 
@@ -1191,8 +1188,8 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        if (pontosAreaMarker != null) {
-            pontosAreaMarker.clear();
+        if (pointsForAreaMarker != null) {
+            pointsForAreaMarker.clear();
 
         }
 
@@ -1202,9 +1199,9 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        if (pointsPlans != null) {
-            pointsPlans.remove(map);
-            map.getOverlays().remove(pointsPlans);
+        if (pointsFromPlan != null) {
+            pointsFromPlan.remove(map);
+            map.getOverlays().remove(pointsFromPlan);
         }
 
 
@@ -1232,7 +1229,7 @@ public class MainActivity extends AppCompatActivity
 
 
         if (Line.getPointsLine() != null) {
-            map.getOverlays().remove(markerLine);
+            map.getOverlays().remove(markerFromLine);
             Line.getPointsLine().clear();
             pointsLine.clear();
         }
@@ -1391,6 +1388,7 @@ public class MainActivity extends AppCompatActivity
             pc.setPlanId(item.toString());
             imc.sendMessage(pc);
             setVehicleStateString("Plan:" + pc.getPlanId());
+            wasPlanChanged = true;
 
             final Handler handler = new Handler();
             handler.postDelayed(() -> {
@@ -1398,7 +1396,9 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(MainActivity.this, "No plan specification available", Toast.LENGTH_SHORT).show();
                 } else {
                     previous = "M";
-                    stopPressed = false;
+                    isStopPressed = false;
+                    hasEnteredServiceMode = false;
+
                     maneuverList.addAll(imc.allManeuvers());
                     callWaypoint(maneuverList);
 
@@ -1455,10 +1455,16 @@ public class MainActivity extends AppCompatActivity
                     if (planWaypoints.size() != maneuverList.size()) {
                         planWaypoints.add(ponto);
                     }
-                } else if (maneuverListFromArea != null)
+                } else if (maneuverListFromArea != null) {
                     if (planWaypoints.size() != maneuverListFromArea.size()) {
                         planWaypoints.add(ponto);
                     }
+                } else if (Line.sendmList() != null) {
+                    if (planWaypoints.size() != Line.sendmList().size()) {
+                        planWaypoints.add(ponto);
+                    }
+
+                }
             }
 
         }

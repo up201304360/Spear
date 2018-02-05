@@ -37,8 +37,7 @@ import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 import static com.example.nachito.spear.MainActivity.depth;
-import static com.example.nachito.spear.MainActivity.setVehicleStateString;
-import static com.example.nachito.spear.MainActivity.showrpm;
+import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
 
@@ -69,7 +68,7 @@ public class Line extends AppCompatActivity {
     ArrayList<GeoPoint> otherVehiclesPosition;
     ArrayList<GeoPoint> areaPoints = MainActivity.returnAreaPoints();
     ArrayList<GeoPoint> linePoints = MainActivity.returnLinePoints();
-    Marker nodeMarkers = MainActivity.getPointsMain();
+    Marker nodeMarkers = MainActivity.getPointsFromMain();
     GeoPoint selectedVehiclePosition;
     final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", selectedVehiclePosition);
     Button eraseAll;
@@ -91,16 +90,7 @@ public class Line extends AppCompatActivity {
                         startMarker.setTitle("lat/lon:" + markers.get(i));
                         map.getOverlays().add(startMarker);
                     }
-                    if (polyline != null) {
-                        map.getOverlays().add(polyline);
-                    }
 
-                    if (circle != null) {
-
-                        circle.setPoints(markers);
-                        map.getOverlays().add(circle);
-                        map.invalidate();
-                    }
                 }
                 drawRed();
                 drawGreen();
@@ -307,7 +297,6 @@ public class Line extends AppCompatActivity {
             polyline.setPoints(points.get(i));
         map.getOverlayManager().add(polyline);
         map.invalidate();
-        isPolylineDrawn = true;
         if (selected == null) {
             System.out.println("No vehicle selected");
         } else {
@@ -337,7 +326,7 @@ public class Line extends AppCompatActivity {
             follow.setZ(depth);
             follow.setZUnits(ZUnits.DEPTH);
             follow.setSpeed(speed);
-            if (!showrpm) {
+            if (!isRPMSelected) {
                 follow.setSpeedUnits(SpeedUnits.METERS_PS);
             } else {
                 follow.setSpeedUnits(SpeedUnits.RPM);
@@ -345,15 +334,10 @@ public class Line extends AppCompatActivity {
             maneuvers.add(follow);
         }
 
-
-        MainActivity.previous = "M";
         isPolylineDrawn = true;
-        MainActivity.enteredServiceMode = false;
-        setVehicleStateString(" Line ");
+        MainActivity.hasEnteredServiceMode = false;
         startBehaviour("followPoints" + selected, PlanUtilities.createPlan("followPoints" + selected, maneuvers.toArray(new Maneuver[0])));
         onBackPressed();
-
-
     }
 
     public void Go(GeoPoint p) {
@@ -365,14 +349,13 @@ public class Line extends AppCompatActivity {
         go.setZ(depth);
         go.setZUnits(ZUnits.DEPTH);
         go.setSpeed(speed);
-        if (!showrpm) {
+        if (!isRPMSelected) {
             go.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
             go.setSpeedUnits(SpeedUnits.RPM);
         }
         String planid = "SpearGoto-" + selected;
-        MainActivity.previous = "M";
-        setVehicleStateString(" ");
+        MainActivity.hasEnteredServiceMode = false;
         startBehaviour(planid, go);
         onBackPressed();
 
@@ -399,7 +382,7 @@ public class Line extends AppCompatActivity {
 
     @Periodic
     public void drawBlue() {
-        otherVehiclesPosition = MainActivity.drawPosicaoOutrosVeiculos();
+        otherVehiclesPosition = MainActivity.drawOtherVehicles();
         Set<GeoPoint> hs = new HashSet<>();
         hs.addAll(otherVehiclesPosition);
         otherVehiclesPosition.clear();

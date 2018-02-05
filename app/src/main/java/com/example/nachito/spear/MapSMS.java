@@ -187,7 +187,7 @@ public class MapSMS extends AppCompatActivity {
     }
 
     public void drawBlue() {
-        posicaoOutrosVeiculos = MainActivity.drawPosicaoOutrosVeiculos();
+        posicaoOutrosVeiculos = MainActivity.drawOtherVehicles();
 
         Set<GeoPoint> hs = new HashSet<>();
         hs.addAll(posicaoOutrosVeiculos);

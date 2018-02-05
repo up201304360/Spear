@@ -40,9 +40,8 @@ import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 import static com.example.nachito.spear.MainActivity.depth;
+import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.returnAreaPoints;
-import static com.example.nachito.spear.MainActivity.setVehicleStateString;
-import static com.example.nachito.spear.MainActivity.showrpm;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
 import static com.example.nachito.spear.MainActivity.swath_width;
@@ -72,7 +71,7 @@ public class Area extends AppCompatActivity {
     ArrayList<GeoPoint> otherVehiclesPosition;
     ArrayList<GeoPoint> areaPoints = returnAreaPoints();
     ArrayList<GeoPoint> linePoints = MainActivity.returnLinePoints();
-    Marker nodeMarkers = MainActivity.getPointsMain();
+    Marker nodeMarkers = MainActivity.getPointsFromMain();
     GeoPoint centerInSelectedVehicle;
     final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centerInSelectedVehicle);
     Goto area2;
@@ -338,7 +337,7 @@ public class Area extends AppCompatActivity {
             area2.setZ(depth);
             area2.setZUnits(ZUnits.DEPTH);
             area2.setSpeed(speed);
-            if (!showrpm) {
+            if (!isRPMSelected) {
                 area2.setSpeedUnits(SpeedUnits.METERS_PS);
             } else {
                 area2.setSpeedUnits(SpeedUnits.RPM);
@@ -349,13 +348,9 @@ public class Area extends AppCompatActivity {
             maneuverArrayList.addAll(maneuvers);
 
         }
-        MainActivity.enteredServiceMode = false;
-
-        setVehicleStateString(" Area ");
-        MainActivity.previous = "M";
-        MainActivity.updateWaypointsBoolean = false;
+        MainActivity.areNewWaypointsFromAreaUpdated = false;
+        MainActivity.hasEnteredServiceMode = false;
         startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
-        sendmList();
         onBackPressed();
 
     }
@@ -369,17 +364,16 @@ public class Area extends AppCompatActivity {
         go.setZ(depth);
         go.setZUnits(ZUnits.DEPTH);
         go.setSpeed(speed);
-        if (!showrpm) {
+        if (!isRPMSelected) {
             go.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
             go.setSpeedUnits(SpeedUnits.RPM);
         }
         String planid = "SpearGoto-" + selected;
+        MainActivity.hasEnteredServiceMode = false;
         startBehaviour(planid, go);
-        MainActivity.previous = "M";
-
-        setVehicleStateString(" ");
         onBackPressed();
+
     }
 
     @Periodic
@@ -401,7 +395,7 @@ public class Area extends AppCompatActivity {
 
     @Periodic
     public void drawBlue() {
-        otherVehiclesPosition = MainActivity.drawPosicaoOutrosVeiculos();
+        otherVehiclesPosition = MainActivity.drawOtherVehicles();
         Set<GeoPoint> hs = new HashSet<>();
         hs.addAll(otherVehiclesPosition);
         otherVehiclesPosition.clear();

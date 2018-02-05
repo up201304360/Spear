@@ -24,11 +24,11 @@ import pt.lsts.neptus.messages.listener.Periodic;
 public class PlanList {
     private static final LinkedHashMap<String, List<String>> planHashMap = new LinkedHashMap<>();
     private static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
-      static boolean samePlan;
-     private static String previousPlan = ".";
-     static boolean callMethodWaypoints;
+    static boolean samePlan;
+    static String previousPlan = ".";
+    static boolean callMethodWaypoints;
+    static String planBeingExecuted = null;
     private IMCGlobal imc = null;
-    private String planBeingExecuted = null;
 
     PlanList(IMCGlobal ref) {
         imc = ref;
