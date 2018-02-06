@@ -438,14 +438,12 @@ public class SendSms extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         unregisterBroadcast();
-
         SendSms.super.onBackPressed();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
         unregisterBroadcast();
 
 

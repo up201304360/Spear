@@ -57,18 +57,13 @@ public class VehicleList {
 
         synchronized (hashMapTime) {
 
-
             for (Map.Entry<String, Pair<Date, String>> entry : hashMapTime.entrySet()) {
                 assert entry.getValue().first != null;
                 if (entry.getValue().first.after(connectedTime))
-
                     ligados.add(entry.getValue().second);
-
-
                 withoutRepetitions = new LinkedHashSet<>();
 
                 Iterator<String> it = ligados.iterator();
-
                 while (it.hasNext()) {
                     String val = it.next();
                     if (withoutRepetitions.contains(val)) {
@@ -78,7 +73,6 @@ public class VehicleList {
                 }
 
             }
-
 
         }
         return withoutRepetitions;

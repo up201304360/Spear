@@ -11,7 +11,11 @@
         <item>lauv-noptilus-3</item>
         <item>lauv-xplore-1</item>
         <item>lauv-xplore-2</item>
-        <item>lauv-arpao</item>
+        <item>lauv-nemo</item>
+
+        <item>lauv-xplore-3</item>
+        <item>lauv-xplore-4</item>
+        <item>lauv-xplore-5</item>
 
     </string-array>
 
@@ -24,6 +28,10 @@
         <item>+351964085112</item>
         <item>+351965655424</item>
         <item>+351924176966</item>
+
+        <item>+351964039469</item>
+        <item>+351964093243</item>
+        <item>+351964125235</item>
 </string-array>
 
 </resources>

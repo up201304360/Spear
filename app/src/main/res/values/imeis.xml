@@ -13,8 +13,11 @@
         <item>lauv-noptilus-3</item>
         <item>lauv-xplore-1</item>
         <item>lauv-xplore-2</item>
-        <item>lauv-arpao</item>
+        <item>lauv-nemo</item>
 
+        <item>lauv-xplore-3</item>
+        <item>lauv-xplore-4</item>
+        <item>lauv-xplore-5</item>
     </string-array>
 
     <string-array name="imei">
@@ -27,6 +30,8 @@
         <item>300234061464450</item>
         <item>300234061188110</item>
         <item>300234060694670</item>
-
+        <item>300234065526950</item>
+        <item>300234065526740</item>
+        <item>300234065325450</item>
     </string-array>
 </resources>
