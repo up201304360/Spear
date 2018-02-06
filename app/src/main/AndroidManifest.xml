@@ -2,122 +2,108 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.nachito.spear">
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <!--
-         The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
-         Google Maps Android API v2, but you must specify either coarse or fine
+         you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="com.example.nachito.atry.MAPS_RECEIVE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <uses-permission android:name="android.permission.READ_SMS" />
-    <uses-permission android:name="android.permission.WRITE_SMS"/>
-    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
-    <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.WRITE_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-feature
         android:glEsVersion="0x00020000"
-        android:required="true"/>
+        android:required="true" />
+
     <application
         android:name="android.support.multidex.MultiDexApplication"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:hardwareAccelerated="true"
         android:icon="@drawable/spear02"
         android:label="@string/app_name"
-        android:hardwareAccelerated="true"
         android:roundIcon="@drawable/spear02"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:fullBackupContent="@xml/backup_descriptor"
-        android:allowBackup="true">
+        android:theme="@style/AppTheme">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyBva0R32uLKe_TkKHoBFk0OH9R_EjZ_fvo"/>
+            android:value="AIzaSyBva0R32uLKe_TkKHoBFk0OH9R_EjZ_fvo" />
 
         <activity
             android:name="com.example.nachito.spear.MainActivity_"
+            android:hardwareAccelerated="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme"
-            android:hardwareAccelerated="true">
+            android:theme="@style/AppTheme">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <meta-data
-                android:name="com.google.android.gms.version"
-                android:value="@integer/google_play_services_version" />
-
-
-            <activity android:name=".TeleOperation"
-                  android:launchMode="singleTask"
+            <activity
+                android:name=".TeleOperation"
+                android:launchMode="singleTask"
+                android:parentActivityName=".MainActivity_"
                 android:screenOrientation="portrait"
-                  android:parentActivityName=".MainActivity_"
-                tools:ignore="WrongManifestParent">
-
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-            </activity>
-
-
-
-            <activity android:name=".Joystick"
-                android:screenOrientation="portrait"
-                      android:launchMode="singleTask"
-                      android:parentActivityName=".MainActivity"
                 tools:ignore="WrongManifestParent">
                 <meta-data
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value=".MainActivity" />
-
             </activity>
-
-
+            <activity
+                android:name=".Joystick"
+                android:launchMode="singleTask"
+                android:parentActivityName=".MainActivity"
+                android:screenOrientation="portrait"
+                tools:ignore="WrongManifestParent">
+                <meta-data
+                    android:name="android.support.PARENT_ACTIVITY"
+                    android:value=".MainActivity" />
+            </activity>
         </activity>
 
         <activity
             android:name="com.example.nachito.spear.SettingsActivity"
             android:label="@string/action_settings"
-            android:screenOrientation="portrait"
-            android:parentActivityName="com.example.nachito.spear.MainActivity_">
-        <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value="com.example.nachito.spear.MainActivity_" />
+            android:parentActivityName="com.example.nachito.spear.MainActivity_"
+            android:screenOrientation="portrait">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
         <activity
             android:name="com.example.nachito.spear.Area_"
-            android:screenOrientation="portrait"
             android:launchMode="singleTask"
-            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
-
-            android:parentActivityName="com.example.nachito.spear.MainActivity_">
+            android:parentActivityName="com.example.nachito.spear.MainActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
-
         <activity
             android:name="com.example.nachito.spear.Line"
-            android:screenOrientation="portrait"
             android:launchMode="singleTask"
-            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
-
-            android:parentActivityName="com.example.nachito.spear.MainActivity_">
+            android:parentActivityName="com.example.nachito.spear.MainActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
-        <activity android:name="com.example.nachito.spear.SendSms"
+        <activity
+            android:name="com.example.nachito.spear.SendSms"
             android:launchMode="singleTask"
+            android:parentActivityName=".MainActivity_"
             android:screenOrientation="portrait"
-            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
-
-            android:parentActivityName=".MainActivity_"  >
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity_" />
@@ -125,10 +111,9 @@
         </activity>
         <activity
             android:name="com.example.nachito.spear.MapSMS"
+            android:parentActivityName="com.example.nachito.spear.MainActivity_"
             android:screenOrientation="portrait"
-            android:theme = "@style/Theme.AppCompat.DayNight.NoActionBar"
-
-            android:parentActivityName="com.example.nachito.spear.MainActivity_">
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.nachito.spear.MainActivity_" />
@@ -137,7 +122,8 @@
         <activity android:name=".MainActivity" />
 
 
-        <receiver android:name="com.example.nachito.spear.ReceiveSms"
+        <receiver
+            android:name="com.example.nachito.spear.ReceiveSms"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
@@ -147,7 +133,7 @@
 
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+            android:value="@integer/google_play_services_version" />
 
     </application>
 

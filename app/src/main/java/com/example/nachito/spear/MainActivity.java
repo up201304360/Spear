@@ -46,7 +46,9 @@ import org.androidannotations.annotations.ViewById;
 import org.jetbrains.annotations.Contract;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -304,8 +306,10 @@ public class MainActivity extends AppCompatActivity
 
 
         setContentView(R.layout.activity_main);
-       // map.setUseDataConnection(false);
+        map.setUseDataConnection(false);
         map.setTileSource(TileSourceFactory.MAPNIK);
+
+
         android.app.ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);

@@ -420,7 +420,6 @@ public class Area extends AppCompatActivity {
 
     @Periodic
     public void drawGreen() {
-        System.out.println("green");
         if (centerInSelectedVehicle != null) {
             final ArrayList<OverlayItem> items = new ArrayList<>();
             final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centerInSelectedVehicle);
@@ -459,7 +458,6 @@ public class Area extends AppCompatActivity {
     public void onDestroy() {
         stopRepeatingTask();
         super.onDestroy();
-
     }
 
 }

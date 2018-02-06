@@ -407,7 +407,6 @@ public class Line extends AppCompatActivity {
 
     @Periodic
     public void drawGreen() {
-        System.out.println("green");
         if (selectedVehiclePosition != null) {
             final ArrayList<OverlayItem> items = new ArrayList<>();
             final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", selectedVehiclePosition);

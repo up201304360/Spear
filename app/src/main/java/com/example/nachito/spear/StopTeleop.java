@@ -46,11 +46,7 @@ public class StopTeleop extends View {
         if (actionType == MotionEvent.ACTION_UP) {
             release();
         }
-        switch (event.getAction()){
-            case MotionEvent.ACTION_UP:
-               // performClick();
-                return true;
-        }
+
         return true;
     }
 

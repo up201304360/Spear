@@ -1,5 +1,6 @@
 package com.example.nachito.spear;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
@@ -12,7 +13,7 @@ import android.view.View;
  * Created by nachito on 17/05/17.
  */
 
-public class Accelerate  extends View {
+public class Accelerate extends View {
     int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     private AccelListener listener;
 
@@ -29,30 +30,25 @@ public class Accelerate  extends View {
     }
 
     public void setOnAccelerate(AccelListener listener) {
-        this .listener = listener;
+        this.listener = listener;
     }
 
-
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         this.setBackgroundColor(pressed_color);
         int actionType = event.getAction();
-
         if (listener != null)
             listener.accelerate();
         invalidate();
-        if(actionType == MotionEvent.ACTION_UP) {
-            performClick();
-            release();}
+        if (actionType == MotionEvent.ACTION_UP)
+            release();
+
         return true;
     }
 
 
-
-    public void release(){
-
-
+    public void release() {
         this.setBackgroundColor(color);
         if (listener != null) {
             listener.OnReleaseAcc();

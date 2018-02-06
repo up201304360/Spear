@@ -60,8 +60,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:multidex:1.0.2'
-    compile 'com.android.support:support-annotations:27.0.2'
-    compile 'org.androidannotations:androidannotations:4.3.1'
     compile 'com.android.support:design:27.0.2'
     implementation 'com.android.support:mediarouter-v7:27.0.2'
     compile 'com.android.support:appcompat-v7:27.0.2'
@@ -69,8 +67,9 @@ dependencies {
     compile 'com.android.support:support-v4:27.0.2'
     testCompile 'junit:junit:4.12'
     apply plugin: 'com.android.application'
-    annotationProcessor 'org.androidannotations:androidannotations:4.3.1'
+    compile 'com.android.support:support-annotations:27.0.2'
     compile 'org.androidannotations:androidannotations:4.3.1'
+    annotationProcessor 'org.androidannotations:androidannotations:4.3.1'
     compile 'org.androidannotations:androidannotations-roboguice:4.3.1'
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'org.osmdroid:osmdroid-android:5.6.5'
@@ -81,10 +80,12 @@ dependencies {
     compile files('libs/AreaCoverage-v1.2.jar')
     compileOnly files('libs/msgsender.jar')
     implementation files('libs/libimc.jar')
+    compile 'com.github.MKergall:osmbonuspack:6.4'
+    def AAVersion = '3.2'
+    annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
+    compile "org.androidannotations:androidannotations-api:$AAVersion"
+    compile 'org.jetbrains:annotations-java5:15.0'
 }
-
-def AAVersion = '3.2'
-
 buildscript {
     repositories {
         mavenCentral()
@@ -93,28 +94,8 @@ buildscript {
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
     }
 }
-
-
-
-
-
-
-
-
-
-
-dependencies {
-    annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
-    compile "org.androidannotations:androidannotations-api:$AAVersion"
-    compile 'org.jetbrains:annotations-java5:15.0'
-}
-
-
 repositories {
     mavenCentral()
     maven { url "https://jitpack.io" }
 }
-dependencies {
-    compile 'org.osmdroid:osmdroid-android:5.6.5'
-    compile 'com.github.MKergall:osmbonuspack:6.4'
-}
+
