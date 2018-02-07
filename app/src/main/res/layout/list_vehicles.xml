@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <RadioGroup
+        android:id="@+id/radioButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/lauv_xplore_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_xplore_1" />
+
+        <RadioButton
+            android:id="@+id/lauv_xplore_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_xplore_2" />
+
+        <RadioButton
+            android:id="@+id/lauv_xplore_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_xplore_3" />
+
+        <RadioButton
+            android:id="@+id/lauv_xplore_4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_xplore_4" />
+
+        <RadioButton
+            android:id="@+id/lauv_xplore_5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_xplore_5" />
+
+        <RadioButton
+            android:id="@+id/lauv_seacon_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_marginStart="40dp"
+            android:text="@string/lauv_seacon_2" />
+
+        <RadioButton
+            android:id="@+id/lauv_seacon_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:checked="false"
+            android:text="@string/lauv_seacon_3" />
+
+        <RadioButton
+            android:id="@+id/lauv_xtreme_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_xtreme_2" />
+
+        <RadioButton
+            android:id="@+id/lauv_noptilus_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_noptilus_1" />
+
+        <RadioButton
+            android:id="@+id/lauv_noptilus_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_noptilus_2" />
+
+        <RadioButton
+            android:id="@+id/lauv_noptilus_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_noptilus_3" />
+
+
+        <RadioButton
+            android:id="@+id/lauv_nemo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:text="@string/lauv_nemo" />
+
+
+    </RadioGroup>
+</ScrollView>

@@ -5,6 +5,8 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+
+
     <!--
          you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality.
@@ -18,6 +20,8 @@
     <uses-permission android:name="android.permission.WRITE_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="com.example.nachito.atry.MAPS_RECEIVE" />
+
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />
@@ -99,6 +103,16 @@
                 android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
         <activity
+            android:name="com.example.nachito.spear.ListVehicles"
+            android:launchMode="singleTask"
+            android:parentActivityName="com.example.nachito.spear.MainActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.nachito.spear.MainActivity_" />
+        </activity>
+        <activity
             android:name="com.example.nachito.spear.SendSms"
             android:launchMode="singleTask"
             android:parentActivityName=".MainActivity_"
@@ -124,12 +138,13 @@
 
         <receiver
             android:name="com.example.nachito.spear.ReceiveSms"
+            android:enabled="true"
+            android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
-
 
         <meta-data
             android:name="com.google.android.gms.version"

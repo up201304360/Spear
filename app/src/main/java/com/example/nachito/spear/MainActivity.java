@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -39,6 +40,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
 
+import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -64,6 +66,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -281,7 +284,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     public static void startBehaviour(String planid, IMCMessage what) {
-        System.out.println("startBehaviour");
         PlanControl pc = new PlanControl();
         pc.setArg(what);
         pc.setType(PlanControl.TYPE.REQUEST);
@@ -306,7 +308,9 @@ public class MainActivity extends AppCompatActivity
 
 
         setContentView(R.layout.activity_main);
-        // map.setUseDataConnection(false);
+
+
+        map.setUseDataConnection(false);
         map.setTileSource(TileSourceFactory.MAPNIK);
 
 
@@ -401,6 +405,7 @@ public class MainActivity extends AppCompatActivity
 
                     return;
                 }
+                String type = matcher.group(1);
                 String vehicle = matcher.group(2);
                 String timeOfDay = matcher.group(3);
                 String latMins = matcher.group(4);
@@ -763,7 +768,6 @@ public class MainActivity extends AppCompatActivity
             return true;
         } else if (id == R.id.sms) {
             Intent i = new Intent(this, SendSms.class);
-            i.putExtra("selected", imc.selectedvehicle);
             startActivity(i);
 
             return true;

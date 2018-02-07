@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#00FFFFFF">
-    <TextView
-        android:layout_width="wrap_content"
+    android:layout_marginTop="20dp"
+    android:background="#00FFFFFF"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/listofVehicles"
+        android:layout_width="276dp"
         android:layout_height="wrap_content"
-        android:id="@+id/nomeVeiculo"
-        android:layout_gravity="center"
-        android:textSize="20sp"
-        android:layout_margin="10dp"
-        android:text="@string/vehicle_name"/>
+        android:layout_marginStart="40dp"
+        android:text="@string/list_of_vehicles" />
 
     <RadioGroup
         android:id="@+id/radioButtons"
@@ -72,19 +73,19 @@
         android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/sms"
-        android:layout_marginStart="77dp"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_marginStart="77dp"
+        android:text="@string/sms" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/iridium"
         android:layout_alignParentTop="true"
+        android:layout_marginStart="40dp"
         android:layout_toEndOf="@+id/button3"
-        android:layout_marginStart="40dp" />
+        android:text="@string/iridium" />
 </RelativeLayout>
 
 

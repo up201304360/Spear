@@ -57,4 +57,17 @@
     <string name="wifion">wifion</string>
     <string name="wifioff">wifioff</string>
     <string name="patternMessageReceived">\\((.)\\) \\((.*)\\) (.*) / (.*), (.*) / .*</string>
+    <string name="list_of_vehicles">List of Vehicles</string>
+    <string name="lauv_seacon_2">lauv-seacon-2</string>
+    <string name="lauv_seacon_3">lauv-seacon-3</string>
+    <string name="lauv_xtreme_2">lauv-xtreme-2</string>
+    <string name="lauv_noptilus_1">lauv-noptilus-1</string>
+    <string name="lauv_noptilus_2">lauv-noptilus-2</string>
+    <string name="lauv_noptilus_3">lauv-noptilus-3</string>
+    <string name="lauv_xplore_1">lauv-xplore-1</string>
+    <string name="lauv_xplore_2">lauv-xplore-2</string>
+    <string name="lauv_xplore_3">lauv-xplore-3</string>
+    <string name="lauv_xplore_4">lauv-xplore-4</string>
+    <string name="lauv_xplore_5">lauv-xplore-5</string>
+    <string name="lauv_nemo">lauv-arpao</string>
 </resources>
