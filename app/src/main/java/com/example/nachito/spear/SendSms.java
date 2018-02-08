@@ -1,9 +1,11 @@
 package com.example.nachito.spear;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,34 +15,21 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.SmsManager;
-import android.telephony.SmsMessage;
 import android.test.mock.MockPackageManager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import org.jetbrains.annotations.Contract;
 import org.osmdroid.util.GeoPoint;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-
 import pt.lsts.imc.IMCMessage;
-import pt.lsts.ripples.model.iridium.ImcIridiumMessage;
 
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
-import static android.os.Build.VERSION_CODES.M;
 
 /**
  *
@@ -55,6 +44,8 @@ public class SendSms extends AppCompatActivity {
     RadioButton abort;
     RadioButton goTo;
     RadioButton pos;
+    RadioButton sendPlan;
+    RadioButton startPlan;
     Button listOfVehicles;
     RadioButton stationKeeping;
     String[] vehicleNumber;
@@ -69,6 +60,7 @@ public class SendSms extends AppCompatActivity {
     String[] vehicleNames;
     String FNumber;
     IMCMessage msg;
+    String planName;
 
     public static GeoPoint pontoSMS() {
         return finalPoint;
@@ -113,7 +105,7 @@ public class SendSms extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_CODE_PERMISSION: {
                 if (grantResults.length > 0
@@ -139,6 +131,8 @@ public class SendSms extends AppCompatActivity {
         goTo = findViewById(R.id.gotoRadioButton);
         pos = findViewById(R.id.pos);
         stationKeeping = findViewById(R.id.stationKeepingRadioButton);
+        sendPlan = findViewById(R.id.sendPlanRadioButton);
+        startPlan = findViewById(R.id.startPlanRadioButton);
         sms = findViewById(R.id.button3);
         iridium = findViewById(R.id.button2);
         listOfVehicles = findViewById(R.id.listofVehicles);
@@ -193,6 +187,82 @@ public class SendSms extends AppCompatActivity {
                     }
 
                 }
+            }
+        });
+
+        startPlan.setOnCheckedChangeListener((compoundButton, b) -> {
+            if (ListVehicles.selectedSMS.equals("."))
+                Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+
+            else {
+                checked = ("start");
+
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(SendSms.this);
+                alertDialog.setTitle("Plan name");
+
+                final EditText input = new EditText(SendSms.this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+                input.setLayoutParams(lp);
+                alertDialog.setView(input);
+
+                alertDialog.setPositiveButton("DONE",
+                        (dialog, which) -> {
+                            planName = input.getText().toString();
+
+                            dialog.cancel();
+                        });
+                alertDialog.show();
+            }
+
+
+            for (int i = 0; i < names.length; i++) {
+
+                if (names[i].contains(ListVehicles.selectedSMS)) {
+                    finalNumber = vehicleNumber[i];
+                }
+                if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                    FNumber = imeiNumb[i];
+                }
+
+            }
+
+        });
+        sendPlan.setOnCheckedChangeListener((compoundButton, b) -> {
+            if (ListVehicles.selectedSMS.equals("."))
+                Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
+
+            else {
+                checked = ("send");
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(SendSms.this);
+                alertDialog.setTitle("Plan name");
+
+                final EditText input = new EditText(SendSms.this);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT);
+                input.setLayoutParams(lp);
+                alertDialog.setView(input);
+
+                alertDialog.setPositiveButton("DONE",
+                        (dialog, which) -> {
+                            planName = input.getText().toString();
+
+                            dialog.cancel();
+                        });
+                alertDialog.show();
+            }
+            for (int i = 0; i < names.length; i++) {
+
+                if (names[i].contains(ListVehicles.selectedSMS)) {
+                    finalNumber = vehicleNumber[i];
+                }
+                if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                    FNumber = imeiNumb[i];
+                }
+
+
             }
         });
 
@@ -285,6 +355,12 @@ public class SendSms extends AppCompatActivity {
                 case "goTo":
                     sendSMS(finalNumber, MainActivity.speed, "go");
                     break;
+                case "send":
+                    sendSMS(finalNumber, MainActivity.speed, "plan " + planName);
+                    break;
+                case "start":
+                    sendSMS(finalNumber, MainActivity.speed, "start" + planName);
+                    break;
             }
         });
 
@@ -322,6 +398,20 @@ public class SendSms extends AppCompatActivity {
                 case "goTo":
                     try {
                         sendIMEI(msg, FNumber, MainActivity.depth, MainActivity.speed, "go");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "send":
+                    try {
+                        sendIMEI(msg, FNumber, MainActivity.depth, MainActivity.speed, "plan" + planName);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "start":
+                    try {
+                        sendIMEI(msg, FNumber, MainActivity.depth, MainActivity.speed, "start" + planName);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -457,6 +547,22 @@ public class SendSms extends AppCompatActivity {
                             ListVehicles.selectedSMS = ".";
 
                             break;
+                        case "start":
+                            System.out.println("SMS STARTPLAN");
+                            smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
+                            onBackPressed();
+                            checked = " ";
+                            ListVehicles.selectedSMS = ".";
+
+                            break;
+                        case "send":
+                            System.out.println("SMS PLAN");
+                            smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
+                            onBackPressed();
+                            checked = " ";
+                            ListVehicles.selectedSMS = ".";
+
+                            break;
 
                     }
 
@@ -475,16 +581,22 @@ public class SendSms extends AppCompatActivity {
 
     private boolean sendIMEI(IMCMessage message, String imeiNumber, double depth, double vel, String smsText) throws Exception {
 
-       /* String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
+     /*   String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
+        String selectedV= ListVehicles.selectedSMS;
 
 
-        //imcid do veiculo
 
         ImcIridiumMessage msg = new ImcIridiumMessage();
-        msg.setDestination(message.getDst());
+        msg.setDestination();         //imcid do veiculo
+
         msg.setSource(message.getSrc());
         msg.source = message.getSrc();
         msg.setMsg(message);
+        // criar uma nova textmessage
+
+
+        TextMessage newText = new TextMessage();
+        newText.setText(smsText);
 
         byte[] data = msg.serialize();
 
@@ -517,7 +629,7 @@ public class SendSms extends AppCompatActivity {
         ByteArrayOutputStream incoming = new ByteArrayOutputStream();
 
         byte buff[] = new byte[1024];
-        int read = 0;
+        int read;
         while ((read = is.read(buff)) > 0)
             incoming.write(buff, 0, read);
         is.close();
@@ -530,9 +642,9 @@ public class SendSms extends AppCompatActivity {
             System.out.println(new String(incoming.toByteArray()));
             urlConnection.disconnect();
 
-        }
+        }*/
 
-*/
+
         return false;
 
 

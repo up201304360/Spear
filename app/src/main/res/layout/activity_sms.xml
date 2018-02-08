@@ -2,37 +2,38 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="20dp"
+    android:layout_marginTop="15dp"
     android:background="#00FFFFFF"
     android:orientation="vertical">
 
     <Button
         android:id="@+id/listofVehicles"
-        android:layout_width="276dp"
+        android:layout_width="291dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginStart="50dp"
+
         android:text="@string/list_of_vehicles" />
 
     <RadioGroup
         android:id="@+id/radioButtons"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="356dp"
         android:layout_gravity="center"
-        android:layout_margin="10dp"
-       >
+        android:layout_margin="5dp">
 
         <RadioButton
             android:id="@+id/pos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/pos" />
 
         <RadioButton
             android:id="@+id/diveRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:checked="false"
             android:text="@string/dive" />
 
@@ -40,29 +41,44 @@
             android:id="@+id/stationKeepingRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/station" />
 
         <RadioButton
             android:id="@+id/abortRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/abort" />
 
         <RadioButton
             android:id="@+id/surfaceRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/surface" />
 
         <RadioButton
             android:id="@+id/gotoRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:text="@string/goTo" />
+
+        <RadioButton
+            android:id="@+id/sendPlanRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/plan" />
+
+        <RadioButton
+            android:id="@+id/startPlanRadioButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/start_plan" />
+
 
     </RadioGroup>
 <RelativeLayout
@@ -75,7 +91,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="77dp"
+        android:layout_marginStart="80dp"
         android:text="@string/sms" />
 
     <Button

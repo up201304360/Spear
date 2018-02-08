@@ -375,24 +375,6 @@ public class Area extends AppCompatActivity {
         onBackPressed();
 
     }
-
-    @Periodic
-    public void drawRed() {
-        final GeoPoint loc = MainActivity.localizacao();
-        final ArrayList<OverlayItem> items2 = new ArrayList<>();
-        final OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", loc);
-        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
-        items2.add(marker2);
-        Bitmap newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
-        float orientation2 = MainActivity.orientation();
-        int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-        ori2 = ori2 - 180;
-        Bitmap target = MainActivity.RotateMyBitmap(newMarker2, ori2);
-        Drawable markerLoc = new BitmapDrawable(getResources(), target);
-        final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
-        map.getOverlays().add(markersOverlay2);
-    }
-
     @Periodic
     public void drawBlue() {
         otherVehiclesPosition = MainActivity.drawOtherVehicles();
@@ -417,6 +399,24 @@ public class Area extends AppCompatActivity {
             }
         }
     }
+
+    @Periodic
+    public void drawRed() {
+        final GeoPoint loc = MainActivity.localizacao();
+        final ArrayList<OverlayItem> items2 = new ArrayList<>();
+        final OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", loc);
+        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
+        items2.add(marker2);
+        Bitmap newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
+        float orientation2 = MainActivity.orientation();
+        int ori2 = (int) Math.round(Math.toDegrees(orientation2));
+        ori2 = ori2 - 180;
+        Bitmap target = MainActivity.RotateMyBitmap(newMarker2, ori2);
+        Drawable markerLoc = new BitmapDrawable(getResources(), target);
+        final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
+        map.getOverlays().add(markersOverlay2);
+    }
+
 
     @Periodic
     public void drawGreen() {

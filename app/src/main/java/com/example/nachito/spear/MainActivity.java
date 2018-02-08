@@ -128,7 +128,6 @@ public class MainActivity extends AppCompatActivity
     //Strings for the panel
     @SuppressLint("StaticFieldLeak")
     static String depthString;
-    static String vehicleStateString;
     static String velocityString;
     //Markers of the map
     static Marker pointsSelectedOnMap;
