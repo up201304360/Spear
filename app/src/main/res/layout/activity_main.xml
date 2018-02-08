@@ -32,6 +32,16 @@
             android:layout_marginTop="20dp"
             android:background="@drawable/loc2" />
 
+        <Button
+            android:id="@+id/minus"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="25dp"
+            android:layout_marginTop="55dp"
+            android:background="#4D000000"
+            android:text="@string/minus"
+            android:textSize="12sp" />
 
 
         <include layout="@layout/persistent_bottomsheet" />

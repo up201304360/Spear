@@ -70,4 +70,8 @@
     <string name="lauv_xplore_4">lauv-xplore-4</string>
     <string name="lauv_xplore_5">lauv-xplore-5</string>
     <string name="lauv_nemo">lauv-arpao</string>
+    <string name="depthstring">Depth:</string>
+    <string name="speedstring">Speed:</string>
+    <string name="meterspersecond">m/s</string>
+    <string name="connectedvehicles">ConnectedVehicles</string>
 </resources>

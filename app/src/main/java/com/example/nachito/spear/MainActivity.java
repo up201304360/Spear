@@ -153,9 +153,12 @@ public class MainActivity extends AppCompatActivity
     static ArrayList<GeoPoint> planWaypoints = new ArrayList<>();
     static boolean hasEnteredServiceMode = false;
     static boolean wasPlanChanged = false;
+    static String stateconncected;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
     @ViewById(R.id.dive)
     Button dive;
+    @ViewById(R.id.minus)
+    Button minus;
     @ViewById(R.id.near)
     Button comeNear;
     @ViewById(R.id.startplan)
@@ -245,10 +248,7 @@ public class MainActivity extends AppCompatActivity
             return null;
     }
 
-    public static void setVehicleStateString(String e) {
 
-        vehicleStateString = e;
-    }
 
     @Nullable
     @Contract(pure = true)
@@ -295,7 +295,6 @@ public class MainActivity extends AppCompatActivity
         previous = "S";
         MainActivity.hasEnteredServiceMode = false;
         imc.sendMessage(pc);
-        setVehicleStateString(planid);
     }
 
 
@@ -357,10 +356,8 @@ public class MainActivity extends AppCompatActivity
         noWifiImage.setVisibility(View.INVISIBLE);
         StopTeleop stopTeleop = findViewById(R.id.stopTeleop);
         stopTeleop.setVisibility(View.INVISIBLE);
-
-
         imc.register(this);
-
+        minus.setOnClickListener(v -> mapController.zoomOut());
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
         }
@@ -453,7 +450,6 @@ public class MainActivity extends AppCompatActivity
 //wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
             cleanMap();
             updateMap();
-            setVehicleStateString(PlanList.planBeingExecuted);
             wasPlanChanged = false;
         }
     }
@@ -617,7 +613,6 @@ public class MainActivity extends AppCompatActivity
                             pc.setRequestId(0);
                             pc.setPlanId("SpearTeleoperation-" + imc.selectedvehicle);
                             imc.sendMessage(pc);
-                            setVehicleStateString(" ");
                         })
                         .setNegativeButton("No", (dialog, id) -> dialog.cancel());
                 AlertDialog alertDialog = alertDialogBuilder.create();
@@ -900,7 +895,7 @@ public class MainActivity extends AppCompatActivity
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
                     if (velocity != null)
-                        runOnUiThread(() -> velocity.setText("Speed:" + " " + velocityString + " " + "m/s" + "\n" + "Depth:" + " " + depthString + "\n" + vehicleStateString + "\n"));
+                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconncected));
 
                 }
 
@@ -939,7 +934,7 @@ public class MainActivity extends AppCompatActivity
         }
         if (stateList.size() != 0) {
             for (int i = 0; i < stateList.size(); i++) {
-                String stateconncected;
+
                 stateconncected = stateList.toString();
 
                 if (!isStopPressed) {
@@ -951,7 +946,6 @@ public class MainActivity extends AppCompatActivity
                         isPolylineDrawn = false;
                         isCircleDrawn = false;
                         otherVehiclesPositionList.clear();
-                        setVehicleStateString("Plan finished");
                         wasPlanChanged = false;
                         cleanMap();
 
@@ -993,7 +987,7 @@ public class MainActivity extends AppCompatActivity
                 for (int i = 0; i < Line.getPointsLine().size(); i++) {
                     markerFromLine = new Marker(map);
 //java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
-                    if (markerFromLine != null && Line.getPointsLine().size() != 0) {
+                    if (Line.getPointsLine().size() != 0) {
                         markerFromLine.setPosition(Line.getPointsLine().get(i));
                         markerFromLine.setIcon(lineIcon);
                         map.getOverlays().add(markerFromLine);
@@ -1018,7 +1012,7 @@ public class MainActivity extends AppCompatActivity
 
                 for (int i = 0; i < planWaypoints.size(); i++) {
                     pointsFromPlan = new Marker(map);
-                    if (pointsFromPlan != null && planWaypoints.size() != 0) {
+                    if (planWaypoints.size() != 0) {
                         pointsFromPlan.setPosition(planWaypoints.get(i));
                         pointsFromPlan.setIcon(areaIcon);
                         map.getOverlays().add(pointsFromPlan);
@@ -1168,7 +1162,6 @@ public class MainActivity extends AppCompatActivity
         pc.setPlanId("stopPlan-" + imc.selectedvehicle);
         imc.sendMessage(pc);
 
-        setVehicleStateString("Plan Stopped");
         MainActivity.previous = "S";
         hasEnteredServiceMode = true;
         isStopPressed = true;
@@ -1409,7 +1402,6 @@ public class MainActivity extends AppCompatActivity
                     previous = "M";
                     isStopPressed = false;
                     hasEnteredServiceMode = false;
-                    setVehicleStateString("Plan:" + pc.getPlanId());
                     maneuverList.addAll(imc.allManeuvers());
                     callWaypoint(maneuverList);
 
@@ -1419,7 +1411,6 @@ public class MainActivity extends AppCompatActivity
             String selected = item.toString();
             String[] getName2 = selected.split(":");
             String selectedName2 = getName2[0];
-            setVehicleStateString(getName2[1]);
             imc.setSelectedvehicle(selectedName2.trim());
             serviceBar.setText(selectedName2);
             previous = null;
