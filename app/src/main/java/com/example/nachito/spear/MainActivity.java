@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -40,7 +39,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
 
-import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
@@ -48,7 +46,7 @@ import org.androidannotations.annotations.ViewById;
 import org.jetbrains.annotations.Contract;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
+
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
@@ -66,7 +64,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
-import java.io.InputStream;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -300,18 +298,25 @@ public class MainActivity extends AppCompatActivity
         setVehicleStateString(planid);
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Context ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-
-
         setContentView(R.layout.activity_main);
 
+        if (isConnectedToWifi(this)) {
+            map.setTileSource(TileSourceFactory.MAPNIK);
 
-        map.setUseDataConnection(false);
-        map.setTileSource(TileSourceFactory.MAPNIK);
+        } else
+
+        {
+            map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
+        }
+
+
+        map.setTilesScaledToDpi(true);
 
 
         android.app.ActionBar actionBar = getActionBar();
@@ -939,7 +944,7 @@ public class MainActivity extends AppCompatActivity
 
                 if (!isStopPressed) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
-                    if ((previous != null) && !hasEnteredServiceMode &&stateconncected.charAt(1) == 'S') {
+                    if ((previous != null) && !hasEnteredServiceMode && stateconncected.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
                         previous = null;
                         areNewWaypointsFromAreaUpdated = false;
