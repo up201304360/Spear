@@ -14,6 +14,7 @@ import android.widget.Toast;
 import org.androidannotations.annotations.EActivity;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -146,6 +147,9 @@ public class Area extends AppCompatActivity {
         map.setMultiTouchControls(true);
         Toast.makeText(this, " Long click on the map to choose an area", Toast.LENGTH_SHORT).show();
         getIntentSelected();
+        if (MainActivity.isOfflineSelected) {
+            map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
+        }
         mapController = map.getController();
         mapController.setZoom(16);
         centerInSelectedVehicle = MainActivity.getVariables();
@@ -286,7 +290,6 @@ public class Area extends AppCompatActivity {
             onBackPressed();
         }
     }
-
     public void getIntentSelected() {
         Intent intent = getIntent();
         selected = intent.getExtras().getString("selected");

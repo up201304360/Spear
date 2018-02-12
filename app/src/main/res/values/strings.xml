@@ -42,6 +42,10 @@
     <string name="pref_width_key" translatable="false">swath width</string>
     <string name="pref_width_default" translatable="false">25</string>
     <string name="pref_show_rpmms_label" translatable="false">RPM or m/s </string>
+    <string name="pref_show_offline_label" translatable="false">Offline or Online </string>
+    <string name="pref_show_offline_key" translatable="false">Offline</string>
+    <string name="pref_show_offtrue" translatable="false">Offline</string>
+    <string name="pref_show_offfalse" translatable="false">Online</string>
     <string name="pref_show_rpmms_key" translatable="false">RPM</string>
     <string name="pref_show_true" translatable="false">RPM</string>
     <string name="pref_show_false" translatable="false"> m/s</string>

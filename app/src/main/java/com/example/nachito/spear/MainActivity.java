@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity
         implements MapViewConstants, OnLocationChangedListener, LocationListener, SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener {
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
+    public static boolean isOfflineSelected;
     @Bean
     static IMCGlobal imc;
     @ViewById(R.id.map)
@@ -147,12 +148,11 @@ public class MainActivity extends AppCompatActivity
     static double latVehicle;
     static double lonVehicle;
     static boolean isStopPressed = false;
-
     static boolean areNewWaypointsFromAreaUpdated = false;
     static ArrayList<GeoPoint> planWaypoints = new ArrayList<>();
     static boolean hasEnteredServiceMode = false;
     static boolean wasPlanChanged = false;
-    static String stateconncected;
+    static String stateconnected;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
     @ViewById(R.id.dive)
     Button dive;
@@ -306,14 +306,14 @@ public class MainActivity extends AppCompatActivity
 
         if (isConnectedToWifi(this)) {
             map.setTileSource(TileSourceFactory.MAPNIK);
+            isOfflineSelected = false;
 
         } else
 
         {
             map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
+            isOfflineSelected = true;
         }
-
-
         map.setTilesScaledToDpi(true);
 
 
@@ -436,7 +436,7 @@ public class MainActivity extends AppCompatActivity
                 System.out.println(coordSMS + " coordinates from sms");
 
                 mapController.setCenter(coordSMS);
-                mapController.setZoom(18);
+                mapController.setZoom(12);
             }
 
         });
@@ -499,7 +499,10 @@ public class MainActivity extends AppCompatActivity
 
     public void onResume() {
         super.onResume();
-
+        if (selectedVehiclePosition != null) {
+            mapController.setCenter(selectedVehiclePosition);
+            mapController.setZoom(12);
+        }
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
 
@@ -525,7 +528,9 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         setShowRPM(sharedPreferences.getBoolean(getString(R.string.pref_show_rpmms_key), getResources().getBoolean((R.bool.pref_show_rpmms_default))));
+        setOfflineMap(sharedPreferences.getBoolean(getString(R.string.pref_show_offline_key), getResources().getBoolean(R.bool.pref_show_offline_default)));
         loadFromPrefs(sharedPreferences);
+
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
@@ -544,6 +549,15 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    public void setOfflineMap(boolean isOfflineMap) {
+        isOfflineSelected = isOfflineMap;
+        if (isOfflineSelected) {
+
+            map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
+        } else {
+            map.setTileSource(TileSourceFactory.MAPNIK);
+        }
+    }
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
@@ -554,6 +568,8 @@ public class MainActivity extends AppCompatActivity
 
             setShowRPM(sharedPreferences.getBoolean(key, getResources().getBoolean((R.bool.pref_show_rpmms_default))));
 
+        } else if (key.equals(getString(R.string.pref_show_offline_key))) {
+            setOfflineMap(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.pref_show_offline_default)));
         } else if (key.equals(getString(R.string.pref_speed_key))) {
             loadFromPrefs(sharedPreferences);
 
@@ -894,7 +910,7 @@ public class MainActivity extends AppCompatActivity
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
                     if (velocity != null)
-                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconncected));
+                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected));
 
                 }
 
@@ -912,7 +928,7 @@ public class MainActivity extends AppCompatActivity
             double[] lld = WGS84Utilities.toLatLonDepth(state);
 
             GeoPoint posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
-            mapController.setZoom(16);
+            mapController.setZoom(12);
             mapController.setCenter(posicaoVeiculo2);
 
         }
@@ -934,11 +950,11 @@ public class MainActivity extends AppCompatActivity
         if (stateList.size() != 0) {
             for (int i = 0; i < stateList.size(); i++) {
 
-                stateconncected = stateList.toString();
+                stateconnected = stateList.toString();
 
                 if (!isStopPressed) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
-                    if ((previous != null) && !hasEnteredServiceMode && stateconncected.charAt(1) == 'S') {
+                    if ((previous != null) && !hasEnteredServiceMode && stateconnected.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
                         previous = null;
                         areNewWaypointsFromAreaUpdated = false;
@@ -964,11 +980,12 @@ public class MainActivity extends AppCompatActivity
         map.getOverlays().clear();
 
         map.setMultiTouchControls(true);
+        if (maneuverList != null)
 
-        if (context == MainActivity.this) {
-            drawWifiSignal();
-            drawCompass();
-        }
+            if (context == MainActivity.this) {
+                drawWifiSignal();
+                drawCompass();
+            }
 
 
         synchronized (estates) {
@@ -1033,7 +1050,6 @@ public class MainActivity extends AppCompatActivity
             }
 
         }
-
 
     }
 
@@ -1172,6 +1188,7 @@ public class MainActivity extends AppCompatActivity
 
         cleanMap();
 
+
     }
 
     public void cleanMap() {
@@ -1207,7 +1224,6 @@ public class MainActivity extends AppCompatActivity
             pointsFromPlan.remove(map);
             map.getOverlays().remove(pointsFromPlan);
         }
-
 
         if (maneuverList != null) {
             maneuverList.clear();
@@ -1391,7 +1407,12 @@ public class MainActivity extends AppCompatActivity
             pc.setRequestId(0);
             pc.setPlanId(item.toString());
             imc.sendMessage(pc);
-            wasPlanChanged = true;
+            if (stateconnected.charAt(1) == 'S')
+                wasPlanChanged = false;
+            else
+                wasPlanChanged = true;
+
+
 
             final Handler handler = new Handler();
             handler.postDelayed(() -> {
