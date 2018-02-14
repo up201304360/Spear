@@ -103,7 +103,7 @@
                 android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
         <activity
-            android:name="com.example.nachito.spear.ListVehicles"
+            android:name="com.example.nachito.spear.StaticListVehicles"
             android:launchMode="singleTask"
             android:parentActivityName="com.example.nachito.spear.MainActivity_"
             android:screenOrientation="portrait"

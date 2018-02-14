@@ -153,6 +153,10 @@ public class MainActivity extends AppCompatActivity
     static boolean hasEnteredServiceMode = false;
     static boolean wasPlanChanged = false;
     static String stateconnected;
+    static int zoomLevel;
+    static int orientationOtherVehicles;
+    static int orientationSelected;
+    static float bearingMyLoc;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
     @ViewById(R.id.dive)
     Button dive;
@@ -213,6 +217,7 @@ public class MainActivity extends AppCompatActivity
     Polyline planWaypointPolyline;
     ArrayList<GeoPoint> pointsForAreaMarker = new ArrayList<>();
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
+    float selectedVehicleOrientation;
     private Context context;
 
     public static GeoPoint getVariables() {
@@ -226,16 +231,11 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    @Contract(pure = true)
     public static ArrayList<GeoPoint> drawOtherVehicles() {
         return otherVehiclesPositionList;
     }
 
-    @Contract(pure = true)
-    public static float orientation() {
-        return vehicleOrientation;
 
-    }
 
     @Nullable
     public static Bitmap RotateMyBitmap(Bitmap source, float angle) {
@@ -311,7 +311,7 @@ public class MainActivity extends AppCompatActivity
         } else
 
         {
-            map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
+            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
             isOfflineSelected = true;
         }
         map.setTilesScaledToDpi(true);
@@ -385,6 +385,7 @@ public class MainActivity extends AppCompatActivity
         map.invalidate();
         mapController = map.getController();
         mapController.setZoom(12);
+        zoomLevel = 12;
         mapController.setCenter(new GeoPoint(location));
 
 
@@ -437,6 +438,7 @@ public class MainActivity extends AppCompatActivity
 
                 mapController.setCenter(coordSMS);
                 mapController.setZoom(12);
+                zoomLevel = 12;
             }
 
         });
@@ -501,7 +503,7 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         if (selectedVehiclePosition != null) {
             mapController.setCenter(selectedVehiclePosition);
-            mapController.setZoom(12);
+            mapController.setZoom(zoomLevel);
         }
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
@@ -552,7 +554,6 @@ public class MainActivity extends AppCompatActivity
     public void setOfflineMap(boolean isOfflineMap) {
         isOfflineSelected = isOfflineMap;
         if (isOfflineSelected) {
-
             map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
         } else {
             map.setTileSource(TileSourceFactory.MAPNIK);
@@ -638,73 +639,45 @@ public class MainActivity extends AppCompatActivity
 
 
         startPlan.setOnClickListener(v -> {
-            startPlan.setBackgroundColor(pressed_color);
-
             if (imc.selectedvehicle == null) {
                 warning();
-                startPlan.setBackgroundColor(color);
-
             } else {
                 requestPlans();
-                startPlan.setBackgroundColor(color);
-
             }
-
         });
 
 
         dive.setOnClickListener(v -> {
-            dive.setBackgroundColor(pressed_color);
-
             if (imc.selectedvehicle == null) {
                 warning();
-                dive.setBackgroundColor(color);
-
             } else {
                 dive();
-                dive.setBackgroundColor(color);
-
             }
         });
 
         comeNear.setOnClickListener(v -> {
-            comeNear.setBackgroundColor(pressed_color);
-
             if (imc.selectedvehicle == null) {
                 warning();
-                comeNear.setBackgroundColor(color);
-
             } else {
                 near();
-                comeNear.setBackgroundColor(color);
-
             }
-
         });
 
         stopPlan.setOnClickListener(v -> {
-
             if (imc.selectedvehicle == null) {
                 warning();
             } else {
                 stopPlan();
                 updateMap();
                 otherVehiclesPositionList.clear();
-
-
             }
         });
 
         keepStation.setOnClickListener(v -> {
-            keepStation.setBackgroundColor(pressed_color);
-
             if (imc.selectedvehicle == null) {
                 warning();
-                keepStation.setBackgroundColor(color);
-
             } else {
                 keepStation();
-                keepStation.setBackgroundColor(color);
             }
         });
 
@@ -722,8 +695,6 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-
-
         if (teleOperation != null) {
             teleOperation.finish();
             getFragmentManager().popBackStack();
@@ -742,22 +713,14 @@ public class MainActivity extends AppCompatActivity
             Joystick joystick = findViewById(R.id.joystick);
             joystick.setVisibility(View.INVISIBLE);
             teleOperation = null;
-
         } else if (sendSms != null) {
-//
-
-
             map.setMultiTouchControls(true);
         } else {
-
-
             Intent setIntent = new Intent(Intent.ACTION_MAIN);
             setIntent.addCategory(Intent.CATEGORY_HOME);
             setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(setIntent);
         }
-
-
     }
 
     @Override
@@ -827,13 +790,11 @@ public class MainActivity extends AppCompatActivity
         latitude = Math.toRadians(location.getLatitude());
         longitude = Math.toRadians(location.getLongitude());
         myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
-
+        bearingMyLoc = location.getBearing();
         final ArrayList<OverlayItem> items = new ArrayList<>();
-
         OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker);
-
         Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
         Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
         ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
@@ -877,12 +838,8 @@ public class MainActivity extends AppCompatActivity
                     });
             }
             if (imc.stillConnected().contains(vname)) {
-
                 double[] lld = WGS84Utilities.toLatLonDepth(state);
-
-
                 final ArrayList<OverlayItem> items2 = new ArrayList<>();
-
                 if (!vname.equals(imc.getSelectedvehicle()))
                     otherVehiclesPositionList.add(new GeoPoint(lld[0], lld[1]));
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
@@ -891,29 +848,25 @@ public class MainActivity extends AppCompatActivity
                 vehicleOrientation = (float) state.getPsi();
                 int ori2 = (int) Math.round(Math.toDegrees(vehicleOrientation));
                 ori2 = ori2 - 180;
+                orientationOtherVehicles = ori2;
                 if (context == MainActivity.this)
                     bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 70, 70, false);
-
-
                 if (vname.equals(imc.getSelectedvehicle())) {
-
                     selectedVehiclePosition = new GeoPoint(lld[0], lld[1]);
-
+                    selectedVehicleOrientation = (float) state.getPsi();
+                    int ori = (int) Math.round(Math.toDegrees(selectedVehicleOrientation));
+                    ori = ori - 180;
+                    orientationSelected = ori;
                     latVehicle = Math.toRadians(selectedVehiclePosition.getLatitude());
                     lonVehicle = Math.toRadians(selectedVehiclePosition.getLongitude());
-
                     if (context == MainActivity.this)
-
                         bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 70, 70, false);
-
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
                     if (velocity != null)
                         runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected));
-
                 }
-
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
                 Drawable marker_ = new BitmapDrawable(resources, target);
@@ -928,9 +881,9 @@ public class MainActivity extends AppCompatActivity
             double[] lld = WGS84Utilities.toLatLonDepth(state);
 
             GeoPoint posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
-            mapController.setZoom(12);
+            mapController.setZoom(14);
+            zoomLevel = 14;
             mapController.setCenter(posicaoVeiculo2);
-
         }
     }
 

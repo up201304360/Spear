@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -146,24 +145,24 @@ public class SendSms extends AppCompatActivity {
 
 
         listOfVehicles.setOnClickListener(view -> {
-            Intent yourIntent = new Intent(SendSms.this, ListVehicles.class);
+            Intent yourIntent = new Intent(SendSms.this, StaticListVehicles.class);
             startActivity(yourIntent);
 
         });
 
 
         pos.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (ListVehicles.selectedSMS.equals("."))
+            if (StaticListVehicles.selectedSMS.equals("."))
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
                 checked = ("pos");
                 for (int i = 0; i < names.length; i++) {
 
-                    if (names[i].contains(ListVehicles.selectedSMS)) {
+                    if (names[i].contains(StaticListVehicles.selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                    if (vehicleNames[i].contains(StaticListVehicles.selectedSMS)) {
                         FNumber = imeiNumb[i];
                     }
 
@@ -172,17 +171,17 @@ public class SendSms extends AppCompatActivity {
         });
 
         dive.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (ListVehicles.selectedSMS.equals("."))
+            if (StaticListVehicles.selectedSMS.equals("."))
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
                 checked = ("dive");
                 for (int i = 0; i < names.length; i++) {
 
-                    if (names[i].contains(ListVehicles.selectedSMS)) {
+                    if (names[i].contains(StaticListVehicles.selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                    if (vehicleNames[i].contains(StaticListVehicles.selectedSMS)) {
                         FNumber = imeiNumb[i];
                     }
 
@@ -191,7 +190,7 @@ public class SendSms extends AppCompatActivity {
         });
 
         startPlan.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (ListVehicles.selectedSMS.equals("."))
+            if (StaticListVehicles.selectedSMS.equals("."))
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
@@ -219,10 +218,10 @@ public class SendSms extends AppCompatActivity {
 
             for (int i = 0; i < names.length; i++) {
 
-                if (names[i].contains(ListVehicles.selectedSMS)) {
+                if (names[i].contains(StaticListVehicles.selectedSMS)) {
                     finalNumber = vehicleNumber[i];
                 }
-                if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                if (vehicleNames[i].contains(StaticListVehicles.selectedSMS)) {
                     FNumber = imeiNumb[i];
                 }
 
@@ -230,7 +229,7 @@ public class SendSms extends AppCompatActivity {
 
         });
         sendPlan.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (ListVehicles.selectedSMS.equals("."))
+            if (StaticListVehicles.selectedSMS.equals("."))
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
@@ -255,10 +254,10 @@ public class SendSms extends AppCompatActivity {
             }
             for (int i = 0; i < names.length; i++) {
 
-                if (names[i].contains(ListVehicles.selectedSMS)) {
+                if (names[i].contains(StaticListVehicles.selectedSMS)) {
                     finalNumber = vehicleNumber[i];
                 }
-                if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                if (vehicleNames[i].contains(StaticListVehicles.selectedSMS)) {
                     FNumber = imeiNumb[i];
                 }
 
@@ -271,7 +270,7 @@ public class SendSms extends AppCompatActivity {
 
         stationKeeping.setOnCheckedChangeListener((compoundButton, b) -> {
 
-            if (ListVehicles.selectedSMS.equals("."))
+            if (StaticListVehicles.selectedSMS.equals("."))
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
@@ -282,10 +281,10 @@ public class SendSms extends AppCompatActivity {
                 checked = "stationKeeping";
                 for (int i = 0; i < names.length; i++) {
 
-                    if (names[i].contains(ListVehicles.selectedSMS)) {
+                    if (names[i].contains(StaticListVehicles.selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                    if (vehicleNames[i].contains(StaticListVehicles.selectedSMS)) {
                         FNumber = imeiNumb[i];
                     }
 
@@ -293,7 +292,7 @@ public class SendSms extends AppCompatActivity {
             }
         });
         goTo.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (ListVehicles.selectedSMS.equals("."))
+            if (StaticListVehicles.selectedSMS.equals("."))
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
@@ -302,10 +301,10 @@ public class SendSms extends AppCompatActivity {
                 checked = "goTo";
                 for (int i = 0; i < names.length; i++) {
 
-                    if (names[i].contains(ListVehicles.selectedSMS)) {
+                    if (names[i].contains(StaticListVehicles.selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                    if (vehicleNames[i].contains(StaticListVehicles.selectedSMS)) {
                         FNumber = imeiNumb[i];
                     }
 
@@ -315,17 +314,17 @@ public class SendSms extends AppCompatActivity {
         });
 
         abort.setOnCheckedChangeListener((compoundButton, b) -> {
-            if (ListVehicles.selectedSMS.equals("."))
+            if (StaticListVehicles.selectedSMS.equals("."))
                 Toast.makeText(SendSms.this, "Select a vehicle fist", Toast.LENGTH_SHORT).show();
 
             else {
                 checked = "abort";
                 for (int i = 0; i < names.length; i++) {
 
-                    if (names[i].contains(ListVehicles.selectedSMS)) {
+                    if (names[i].contains(StaticListVehicles.selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(ListVehicles.selectedSMS)) {
+                    if (vehicleNames[i].contains(StaticListVehicles.selectedSMS)) {
                         FNumber = imeiNumb[i];
                     }
 
@@ -471,7 +470,7 @@ public class SendSms extends AppCompatActivity {
                         // Set the message to be sent
                         smsIntent.putExtra("sms_body", smsText);
                         checked = " ";
-                        ListVehicles.selectedSMS = ".";
+                        StaticListVehicles.selectedSMS = ".";
                         startActivity(smsIntent);
 
                     } catch (Exception e) {
@@ -491,7 +490,7 @@ public class SendSms extends AppCompatActivity {
                             smsManager.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude + ";lon=" + longitude + ";speed=" + vel, sentPI, null);
                             finalPoint = ponto;
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
                             MainActivity.previous = "M";
 
                             onBackPressed();
@@ -507,7 +506,7 @@ public class SendSms extends AppCompatActivity {
                             finalPoint = ponto2;
                             MainActivity.previous = "M";
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
                             onBackPressed();
 
                             break;
@@ -518,7 +517,7 @@ public class SendSms extends AppCompatActivity {
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                             System.out.println("SMS POS2");
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
                             onBackPressed();
 
                             break;
@@ -528,7 +527,7 @@ public class SendSms extends AppCompatActivity {
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                             onBackPressed();
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
 
                             break;
                         case "surface":
@@ -536,7 +535,7 @@ public class SendSms extends AppCompatActivity {
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                             onBackPressed();
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
 
                             break;
                         case "abort":
@@ -544,7 +543,7 @@ public class SendSms extends AppCompatActivity {
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                             onBackPressed();
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
 
                             break;
                         case "start":
@@ -552,7 +551,7 @@ public class SendSms extends AppCompatActivity {
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                             onBackPressed();
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
 
                             break;
                         case "send":
@@ -560,7 +559,7 @@ public class SendSms extends AppCompatActivity {
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
                             onBackPressed();
                             checked = " ";
-                            ListVehicles.selectedSMS = ".";
+                            StaticListVehicles.selectedSMS = ".";
 
                             break;
 
@@ -582,7 +581,7 @@ public class SendSms extends AppCompatActivity {
     private boolean sendIMEI(IMCMessage message, String imeiNumber, double depth, double vel, String smsText) throws Exception {
 
      /*   String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
-        String selectedV= ListVehicles.selectedSMS;
+        String selectedV= StaticListVehicles.selectedSMS;
 
 
 
@@ -653,7 +652,7 @@ public class SendSms extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         checked = null;
-        ListVehicles.selectedSMS = ".";
+        StaticListVehicles.selectedSMS = ".";
         unregisterBroadcast();
         SendSms.super.onBackPressed();
     }

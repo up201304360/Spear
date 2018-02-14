@@ -10,7 +10,7 @@ import android.widget.Toast;
  * Created by ines on 2/6/18.
  */
 
-public class ListVehicles extends AppCompatActivity {
+public class StaticListVehicles extends AppCompatActivity {
     static String selectedSMS = ".";
     RadioButton xp1;
     RadioButton xp2;

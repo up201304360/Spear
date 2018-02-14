@@ -152,6 +152,7 @@ public class Area extends AppCompatActivity {
         }
         mapController = map.getController();
         mapController.setZoom(16);
+        MainActivity.zoomLevel = 16;
         centerInSelectedVehicle = MainActivity.getVariables();
         mapController.setCenter(centerInSelectedVehicle);
         drawRed();
@@ -392,10 +393,7 @@ public class Area extends AppCompatActivity {
                 markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
                 itemsPoints.add(markerPoints);
                 Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
-                float orientation2 = MainActivity.orientation();
-                int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-                ori2 = ori2 - 180;
-                Bitmap target = MainActivity.RotateMyBitmap(source2, ori2);
+                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles);
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
                 map.getOverlays().add(markersOverlay_);
@@ -411,10 +409,7 @@ public class Area extends AppCompatActivity {
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items2.add(marker2);
         Bitmap newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
-        float orientation2 = MainActivity.orientation();
-        int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-        ori2 = ori2 - 180;
-        Bitmap target = MainActivity.RotateMyBitmap(newMarker2, ori2);
+        Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
         Drawable markerLoc = new BitmapDrawable(getResources(), target);
         final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
         map.getOverlays().add(markersOverlay2);
@@ -429,10 +424,7 @@ public class Area extends AppCompatActivity {
             marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
             items.add(marker);
             Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowgreen), 70, 70, false);
-            float orientation2 = MainActivity.orientation();
-            int ori2 = (int) Math.round(Math.toDegrees(orientation2));
-            ori2 = ori2 - 180;
-            Bitmap target = MainActivity.RotateMyBitmap(newMarker, ori2);
+            Bitmap target = MainActivity.RotateMyBitmap(newMarker, MainActivity.orientationSelected);
             Drawable markerLoc = new BitmapDrawable(getResources(), target);
             final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, markerLoc, null, this);
             map.getOverlays().add(markersOverlay2);
