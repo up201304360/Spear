@@ -67,14 +67,12 @@ public class Line extends AppCompatActivity {
     Goto follow;
     Marker startMarker;
     ArrayList<GeoPoint> otherVehiclesPosition;
-    ArrayList<GeoPoint> areaPoints = MainActivity.returnAreaPoints();
-    ArrayList<GeoPoint> linePoints = MainActivity.returnLinePoints();
-    Marker nodeMarkers = MainActivity.getPointsFromMain();
     GeoPoint selectedVehiclePosition;
     final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", selectedVehiclePosition);
     Button eraseAll;
     boolean isDoneClicked = false;
     String selected;
+    List<Marker> markerList = new ArrayList<>();
     private Handler mHandler;
     Runnable mStatusChecker = new Runnable() {
         @Override
@@ -150,50 +148,6 @@ public class Line extends AppCompatActivity {
         drawBlue();
         drawGreen();
 
-        if (areaPoints != null) {
-            Set<GeoPoint> hs = new HashSet<>();
-            hs.addAll(areaPoints);
-            areaPoints.clear();
-            areaPoints.addAll(hs);
-            for (int i = 0; i < areaPoints.size(); i++) {
-                Marker markerArea = new Marker(map);
-                markerArea.setPosition(areaPoints.get(i));
-                markerArea.setIcon(nodeIcon);
-                map.getOverlays().add(markerArea);
-            }
-
-        }
-
-        if (linePoints != null) {
-            Set<GeoPoint> hs = new HashSet<>();
-            hs.addAll(linePoints);
-            linePoints.clear();
-            linePoints.addAll(hs);
-            for (int i = 0; i < linePoints.size(); i++) {
-                Marker markerLine = new Marker(map);
-                markerLine.setPosition(linePoints.get(i));
-                markerLine.setIcon(nodeIcon);
-                map.getOverlays().add(markerLine);
-            }
-        }
-        if (nodeMarkers != null) {
-            map.getOverlays().add(nodeMarkers);
-        }
-
-
-        if (MainActivity.returnCircle()) {
-            circle = new Polygon();
-            circle.setPoints(markers);
-            map.getOverlays().add(circle);
-
-        }
-        if (MainActivity.returnPoly()) {
-            polyline = new Polyline();
-            polyline.setPoints(markers);
-            map.getOverlays().add(polyline);
-        }
-
-
         MapEventsReceiver mReceive = new MapEventsReceiver() {
             @Override
             public boolean singleTapConfirmedHelper(GeoPoint p) {
@@ -210,7 +164,7 @@ public class Line extends AppCompatActivity {
                 startMarker.isDraggable();
                 map.getOverlays().add(startMarker);
                 startMarker.setIcon(getResources().getDrawable(R.drawable.orangeled));
-                startMarker.setTitle(p.toString());
+                markerList.add(startMarker);
                 map.invalidate();
                 numberOfPoints++;
                 erase.setOnClickListener(v -> {
@@ -233,20 +187,16 @@ public class Line extends AppCompatActivity {
 
                 eraseAll.setOnClickListener(v -> {
                     if (!isDoneClicked) {
-                        eraseAll.setClickable(false);
-                        map.getOverlayManager().clear();
-                        map.setMultiTouchControls(true);
+                        for (Marker m : markerList) {
+                            m.remove(map);
+                            map.invalidate();
+                        }
+                        markerList.clear();
                         markers.clear();
-                        if (polyline != null)
-                            polyline.setPoints(markers);
-                        if (circle != null)
-                            circle.setPoints(markers);
                         numberOfPoints = 0;
-                        map.invalidate();
                         drawGreen();
                         drawBlue();
                         drawRed();
-                        onBackPressed();
                     }
                 });
                 done.setOnClickListener(v -> {
@@ -423,6 +373,7 @@ public class Line extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        stopRepeatingTask();
         super.onBackPressed();
     }
 

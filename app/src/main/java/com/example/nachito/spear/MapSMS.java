@@ -61,6 +61,7 @@ public class MapSMS extends AppCompatActivity {
         done =  findViewById(R.id.doneSMS);
         nodeIcon = getResources().getDrawable(R.drawable.orangeled);
         eraseSMS =  findViewById(R.id.eraseSMS);
+        List<Marker> markerListSMS = new ArrayList<>();
         map.setMultiTouchControls(true);
         scaleBarOverlay = new com.example.nachito.spear.ScaleBarOverlay(map);
         List<Overlay> overlays = map.getOverlays();
@@ -101,7 +102,7 @@ public class MapSMS extends AppCompatActivity {
                 startMarker = new Marker(map);
                 startMarker.setPosition(p);
                 startMarker.isDraggable();
-
+                markerListSMS.add(startMarker);
                 map.getOverlays().add(startMarker);
                 startMarker.setIcon(getResources().getDrawable(R.drawable.orangeled));
                 startMarker.setTitle(p.toString());
@@ -113,15 +114,18 @@ public class MapSMS extends AppCompatActivity {
 
                 eraseSMS.setOnClickListener(v -> {
 
-                    for (int i = 0; i <= markers.size(); i++) {
 
-                        startMarker.remove(map);
+                    for (Marker m : markerListSMS) {
+                        m.remove(map);
                         map.invalidate();
-
                     }
+                    markerListSMS.clear();
                     markers.clear();
                     numPontos = 0;
-                    map.invalidate();
+                    drawGreen();
+                    drawBlue();
+                    drawRed();
+
 
 
                 });

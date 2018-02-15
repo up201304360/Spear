@@ -42,7 +42,6 @@ import pt.lsts.util.PlanUtilities;
 
 import static com.example.nachito.spear.MainActivity.depth;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
-import static com.example.nachito.spear.MainActivity.returnAreaPoints;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
 import static com.example.nachito.spear.MainActivity.swath_width;
@@ -70,42 +69,20 @@ public class Area extends AppCompatActivity {
     Drawable nodeIcon;
     Marker startMarker;
     ArrayList<GeoPoint> otherVehiclesPosition;
-    ArrayList<GeoPoint> areaPoints = returnAreaPoints();
-    ArrayList<GeoPoint> linePoints = MainActivity.returnLinePoints();
-    Marker nodeMarkers = MainActivity.getPointsFromMain();
     GeoPoint centerInSelectedVehicle;
     final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centerInSelectedVehicle);
     Goto area2;
     boolean doneClicked = false;
     Button eraseAll;
     String selected;
+    List<Marker> markerList = new ArrayList<>();
     private Handler mHandler;
     Runnable mStatusChecker = new Runnable() {
         @Override
         public void run() {
             try {
-                map.getOverlayManager().clear();
-                if (markers.size() != 0) {
-                    for (int i = 0; i < markers.size(); i++) {
-                        startMarker = new Marker(map);
-                        startMarker.setPosition(markers.get(i));
-                        startMarker.setIcon(nodeIcon);
-                        startMarker.isDraggable();
-                        startMarker.setDraggable(true);
-                        startMarker.setTitle("lat/lon:" + markers.get(i));
-                        map.getOverlays().add(startMarker);
-                    }
-                    if (circle != null) {
-                        circle = new Polygon();
-                        circle.setPoints(markers);
-                        circle.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
-                        map.getOverlays().add(circle);
-                        map.invalidate();
-                    }
 
-                }
-                if (polyline != null)
-                    map.getOverlays().add(polyline);
+
                 drawRed();
                 drawGreen();
                 drawBlue();
@@ -158,50 +135,8 @@ public class Area extends AppCompatActivity {
         drawRed();
         drawBlue();
         drawGreen();
-        if (areaPoints != null) {
-            Set<GeoPoint> hs = new HashSet<>();
-            hs.addAll(areaPoints);
-            areaPoints.clear();
-            areaPoints.addAll(hs);
-            for (int i = 0; i < areaPoints.size(); i++) {
-                Marker markerArea = new Marker(map);
-                markerArea.setPosition(areaPoints.get(i));
-                markerArea.setIcon(nodeIcon);
-                map.getOverlays().add(markerArea);
-            }
-        }
-
-        if (linePoints != null) {
-            Set<GeoPoint> hs = new HashSet<>();
-            hs.addAll(linePoints);
-            linePoints.clear();
-            linePoints.addAll(hs);
-
-            for (int i = 0; i < linePoints.size(); i++) {
-                Marker markerLine = new Marker(map);
-                markerLine.setPosition(linePoints.get(i));
-                markerLine.setIcon(nodeIcon);
-                map.getOverlays().add(markerLine);
-            }
-
-        }
-        if (nodeMarkers != null) {
-            map.getOverlays().add(nodeMarkers);
-        }
 
 
-        if (MainActivity.returnCircle()) {
-            circle = new Polygon();
-            circle.setPoints(markers);
-            map.getOverlays().add(circle);
-
-        }
-        if (MainActivity.returnPoly()) {
-            polyline = new Polyline();
-            polyline.setPoints(markers);
-            map.getOverlays().add(polyline);
-
-        }
         MapEventsReceiver mReceive = new MapEventsReceiver() {
             @Override
             public boolean singleTapConfirmedHelper(GeoPoint p) {
@@ -217,7 +152,7 @@ public class Area extends AppCompatActivity {
                 startMarker.setPosition(p);
                 map.getOverlays().add(startMarker);
                 startMarker.setIcon(getResources().getDrawable(R.drawable.orangeled));
-                startMarker.setTitle(p.toString());
+                markerList.add(startMarker);
                 map.invalidate();
                 numberOfPointsPressed++;
                 erase.setOnClickListener(v -> {
@@ -239,7 +174,26 @@ public class Area extends AppCompatActivity {
                 });
 
 
-                eraseAll.setOnClickListener(v -> erasePointsArea());
+                eraseAll.setOnClickListener(v -> {
+
+
+                    if (!doneClicked) {
+                        for (Marker m : markerList) {
+                            m.remove(map);
+                            map.invalidate();
+
+                        }
+                        markerList.clear();
+                        markers.clear();
+                        //    markers=new ArrayList<>();
+                        numberOfPointsPressed = 0;
+                        //    map.invalidate();
+                        drawGreen();
+                        drawBlue();
+                        drawRed();
+
+                    }
+                });
 
                 done.setOnClickListener(v -> {
                     if (markers.size() <= 1) {
@@ -273,24 +227,6 @@ public class Area extends AppCompatActivity {
         mHandler = new Handler();
     }
 
-    public void erasePointsArea() {
-        if (!doneClicked) {
-            eraseAll.setClickable(false);
-            map.getOverlayManager().clear();
-            map.setMultiTouchControls(true);
-            markers.clear();
-            if (polyline != null)
-                polyline.setPoints(markers);
-            if (circle != null)
-                circle.setPoints(markers);
-            numberOfPointsPressed = 0;
-            map.invalidate();
-            drawGreen();
-            drawBlue();
-            drawRed();
-            onBackPressed();
-        }
-    }
     public void getIntentSelected() {
         Intent intent = getIntent();
         selected = intent.getExtras().getString("selected");
@@ -435,6 +371,7 @@ public class Area extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        stopRepeatingTask();
         super.onBackPressed();
     }
 

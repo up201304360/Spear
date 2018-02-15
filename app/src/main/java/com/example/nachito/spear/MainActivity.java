@@ -191,7 +191,6 @@ public class MainActivity extends AppCompatActivity
     double longitude;
     @ViewById(R.id.velocity)
     TextView velocity;
-    int color = Color.parseColor("#39B7CD"), pressed_color = Color.parseColor("#568203");
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
     Marker pointsFromPlan;
@@ -249,36 +248,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-    @Nullable
-    @Contract(pure = true)
-    public static Marker getPointsFromMain() {
-        return pointsSelectedOnMap;
-
-    }
-
-    public static boolean returnCircle() {
-        return isCircleDrawn;
-
-    }
-
-    public static boolean returnPoly() {
-        return isPolylineDrawn;
-
-    }
-
-    @Nullable
-    public static ArrayList<GeoPoint> returnLinePoints() {
-        Line.markers.addAll(Line.getPointsLine());
-        Area.markers.addAll(Line.getPointsLine());
-        return Line.getPointsLine();
-    }
-
-    @Nullable
-    public static ArrayList<GeoPoint> returnAreaPoints() {
-        Line.markers.addAll(Area.getPointsArea());
-        Area.markers.addAll(Area.getPointsArea());
-        return Area.getPointsArea();
-    }
 
     public static void startBehaviour(String planid, IMCMessage what) {
         PlanControl pc = new PlanControl();
@@ -1206,9 +1175,7 @@ public class MainActivity extends AppCompatActivity
             Line.getPointsLine().clear();
             pointsLine.clear();
         }
-        if (returnAreaPoints() != null) {
-            Area.getPointsArea().clear();
-        }
+
 
 
         if (Area.sendmList() != null) {
@@ -1360,11 +1327,7 @@ public class MainActivity extends AppCompatActivity
             pc.setRequestId(0);
             pc.setPlanId(item.toString());
             imc.sendMessage(pc);
-            if (stateconnected.charAt(1) == 'S')
-                wasPlanChanged = false;
-            else
-                wasPlanChanged = true;
-
+            wasPlanChanged = stateconnected.charAt(1) != 'S';
 
 
             final Handler handler = new Handler();
