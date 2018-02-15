@@ -76,7 +76,7 @@ public class MapSMS extends AppCompatActivity {
         }
 
         mapController = map.getController();
-        mapController.setZoom(16);
+        mapController.setZoom(MainActivity.zoomLevel);
         centro = MainActivity.getVariables();
         System.out.println(centro);
         mapController.setCenter(centro);
@@ -197,7 +197,7 @@ public class MapSMS extends AppCompatActivity {
                 markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
                 itemsPoints.add(markerPoints);
                 Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
-                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles);
+                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
                 map.getOverlays().add(markersOverlay_);

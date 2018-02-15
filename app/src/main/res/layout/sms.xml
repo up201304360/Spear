@@ -1,6 +1,6 @@
-<RelativeLayout android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
     <org.osmdroid.views.MapView
         android:id="@+id/mapSMS"
         android:layout_width="fill_parent"
@@ -13,20 +13,20 @@
         android:id="@+id/doneSMS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/done"
-        android:background="#50505010"
-        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
         android:layout_marginEnd="14dp"
-        android:layout_marginTop="13dp" />
+        android:layout_marginTop="13dp"
+        android:background="#50505010"
+        android:text="@string/done" />
 
     <Button
         android:id="@+id/eraseSMS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/erase"
-        android:background="#50505010"
-        android:layout_marginTop="11dp"
+        android:layout_alignStart="@+id/doneSMS"
         android:layout_below="@+id/doneSMS"
-        android:layout_alignStart="@+id/doneSMS" />
+        android:layout_marginTop="11dp"
+        android:background="#50505010"
+        android:text="@string/eraseAll" />
 </RelativeLayout>

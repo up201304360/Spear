@@ -45,6 +45,7 @@ import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
 import static com.example.nachito.spear.MainActivity.swath_width;
+import static com.example.nachito.spear.MainActivity.zoomLevel;
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
 
 /**
@@ -76,26 +77,7 @@ public class Area extends AppCompatActivity {
     Button eraseAll;
     String selected;
     List<Marker> markerList = new ArrayList<>();
-    private Handler mHandler;
-    Runnable mStatusChecker = new Runnable() {
-        @Override
-        public void run() {
-            try {
 
-
-                drawRed();
-                drawGreen();
-                drawBlue();
-                //this function can change value of mInterval.
-            } finally {
-                // 100% guarantee that this always happens, even if
-                // your update method throws an exception
-                int mInterval = 5000;
-                mHandler.postDelayed(mStatusChecker, mInterval);
-            }
-        }
-
-    };
 
     public static ArrayList<GeoPoint> getPointsArea() {
         return markers;
@@ -128,10 +110,10 @@ public class Area extends AppCompatActivity {
             map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
         }
         mapController = map.getController();
-        mapController.setZoom(16);
-        MainActivity.zoomLevel = 16;
+        mapController.setZoom(zoomLevel);
         centerInSelectedVehicle = MainActivity.getVariables();
         mapController.setCenter(centerInSelectedVehicle);
+
         drawRed();
         drawBlue();
         drawGreen();
@@ -203,7 +185,6 @@ public class Area extends AppCompatActivity {
                         } else {
                             Go(p);
                             doneClicked = true;
-                            startRepeatingTask();
                         }
                     } else if (markers.size() > 1) {
                         if (selected == null) {
@@ -212,7 +193,6 @@ public class Area extends AppCompatActivity {
                             drawArea();
                             doneClicked = true;
                             iscircleDrawn = true;
-                            startRepeatingTask();
                         }
                     }
                 });
@@ -224,7 +204,7 @@ public class Area extends AppCompatActivity {
         map.getOverlays().add(OverlayEventos);
         //Refreshing the map to draw the new overlay
         map.invalidate();
-        mHandler = new Handler();
+
     }
 
     public void getIntentSelected() {
@@ -232,13 +212,7 @@ public class Area extends AppCompatActivity {
         selected = intent.getExtras().getString("selected");
     }
 
-    void startRepeatingTask() {
-        mStatusChecker.run();
-    }
 
-    void stopRepeatingTask() {
-        mHandler.removeCallbacks(mStatusChecker);
-    }
 
     public void drawArea() {
         circle = new Polygon();
@@ -329,10 +303,11 @@ public class Area extends AppCompatActivity {
                 markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
                 itemsPoints.add(markerPoints);
                 Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
-                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles);
+                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
                 map.getOverlays().add(markersOverlay_);
+
             }
         }
     }
@@ -349,6 +324,7 @@ public class Area extends AppCompatActivity {
         Drawable markerLoc = new BitmapDrawable(getResources(), target);
         final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
         map.getOverlays().add(markersOverlay2);
+
     }
 
 
@@ -365,13 +341,13 @@ public class Area extends AppCompatActivity {
             final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, markerLoc, null, this);
             map.getOverlays().add(markersOverlay2);
 
+
         }
     }
 
 
     @Override
     public void onBackPressed() {
-        stopRepeatingTask();
         super.onBackPressed();
     }
 
@@ -382,13 +358,11 @@ public class Area extends AppCompatActivity {
 
     @Override
     public void onStop() {
-        stopRepeatingTask();
         super.onStop();
     }
 
     @Override
     public void onDestroy() {
-        stopRepeatingTask();
         super.onDestroy();
     }
 

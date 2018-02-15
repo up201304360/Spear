@@ -130,8 +130,6 @@ public class MainActivity extends AppCompatActivity
     @SuppressLint("StaticFieldLeak")
     static String depthString;
     static String velocityString;
-    //Markers of the map
-    static Marker pointsSelectedOnMap;
     //previous- when Spear starts it doesn't enter the updateState() method
     static String previous = null;
     //points we choose in Activity Line
@@ -154,7 +152,7 @@ public class MainActivity extends AppCompatActivity
     static boolean wasPlanChanged = false;
     static String stateconnected;
     static int zoomLevel;
-    static int orientationOtherVehicles;
+    static List<Integer> orientationOtherVehicles;
     static int orientationSelected;
     static float bearingMyLoc;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
@@ -295,7 +293,7 @@ public class MainActivity extends AppCompatActivity
         resources = getResources();
         context = this;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-
+        orientationOtherVehicles = new ArrayList<>();
 
         map.setMultiTouchControls(true);
         map.setClickable(true);
@@ -474,6 +472,7 @@ public class MainActivity extends AppCompatActivity
             mapController.setCenter(selectedVehiclePosition);
             mapController.setZoom(zoomLevel);
         }
+
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
 
@@ -817,9 +816,14 @@ public class MainActivity extends AppCompatActivity
                 vehicleOrientation = (float) state.getPsi();
                 int ori2 = (int) Math.round(Math.toDegrees(vehicleOrientation));
                 ori2 = ori2 - 180;
-                orientationOtherVehicles = ori2;
+                if (!orientationOtherVehicles.contains(ori2))
+                    orientationOtherVehicles.add(ori2);
+
+
                 if (context == MainActivity.this)
                     bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 70, 70, false);
+
+
                 if (vname.equals(imc.getSelectedvehicle())) {
                     selectedVehiclePosition = new GeoPoint(lld[0], lld[1]);
                     selectedVehicleOrientation = (float) state.getPsi();

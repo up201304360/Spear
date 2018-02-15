@@ -41,6 +41,7 @@ import static com.example.nachito.spear.MainActivity.depth;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
+import static com.example.nachito.spear.MainActivity.zoomLevel;
 
 /**
  *
@@ -140,8 +141,7 @@ public class Line extends AppCompatActivity {
             map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
         }
         mapController = map.getController();
-        mapController.setZoom(16);
-        MainActivity.zoomLevel = 16;
+        mapController.setZoom(zoomLevel);
         selectedVehiclePosition = MainActivity.getVariables();
         mapController.setCenter(selectedVehiclePosition);
         drawRed();
@@ -346,7 +346,7 @@ public class Line extends AppCompatActivity {
                 markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
                 itemsPoints.add(markerPoints);
                 Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
-                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles);
+                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
                 map.getOverlays().add(markersOverlay_);
