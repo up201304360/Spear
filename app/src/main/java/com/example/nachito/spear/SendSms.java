@@ -23,9 +23,20 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
+import org.apache.commons.codec.binary.Hex;
 import org.osmdroid.util.GeoPoint;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
+import pt.lsts.imc.IMCOutputStream;
+import pt.lsts.imc.TextMessage;
+import pt.lsts.ripples.model.iridium.ImcIridiumMessage;
 
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
@@ -367,21 +378,21 @@ public class SendSms extends AppCompatActivity {
             switch (checked) {
                 case "dive":
                     try {
-                        sendIMEI(msg, FNumber, 0, 0, "dive");
+                        sendIMEI(FNumber, 0, 0, "dive");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 case "surface":
                     try {
-                        sendIMEI(msg, FNumber, 0, 0, "surface");
+                        sendIMEI(FNumber, 0, 0, "surface");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 case "stationKeeping":
                     try {
-                        sendIMEI(msg, FNumber, MainActivity.depth, MainActivity.speed, "sk");
+                        sendIMEI(FNumber, MainActivity.depth, MainActivity.speed, "sk");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -389,28 +400,28 @@ public class SendSms extends AppCompatActivity {
                 case "abort":
 
                     try {
-                        sendIMEI(msg, FNumber, 0, 0, "abort");
+                        sendIMEI(FNumber, 0, 0, "abort");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 case "goTo":
                     try {
-                        sendIMEI(msg, FNumber, MainActivity.depth, MainActivity.speed, "go");
+                        sendIMEI(FNumber, MainActivity.depth, MainActivity.speed, "go");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 case "send":
                     try {
-                        sendIMEI(msg, FNumber, MainActivity.depth, MainActivity.speed, "plan" + planName);
+                        sendIMEI(FNumber, MainActivity.depth, MainActivity.speed, "plan" + planName);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 case "start":
                     try {
-                        sendIMEI(msg, FNumber, MainActivity.depth, MainActivity.speed, "start" + planName);
+                        sendIMEI(FNumber, MainActivity.depth, MainActivity.speed, "start" + planName);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -488,6 +499,7 @@ public class SendSms extends AppCompatActivity {
                             double latitude = ponto.getLatitude();
                             double longitude = ponto.getLongitude();
                             smsManager.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude + ";lon=" + longitude + ";speed=" + vel, sentPI, null);
+
                             finalPoint = ponto;
                             checked = " ";
                             StaticListVehicles.selectedSMS = ".";
@@ -578,30 +590,68 @@ public class SendSms extends AppCompatActivity {
 
     }
 
-    private boolean sendIMEI(IMCMessage message, String imeiNumber, double depth, double vel, String smsText) throws Exception {
 
-     /*   String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
+    private void sendIMEI(String imeiNumber, double depth, double vel, String smsText) throws Exception {
+
+        String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
         String selectedV= StaticListVehicles.selectedSMS;
 
-
-
-        ImcIridiumMessage msg = new ImcIridiumMessage();
-        msg.setDestination();         //imcid do veiculo
-
-        msg.setSource(message.getSrc());
-        msg.source = message.getSrc();
-        msg.setMsg(message);
-        // criar uma nova textmessage
-
-
+        ImcIridiumMessage message1 = new ImcIridiumMessage();
         TextMessage newText = new TextMessage();
-        newText.setText(smsText);
 
-        byte[] data = msg.serialize();
+        switch (smsText) {
+            case "sk":
+                GeoPoint ponto = MapSMS.resultado();
+                double latitude = ponto.getLatitude();
+                double longitude = ponto.getLongitude();
+                newText.setText("sk lat=" + latitude + ";lon=" + longitude + ";speed=" + vel);
+                finalPoint = ponto;
+                checked = " ";
+                StaticListVehicles.selectedSMS = ".";
+                MainActivity.previous = "M";
+                onBackPressed();
+                break;
+            case "abort":
+                newText.setText(smsText);
+                onBackPressed();
+                checked = " ";
+                StaticListVehicles.selectedSMS = ".";
+                break;
+            case "dive":
+                newText.setText(smsText);
+                onBackPressed();
+                checked = " ";
+                StaticListVehicles.selectedSMS = ".";
+                break;
+            case "go":
+                GeoPoint ponto2 = MapSMS.resultado();
+                double latitude2 = ponto2.getLatitude();
+                double longitude2 = ponto2.getLongitude();
+                newText.setText("go lat=" + latitude2 + ";lon=" + longitude2 + ";depth=" + depth + ";speed=" + vel);
+                finalPoint = ponto2;
+                MainActivity.previous = "M";
+                checked = " ";
+                StaticListVehicles.selectedSMS = ".";
+                onBackPressed();
+                break;
+            case "surface":
+                newText.setText(smsText);
+                onBackPressed();
+                checked = " ";
+                StaticListVehicles.selectedSMS = ".";
+                break;
+        }
+
+
+        message1.setMsg(newText);
+        message1.setDestination(IMCDefinition.getInstance().getResolver().resolve(selectedV)); //imcid do veiculo
+        //  message1.setSource();
+
+        byte[] data = message1.serialize();
 
 
 //bytes para hexadecimal
-        //    data = DatatypeConverter.printHexBinary(data).getBytes();
+        //   data = DatatypeConverter.printHexBinary(data).getBytes();
 
         //converts an array of bytes into a string
         data = Hex.encodeHexString(data).getBytes();
@@ -633,7 +683,7 @@ public class SendSms extends AppCompatActivity {
             incoming.write(buff, 0, read);
         is.close();
 
-        System.out.println("Sent " + msg.getClass().getSimpleName() + " through HTTP: " + urlConnection.getResponseCode() + " " + urlConnection.getResponseMessage());
+        System.out.println("Sent " + newText.getClass().getSimpleName() + " through HTTP: " + urlConnection.getResponseCode() + " " + urlConnection.getResponseMessage());
 
         if (urlConnection.getResponseCode() != 200) {
             throw new Exception("Server returned " + urlConnection.getResponseCode() + ": " + urlConnection.getResponseMessage());
@@ -641,10 +691,7 @@ public class SendSms extends AppCompatActivity {
             System.out.println(new String(incoming.toByteArray()));
             urlConnection.disconnect();
 
-        }*/
-
-
-        return false;
+        }
 
 
     }

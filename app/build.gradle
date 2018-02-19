@@ -5,7 +5,7 @@ android {
     buildToolsVersion '27.0.0'
     defaultConfig {
         applicationId "com.example.nachito.spear"
-        minSdkVersion 19
+        minSdkVersion 16
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -76,15 +76,18 @@ dependencies {
     compile 'org.osmdroid:osmdroid-third-party:5.6.5'
     compile 'org.slf4j:slf4j-android:1.7.25'
     compile 'com.android.support:preference-v7:27.0.2'
-    compile 'commons-codec:commons-codec:1.6'
     compile files('libs/AreaCoverage-v1.2.jar')
     compileOnly files('libs/msgsender.jar')
     implementation files('libs/libimc.jar')
+    compile 'javax.xml.bind:jaxb-api:2.2.9'
     compile 'com.github.MKergall:osmbonuspack:6.4'
     def AAVersion = '3.2'
     annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
     compile 'org.jetbrains:annotations-java5:15.0'
+    // https://mvnrepository.com/artifact/commons-codec/commons-codec
+    compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
+    compile 'org.greenrobot:essentials:3.0.0-RC1'
 }
 buildscript {
     repositories {

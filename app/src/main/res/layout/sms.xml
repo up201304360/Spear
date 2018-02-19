@@ -14,8 +14,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="14dp"
+        android:layout_marginRight="14dp"
         android:layout_marginTop="13dp"
         android:background="#50505010"
         android:text="@string/done" />
@@ -24,6 +26,7 @@
         android:id="@+id/eraseSMS"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/doneSMS"
         android:layout_alignStart="@+id/doneSMS"
         android:layout_below="@+id/doneSMS"
         android:layout_marginTop="11dp"

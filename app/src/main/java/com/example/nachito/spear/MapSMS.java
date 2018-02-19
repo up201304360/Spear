@@ -1,6 +1,7 @@
 package com.example.nachito.spear;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 
 import org.osmdroid.api.IMapController;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -25,6 +27,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static android.os.Build.VERSION_CODES.M;
+import static com.example.nachito.spear.MainActivity.localizacao;
+import static com.example.nachito.spear.MainActivity.zoomLevel;
 
 
 /**
@@ -74,12 +80,19 @@ public class MapSMS extends AppCompatActivity {
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setDisplayShowHomeEnabled(false);
         }
-
+        if (MainActivity.isOfflineSelected) {
+            map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
+        }
+        mapController = map.getController();
+        mapController.setZoom(zoomLevel);
+        centro = MainActivity.getVariables();
+        if (centro != null)
+            mapController.setCenter(centro);
+        else
+            mapController.setCenter(localizacao());
         mapController = map.getController();
         mapController.setZoom(MainActivity.zoomLevel);
-        centro = MainActivity.getVariables();
-        System.out.println(centro);
-        mapController.setCenter(centro);
+
         drawGreen();
         drawRed();
         drawBlue();
@@ -174,7 +187,17 @@ public class MapSMS extends AppCompatActivity {
         final OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", loc);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items2.add(marker2);
-        Bitmap newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
+        Resources resources = this.getResources();
+        Bitmap newMarker2;
+        if (android.os.Build.VERSION.SDK_INT <= M) {
+
+            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred));
+
+        } else {
+
+            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 50, 50, false);
+
+        }
         Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
         Drawable markerLoc = new BitmapDrawable(getResources(), target);
         final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
@@ -196,7 +219,14 @@ public class MapSMS extends AppCompatActivity {
                 System.out.println(posicaoOutrosVeiculos.get(i));
                 markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
                 itemsPoints.add(markerPoints);
-                Bitmap source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.downarrow), 70, 70, false);
+                Resources resources = this.getResources();
+                Bitmap source2;
+                if (android.os.Build.VERSION.SDK_INT <= M) {
+                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow));
+
+                } else
+
+                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 50, 50, false);
                 Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
@@ -212,7 +242,16 @@ public class MapSMS extends AppCompatActivity {
             final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centro);
             marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
             items.add(marker);
-            Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowgreen), 70, 70, false);
+            Bitmap newMarker;
+            Resources resources = this.getResources();
+
+            if (android.os.Build.VERSION.SDK_INT <= M) {
+                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen));
+
+            } else
+
+                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 50, 50, false);
+
             Bitmap target = MainActivity.RotateMyBitmap(newMarker, MainActivity.orientationSelected);
             Drawable markerLoc = new BitmapDrawable(getResources(), target);
             final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, markerLoc, null, this);
@@ -241,6 +280,11 @@ public class MapSMS extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+    }
     @Override
     public void onDestroy() {
         super.onDestroy();

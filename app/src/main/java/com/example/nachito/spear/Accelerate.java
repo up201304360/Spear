@@ -54,5 +54,4 @@ public class Accelerate extends View {
             listener.OnReleaseAcc();
         }
     }
-
 }

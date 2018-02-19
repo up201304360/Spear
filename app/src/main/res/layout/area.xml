@@ -1,7 +1,7 @@
-<RelativeLayout xmlns:tools="http://schemas.android.com/tools"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:layout_height="match_parent">
     <org.osmdroid.views.MapView
         android:id="@+id/mapArea"
         android:layout_width="fill_parent"
@@ -17,13 +17,15 @@
         android:id="@+id/doneArea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/done"
-        android:background="#50505010"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="10dp"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
 
 
+        android:background="#50505010"
+        android:text="@string/done"
         tools:ignore="RelativeOverlap" />
 
 
@@ -31,21 +33,23 @@
         android:id="@+id/eraseArea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/erase"
-        android:background="#50505010"
-        android:layout_marginTop="11dp"
+        android:layout_alignLeft="@+id/doneArea"
+        android:layout_alignStart="@+id/doneArea"
         android:layout_below="@+id/doneArea"
-        android:layout_alignStart="@+id/doneArea" />
+        android:layout_marginTop="11dp"
+        android:background="#50505010"
+        android:text="@string/erase" />
 
     <Button
         android:id="@+id/eraseAllArea"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/eraseAll"
-        android:background="#50505010"
-        android:layout_marginTop="11dp"
+        android:layout_alignLeft="@+id/eraseArea"
+        android:layout_alignStart="@+id/eraseArea"
         android:layout_below="@+id/eraseArea"
-        android:layout_alignStart="@+id/eraseArea" />
+        android:layout_marginTop="11dp"
+        android:background="#50505010"
+        android:text="@string/eraseAll" />
 
 
 </RelativeLayout>

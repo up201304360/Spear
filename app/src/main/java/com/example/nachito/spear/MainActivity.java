@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -17,15 +16,18 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -43,7 +45,6 @@ import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
-import org.jetbrains.annotations.Contract;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 
@@ -172,6 +173,18 @@ public class MainActivity extends AppCompatActivity
     ImageView wifiDrawable;
     @ViewById(R.id.noWifiImage)
     ImageView noWifiImage;
+    @ViewById(R.id.accelerate)
+    Accelerate accelerate;
+    @ViewById(R.id.decelerate)
+    Decelerate decelerate;
+    @ViewById(R.id.stopTeleop)
+    StopTeleop stopTeleop;
+    @ViewById(R.id.textView2)
+    TextView txt2;
+    @ViewById(R.id.textView4)
+    TextView txt4;
+    @ViewById(R.id.textView5)
+    TextView txt5;
     TeleOperation teleOperation;
     List<Maneuver> maneuverList;
     List<VehicleState> vehicleStateList;
@@ -313,17 +326,25 @@ public class MainActivity extends AppCompatActivity
         init();
         planWaypointPolyline = new Polyline();
 
-        Accelerate accelerate = findViewById(R.id.accelerate);
+
         accelerate.setVisibility(View.INVISIBLE);
-        Decelerate decelerate = findViewById(R.id.decelerate);
+
         decelerate.setVisibility(View.INVISIBLE);
         Joystick joystick = findViewById(R.id.joystick);
         joystick.setVisibility(View.INVISIBLE);
         noWifiImage.setVisibility(View.INVISIBLE);
-        StopTeleop stopTeleop = findViewById(R.id.stopTeleop);
+
+        txt2.setVisibility(View.INVISIBLE);
+        txt4.setVisibility(View.INVISIBLE);
+        txt5.setVisibility(View.INVISIBLE);
+
         stopTeleop.setVisibility(View.INVISIBLE);
+
+
         imc.register(this);
         minus.setOnClickListener(v -> mapController.zoomOut());
+
+
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
         }
@@ -411,6 +432,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+
     //if a plan is changed without stopping the plan that was executing
     @Periodic()
     public void changePlans() {
@@ -441,6 +463,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     public boolean checkLocationPermission() {
+
+
         if (ContextCompat.checkSelfPermission(this,
                 permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -471,7 +495,10 @@ public class MainActivity extends AppCompatActivity
         if (selectedVehiclePosition != null) {
             mapController.setCenter(selectedVehiclePosition);
             mapController.setZoom(zoomLevel);
-        }
+        } else
+            mapController.setCenter(localizacao());
+        mapController.setZoom(zoomLevel);
+
 
         //this will refresh the osmdroid configuration on resuming.
         //if you make changes to the configuration, use
@@ -576,11 +603,15 @@ public class MainActivity extends AppCompatActivity
                             startPlan.setVisibility(View.INVISIBLE);
                             comeNear.setVisibility(View.INVISIBLE);
                             keepStation.setVisibility(View.INVISIBLE);
-                            Accelerate accelerate = findViewById(R.id.accelerate);
+
                             accelerate.setVisibility(View.VISIBLE);
+                            txt2.setVisibility(View.VISIBLE);
+                            txt4.setVisibility(View.VISIBLE);
+                            txt5.setVisibility(View.VISIBLE);
                             accelerate.setOnAccelerate(teleOperation);
                             Decelerate decelerate = findViewById(R.id.decelerate);
                             decelerate.setVisibility(View.VISIBLE);
+
                             decelerate.setOnDec(teleOperation);
                             stopPlan.setVisibility(View.INVISIBLE);
                             StopTeleop stopTeleop = findViewById(R.id.stopTeleop);
@@ -763,7 +794,19 @@ public class MainActivity extends AppCompatActivity
         OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
         items.add(marker);
-        Bitmap newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 70, 70, false);
+        Bitmap newMarker;
+        if (android.os.Build.VERSION.SDK_INT <= M) {
+
+            newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred));
+
+        } else {
+
+            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 50, 50, false);
+
+        }
+
+
+
         Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
         ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
         map.getOverlays().add(markersOverlay);
@@ -820,10 +863,17 @@ public class MainActivity extends AppCompatActivity
                     orientationOtherVehicles.add(ori2);
 
 
-                if (context == MainActivity.this)
-                    bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 70, 70, false);
+                if (context == MainActivity.this) {
 
+                    if (android.os.Build.VERSION.SDK_INT <= M) {
+                        bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow));
 
+                    } else {
+
+                        bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 50, 50, false);
+
+                    }
+                }
                 if (vname.equals(imc.getSelectedvehicle())) {
                     selectedVehiclePosition = new GeoPoint(lld[0], lld[1]);
                     selectedVehicleOrientation = (float) state.getPsi();
@@ -832,8 +882,16 @@ public class MainActivity extends AppCompatActivity
                     orientationSelected = ori;
                     latVehicle = Math.toRadians(selectedVehiclePosition.getLatitude());
                     lonVehicle = Math.toRadians(selectedVehiclePosition.getLongitude());
-                    if (context == MainActivity.this)
-                        bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 70, 70, false);
+                    if (context == MainActivity.this) {
+                        if (android.os.Build.VERSION.SDK_INT <= M) {
+                            bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen));
+
+                        } else {
+
+                            bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 50, 50, false);
+
+                        }
+                    }
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
@@ -897,6 +955,7 @@ public class MainActivity extends AppCompatActivity
             }
         }
     }
+
 
     @Background
     @Periodic(500)

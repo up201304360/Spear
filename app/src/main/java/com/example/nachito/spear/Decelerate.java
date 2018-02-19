@@ -67,5 +67,5 @@ public class Decelerate extends View {
             listener.OnReleaseDec();
         }
     }
-
+    
 }
