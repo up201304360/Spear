@@ -24,9 +24,7 @@ import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.MainActivity.localizacao;
@@ -191,11 +189,11 @@ public class MapSMS extends AppCompatActivity {
         Bitmap newMarker2;
         if (android.os.Build.VERSION.SDK_INT <= M) {
 
-            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred));
+            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred2));
 
         } else {
 
-            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 50, 50, false);
+            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 0, 0, true);
 
         }
         Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
@@ -207,11 +205,7 @@ public class MapSMS extends AppCompatActivity {
     }
 
     public void drawBlue() {
-        posicaoOutrosVeiculos = MainActivity.drawOtherVehicles();
-        Set<GeoPoint> hs = new HashSet<>();
-        hs.addAll(posicaoOutrosVeiculos);
-        posicaoOutrosVeiculos.clear();
-        posicaoOutrosVeiculos.addAll(hs);
+
         for (int i = 0; i < posicaoOutrosVeiculos.size(); i++) {
             if (posicaoOutrosVeiculos.get(i) != centro) {
                 final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
@@ -222,11 +216,11 @@ public class MapSMS extends AppCompatActivity {
                 Resources resources = this.getResources();
                 Bitmap source2;
                 if (android.os.Build.VERSION.SDK_INT <= M) {
-                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow));
+                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2));
 
                 } else
 
-                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 50, 50, false);
+                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2), 0, 0, true);
                 Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
@@ -246,11 +240,11 @@ public class MapSMS extends AppCompatActivity {
             Resources resources = this.getResources();
 
             if (android.os.Build.VERSION.SDK_INT <= M) {
-                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen));
+                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2));
 
             } else
 
-                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 50, 50, false);
+                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2), 0, 0, true);
 
             Bitmap target = MainActivity.RotateMyBitmap(newMarker, MainActivity.orientationSelected);
             Drawable markerLoc = new BitmapDrawable(getResources(), target);

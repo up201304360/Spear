@@ -2,10 +2,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <org.osmdroid.views.MapView
         android:id="@+id/mapArea"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:longClickable="true"
         android:scrollbars="vertical" />
 
@@ -39,6 +43,17 @@
         android:layout_marginTop="11dp"
         android:background="#50505010"
         android:text="@string/erase" />
+
+    <Button
+        android:id="@+id/previewArea"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/eraseAllArea"
+        android:layout_alignStart="@+id/eraseAllArea"
+        android:layout_below="@+id/eraseAllArea"
+        android:layout_marginTop="11dp"
+        android:background="#50505010"
+        android:text="@string/preview" />
 
     <Button
         android:id="@+id/eraseAllArea"

@@ -18,16 +18,16 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -156,6 +156,8 @@ public class MainActivity extends AppCompatActivity
     static List<Integer> orientationOtherVehicles;
     static int orientationSelected;
     static float bearingMyLoc;
+    static double altitude;
+    static boolean isDepthSelected;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
     @ViewById(R.id.dive)
     Button dive;
@@ -284,7 +286,13 @@ public class MainActivity extends AppCompatActivity
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
 
-        if (isConnectedToWifi(this)) {
+        if (Build.VERSION.SDK_INT <= 19) {
+            checkConnections();
+        } else {
+            requestForSpecificPermission();
+        }
+
+        if (isWifiAvailable()) {
             map.setTileSource(TileSourceFactory.MAPNIK);
             isOfflineSelected = false;
 
@@ -496,7 +504,7 @@ public class MainActivity extends AppCompatActivity
             mapController.setCenter(selectedVehiclePosition);
             mapController.setZoom(zoomLevel);
         } else
-            mapController.setCenter(localizacao());
+            mapController.setCenter(new GeoPoint(41.1496100, -8.6109900));
         mapController.setZoom(zoomLevel);
 
 
@@ -526,6 +534,7 @@ public class MainActivity extends AppCompatActivity
 
         setShowRPM(sharedPreferences.getBoolean(getString(R.string.pref_show_rpmms_key), getResources().getBoolean((R.bool.pref_show_rpmms_default))));
         setOfflineMap(sharedPreferences.getBoolean(getString(R.string.pref_show_offline_key), getResources().getBoolean(R.bool.pref_show_offline_default)));
+        setShowDepth(sharedPreferences.getBoolean(getString(R.string.pref_show_depth_key), getResources().getBoolean(R.bool.pref_show_depth_default)));
         loadFromPrefs(sharedPreferences);
 
 
@@ -538,6 +547,7 @@ public class MainActivity extends AppCompatActivity
         radius = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_radius_key), getString(R.string.pref_radius_default)));
         depth = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_depth_key), getString(R.string.pref_depth_default)));
         swath_width = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_width_key), "25"));
+        altitude = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_altitude_key), getString(R.string.pref_altitude_default)));
 
     }
 
@@ -546,6 +556,9 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    public void setShowDepth(boolean showDepth) {
+        MainActivity.isDepthSelected = showDepth;
+    }
     public void setOfflineMap(boolean isOfflineMap) {
         isOfflineSelected = isOfflineMap;
         if (isOfflineSelected) {
@@ -576,6 +589,11 @@ public class MainActivity extends AppCompatActivity
             loadFromPrefs(sharedPreferences);
         } else if (key.equals(getString(R.string.pref_depth_key))) {
             loadFromPrefs(sharedPreferences);
+        } else if (key.equals(getString(R.string.pref_altitude_key))) {
+            loadFromPrefs(sharedPreferences);
+        } else if (key.equals(getString(R.string.pref_show_depth_key))) {
+            setShowDepth(sharedPreferences.getBoolean(key, getResources().getBoolean((R.bool.pref_show_depth_default))));
+
         }
     }
 
@@ -589,7 +607,7 @@ public class MainActivity extends AppCompatActivity
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
                 alertDialogBuilder
                         .setMessage("Connect to " + imc.selectedvehicle + "?")
-                        .setCancelable(false)
+                        .setCancelable(true)
                         .setPositiveButton("Yes", (dialog, id) -> {
                             if (teleOperation == null)
                                 teleOperation = new TeleOperation();
@@ -692,6 +710,41 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    private void requestForSpecificPermission() {
+        int PERMISSION_ALL = 101;
+        String[] PERMISSIONS = {
+                android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                android.Manifest.permission.ACCESS_NETWORK_STATE,
+                android.Manifest.permission.ACCESS_WIFI_STATE,
+                android.Manifest.permission.VIBRATE,
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                android.Manifest.permission.INTERNET};
+
+        hasPermissions(this, PERMISSIONS);
+        ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
+    }
+
+    public void hasPermissions(Context context, String... permissions) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                ActivityCompat.checkSelfPermission(context, permission);
+            }
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        boolean result_permission = true;
+        for (int grantResult : grantResults) {
+            if (grantResult == -1)
+                result_permission = false;
+        }
+        if (result_permission) {
+
+            checkConnections();
+        }
+    }
     @Override
     public void onBackPressed() {
         if (teleOperation != null) {
@@ -797,11 +850,11 @@ public class MainActivity extends AppCompatActivity
         Bitmap newMarker;
         if (android.os.Build.VERSION.SDK_INT <= M) {
 
-            newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred));
+            newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred2));
 
         } else {
 
-            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 50, 50, false);
+            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 0, 0, true);
 
         }
 
@@ -843,6 +896,7 @@ public class MainActivity extends AppCompatActivity
                         serviceBar.setText(" ");
                         velocity.setText(" ");
                         //retirar icon
+                        selectedVehiclePosition = null;
                         if (map.getOverlays().contains(markersOverlay2))
                             map.getOverlays().remove(markersOverlay2);
 
@@ -866,11 +920,11 @@ public class MainActivity extends AppCompatActivity
                 if (context == MainActivity.this) {
 
                     if (android.os.Build.VERSION.SDK_INT <= M) {
-                        bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow));
+                        bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2));
 
                     } else {
 
-                        bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 50, 50, false);
+                        bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2), 50, 50, false);
 
                     }
                 }
@@ -880,15 +934,17 @@ public class MainActivity extends AppCompatActivity
                     int ori = (int) Math.round(Math.toDegrees(selectedVehicleOrientation));
                     ori = ori - 180;
                     orientationSelected = ori;
-                    latVehicle = Math.toRadians(selectedVehiclePosition.getLatitude());
-                    lonVehicle = Math.toRadians(selectedVehiclePosition.getLongitude());
+                    if (selectedVehiclePosition != null) {
+                        latVehicle = Math.toRadians(selectedVehiclePosition.getLatitude());
+                        lonVehicle = Math.toRadians(selectedVehiclePosition.getLongitude());
+                    }
                     if (context == MainActivity.this) {
                         if (android.os.Build.VERSION.SDK_INT <= M) {
-                            bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen));
+                            bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2));
 
                         } else {
 
-                            bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 50, 50, false);
+                            bitmapArrow = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2), 50, 50, false);
 
                         }
                     }
@@ -1100,7 +1156,13 @@ public class MainActivity extends AppCompatActivity
         dive.setLat(latVehicle);
         dive.setZ(depth);
         dive.setType(Loiter.TYPE.CIRCULAR);
-        dive.setZUnits(ZUnits.DEPTH);
+        if (isDepthSelected) {
+            dive.setZ(depth);
+            dive.setZUnits(ZUnits.DEPTH);
+        } else {
+            dive.setZ(altitude);
+            dive.setZUnits(ZUnits.ALTITUDE);
+        }
         dive.setSpeed(speed);
 
         if (!isRPMSelected) {
@@ -1127,8 +1189,13 @@ public class MainActivity extends AppCompatActivity
         }
         stationKeepingmsg.setDuration(duration);
         stationKeepingmsg.setRadius(radius);
-        stationKeepingmsg.setZ(depth);
-        stationKeepingmsg.setZUnits(ZUnits.DEPTH);
+        if (isDepthSelected) {
+            stationKeepingmsg.setZ(depth);
+            stationKeepingmsg.setZUnits(ZUnits.DEPTH);
+        } else {
+            stationKeepingmsg.setZ(altitude);
+            stationKeepingmsg.setZUnits(ZUnits.ALTITUDE);
+        }
         String planid = " SpearStationKeeping-" + imc.selectedvehicle;
         startBehaviour(planid, stationKeepingmsg);
 
@@ -1140,7 +1207,11 @@ public class MainActivity extends AppCompatActivity
         go.setLat(latitude);
         go.setLon(longitude);
         go.setZ(0);
-        go.setZUnits(ZUnits.DEPTH);
+        if (isDepthSelected) {
+            go.setZUnits(ZUnits.DEPTH);
+        } else {
+            go.setZUnits(ZUnits.ALTITUDE);
+        }
         go.setSpeed(speed);
         if (!isRPMSelected) {
             go.setSpeedUnits(SpeedUnits.METERS_PS);
@@ -1181,6 +1252,7 @@ public class MainActivity extends AppCompatActivity
             planWaypointPolyline.setPoints(nullArray);
             map.getOverlays().remove(planWaypointPolyline);
         }
+        stateconnected = null;
 
 
         if (planWaypoints != null) {
@@ -1242,7 +1314,6 @@ public class MainActivity extends AppCompatActivity
 
 
         if (Area.sendmList() != null) {
-            Area.maneuverArrayList.clear();
 
             if (maneuverListFromArea != null)
                 maneuverListFromArea.clear();
@@ -1278,29 +1349,52 @@ public class MainActivity extends AppCompatActivity
     }
 
     //if there is wifiDrawable show an imageview, when the wifiDrawable is off change it to another
-    private boolean isConnectedToWifi(Context context) {
+    private void checkConnections() {
+        final boolean[] connectedWifi = {false};
 
-        boolean connectedWifi = false;
-        try {
-            ConnectivityManager nConManager = (ConnectivityManager) context
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (nConManager != null) {
-                NetworkInfo nNetworkinfo = nConManager.getActiveNetworkInfo();
-                if (nNetworkinfo.isConnected()) {
-                    connectedWifi = true;
-                    return connectedWifi;
+        if (isWifiAvailable() || isNetworkAvailable()) {
+            new CountDownTimer(5000, 1000) {
+                public void onFinish() {
+                    // When timer is finished
+                    // Execute your code here
+                    connectedWifi[0] = true;
+
                 }
-            }
-        } catch (Exception ignored) {
+
+                public void onTick(long millisUntilFinished) {
+                }
+            }.start();
+        } else {
+            connectedWifi[0] = false;
         }
-        return connectedWifi;
     }
+
+    private boolean isWifiAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = null;
+        if (cm != null) {
+            wifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        }
+        return wifi != null && wifi.isConnected();
+
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = null;
+        if (connectivityManager != null) {
+            activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        }
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+    //if there is wifiDrawable show an imageview, when the wifiDrawable is off change it to another
+
 
     //Set a timer to check if is connected to a Wifi Network
     public void drawWifiSignal() {
         // Check if is connected to a Wifi Network, if not popups a informative toast
         runOnUiThread(() -> {
-            if (!isConnectedToWifi(MainActivity.this)) {
+            if (!isWifiAvailable()) {
                 if (serviceBar != null) {
                     wifiDrawable.setVisibility(View.INVISIBLE);
                     noWifiImage.setVisibility(View.VISIBLE);

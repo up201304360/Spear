@@ -25,11 +25,9 @@ import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
@@ -39,7 +37,9 @@ import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 import static android.os.Build.VERSION_CODES.M;
+import static com.example.nachito.spear.MainActivity.altitude;
 import static com.example.nachito.spear.MainActivity.depth;
+import static com.example.nachito.spear.MainActivity.isDepthSelected;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.localizacao;
 import static com.example.nachito.spear.MainActivity.speed;
@@ -286,8 +286,13 @@ public class Line extends AppCompatActivity {
             double lon = Math.toRadians((point.getLongitude()));
             follow.setLat(lat);
             follow.setLon(lon);
-            follow.setZ(depth);
-            follow.setZUnits(ZUnits.DEPTH);
+            if (isDepthSelected) {
+                follow.setZ(depth);
+                follow.setZUnits(ZUnits.DEPTH);
+            } else {
+                follow.setZ(altitude);
+                follow.setZUnits(ZUnits.ALTITUDE);
+            }
             follow.setSpeed(speed);
             if (!isRPMSelected) {
                 follow.setSpeedUnits(SpeedUnits.METERS_PS);
@@ -309,8 +314,13 @@ public class Line extends AppCompatActivity {
         double lon = Math.toRadians(p.getLongitude());
         go.setLat(lat);
         go.setLon(lon);
-        go.setZ(depth);
-        go.setZUnits(ZUnits.DEPTH);
+        if (isDepthSelected) {
+            go.setZ(depth);
+            go.setZUnits(ZUnits.DEPTH);
+        } else {
+            go.setZ(altitude);
+            go.setZUnits(ZUnits.ALTITUDE);
+        }
         go.setSpeed(speed);
         if (!isRPMSelected) {
             go.setSpeedUnits(SpeedUnits.METERS_PS);
@@ -337,11 +347,11 @@ public class Line extends AppCompatActivity {
         Bitmap newMarker2;
         if (android.os.Build.VERSION.SDK_INT <= M) {
 
-            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred));
+            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred2));
 
         } else {
 
-            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 50, 50, false);
+            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 0, 0, true);
 
         }
         Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
@@ -354,10 +364,7 @@ public class Line extends AppCompatActivity {
     @Periodic
     public void drawBlue() {
         otherVehiclesPosition = MainActivity.drawOtherVehicles();
-        Set<GeoPoint> hs = new HashSet<>();
-        hs.addAll(otherVehiclesPosition);
-        otherVehiclesPosition.clear();
-        otherVehiclesPosition.addAll(hs);
+
         for (int i = 0; i < otherVehiclesPosition.size(); i++) {
             if (otherVehiclesPosition.get(i) != selectedVehiclePosition) {
                 final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
@@ -368,11 +375,11 @@ public class Line extends AppCompatActivity {
                 Resources resources = this.getResources();
 
                 if (android.os.Build.VERSION.SDK_INT <= M) {
-                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow));
+                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2));
 
                 } else
 
-                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 50, 50, false);
+                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2), 0, 0, true);
 
                 Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
@@ -393,11 +400,11 @@ public class Line extends AppCompatActivity {
             Resources resources = this.getResources();
 
             if (android.os.Build.VERSION.SDK_INT <= M) {
-                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen));
+                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2));
 
             } else
 
-                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 50, 50, false);
+                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2), 0, 0, true);
 
             Bitmap target = MainActivity.RotateMyBitmap(newMarker, MainActivity.orientationSelected);
             Drawable markerLoc = new BitmapDrawable(getResources(), target);

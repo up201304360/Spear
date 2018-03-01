@@ -7,12 +7,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.Toast;
 
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EActivity;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.events.MapEventsReceiver;
@@ -25,25 +23,26 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
-
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-
+import java.util.Vector;
 import pt.lsts.coverage.GeoCoord;
+import pt.lsts.imc.FollowPath;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
+import pt.lsts.imc.PathPoint;
 import pt.lsts.imc.def.SpeedUnits;
 import pt.lsts.imc.def.ZUnits;
 import pt.lsts.neptus.messages.listener.Periodic;
 import pt.lsts.util.PlanUtilities;
 
 import static android.os.Build.VERSION_CODES.M;
+import static com.example.nachito.spear.MainActivity.altitude;
 import static com.example.nachito.spear.MainActivity.depth;
+import static com.example.nachito.spear.MainActivity.isDepthSelected;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.localizacao;
 import static com.example.nachito.spear.MainActivity.speed;
@@ -66,10 +65,13 @@ public class Area extends AppCompatActivity {
     static Polygon circle;
     static ArrayList<GeoPoint> markers = new ArrayList<>();
     static ArrayList<Maneuver> maneuverArrayList;
+    static ArrayList<GeoPoint> nullArray = new ArrayList<>();
     IMapController mapController;
     Button done;
-    MapView map;
+    Button preview;
+    MapView mapArea;
     Button erase;
+    Drawable nodeIcon2;
     int numberOfPointsPressed;
     Drawable nodeIcon;
     Marker startMarker;
@@ -77,10 +79,18 @@ public class Area extends AppCompatActivity {
     GeoPoint centerInSelectedVehicle;
     final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centerInSelectedVehicle);
     Goto area2;
-    boolean doneClicked = false;
+    boolean isdoneClicked = false;
     Button eraseAll;
     String selected;
     List<Marker> markerList = new ArrayList<>();
+    List<Marker> markerArea = new ArrayList<>();
+    List<Polyline> poliList = new ArrayList<>();
+    Maneuver maneuverFromArea;
+    ArrayList<GeoPoint> areaWaypoints = new ArrayList<>();
+    Collection<PlanUtilities.Waypoint> waypointsFromArea;
+    Marker pointsFromArea;
+    Polyline areaWaypointPolyline;
+    ArrayList<Maneuver> maneuvers;
 
 
     public static ArrayList<GeoPoint> getPointsArea() {
@@ -102,18 +112,44 @@ public class Area extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.area);
 
-        map = findViewById(R.id.mapArea);
+        mapArea = findViewById(R.id.mapArea);
         done = findViewById(R.id.doneArea);
         nodeIcon = getResources().getDrawable(R.drawable.orangeled);
         erase = findViewById(R.id.eraseArea);
         eraseAll = findViewById(R.id.eraseAllArea);
-        map.setMultiTouchControls(true);
+        isdoneClicked = false;
+        if (pointsFromArea != null) {
+            for (Marker l : markerArea) {
+                l.remove(mapArea);
+                mapArea.invalidate();
+            }
+        }
+
+        if (areaWaypointPolyline != null) {
+
+            areaWaypointPolyline.setPoints(nullArray);
+            mapArea.getOverlays().remove(areaWaypointPolyline);
+            mapArea.invalidate();
+        }
+        if (areaWaypoints != null)
+            areaWaypoints.clear();
+
+
+        if (maneuverArrayList != null)
+            maneuverArrayList.clear();
+        markerList.clear();
+        markerArea.clear();
+        markers.clear();
+        numberOfPointsPressed = 0;
         Toast.makeText(this, " Long click on the map to choose an area", Toast.LENGTH_SHORT).show();
         getIntentSelected();
+        nodeIcon2 = getResources().getDrawable(R.drawable.reddot);
+        preview = findViewById(R.id.previewArea);
+
         if (MainActivity.isOfflineSelected) {
-            map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
+            mapArea.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
         }
-        mapController = map.getController();
+        mapController = mapArea.getController();
         mapController.setZoom(zoomLevel);
         centerInSelectedVehicle = MainActivity.getVariables();
         if (centerInSelectedVehicle != null)
@@ -137,18 +173,18 @@ public class Area extends AppCompatActivity {
                 lat = p.getLatitude();
                 lon = p.getLongitude();
                 markers.add(p);
-                startMarker = new Marker(map);
+                startMarker = new Marker(mapArea);
                 startMarker.setPosition(p);
-                map.getOverlays().add(startMarker);
+                mapArea.getOverlays().add(startMarker);
                 startMarker.setIcon(getResources().getDrawable(R.drawable.orangeled));
                 markerList.add(startMarker);
-                map.invalidate();
+                mapArea.invalidate();
                 numberOfPointsPressed++;
                 erase.setOnClickListener(v -> {
-                    if (!doneClicked) {
+                    if (!isdoneClicked) {
                         for (int i = 0; i < numberOfPointsPressed; i++) {
-                            map.getOverlays().remove(startMarker);
-                            startMarker.remove(map);
+                            mapArea.getOverlays().remove(startMarker);
+                            startMarker.remove(mapArea);
                             markers.remove(startMarker.getPosition());
                             numberOfPointsPressed--;
                         }
@@ -157,26 +193,46 @@ public class Area extends AppCompatActivity {
                             polyline.setPoints(markers);
                         if (circle != null)
                             circle.setPoints(markers);
-                        map.invalidate();
+                        mapArea.invalidate();
                         erase.setClickable(false);
                     }
                 });
 
 
                 eraseAll.setOnClickListener(v -> {
+                    if (pointsFromArea != null) {
+                        for (Marker l : markerArea) {
+                            l.remove(mapArea);
+                            mapArea.invalidate();
+                        }
+                    }
 
+                    if (areaWaypointPolyline != null) {
+                        for (Polyline line : poliList) {
+                            line.setPoints(nullArray);
+                            mapArea.getOverlays().remove(areaWaypointPolyline);
+                            mapArea.invalidate();
 
-                    if (!doneClicked) {
+                        }
+
+                    }
+                    if (areaWaypoints != null)
+                        areaWaypoints.clear();
+                    if (maneuverArrayList != null)
+                        maneuverArrayList.clear();
+                    if (maneuvers != null)
+                        maneuvers.clear();
+
+                    if (!isdoneClicked) {
                         for (Marker m : markerList) {
-                            m.remove(map);
-                            map.invalidate();
+                            m.remove(mapArea);
+                            mapArea.invalidate();
 
                         }
                         markerList.clear();
+                        markerArea.clear();
                         markers.clear();
-                        //    markers=new ArrayList<>();
                         numberOfPointsPressed = 0;
-                        //    map.invalidate();
                         drawGreen();
                         drawBlue();
                         drawRed();
@@ -191,26 +247,40 @@ public class Area extends AppCompatActivity {
                             Toast.makeText(Area.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
                         } else {
                             Go(p);
-                            doneClicked = true;
+                            isdoneClicked = true;
                         }
                     } else if (markers.size() > 1) {
                         if (selected == null) {
                             Toast.makeText(Area.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
                         } else {
-                            drawArea();
-                            doneClicked = true;
+                            isdoneClicked = true;
                             iscircleDrawn = true;
+                            followArea();
+
+                        }
+                    }
+                });
+
+
+                preview.setOnClickListener(v -> {
+                    if (markers.size() <= 1) {
+                        Toast.makeText(Area.this, "Add more points", Toast.LENGTH_SHORT).show();
+                    } else if (markers.size() > 1) {
+                        if (selected == null) {
+                            Toast.makeText(Area.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                        } else {
+
+                            followArea();
                         }
                     }
                 });
                 return false;
             }
         };
-
         MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);
-        map.getOverlays().add(OverlayEventos);
+        mapArea.getOverlays().add(OverlayEventos);
         //Refreshing the map to draw the new overlay
-        map.invalidate();
+        mapArea.invalidate();
 
     }
 
@@ -221,17 +291,6 @@ public class Area extends AppCompatActivity {
 
 
 
-    public void drawArea() {
-        circle = new Polygon();
-        circle.isVisible();
-        circle.setStrokeWidth(7);
-        circle.setPoints(markers);
-        circle.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
-        map.getOverlays().add(circle);
-        map.invalidate();
-        iscircleDrawn = true;
-        followArea();
-    }
 
     public void followArea() {
         LinkedHashSet<String> noRepetitions = new LinkedHashSet<>();
@@ -245,34 +304,96 @@ public class Area extends AppCompatActivity {
         }
 
         ArrayList<GeoCoord> coords = new ArrayList<>();
-        ArrayList<Maneuver> maneuvers = new ArrayList<>();
+        maneuvers = new ArrayList<>();
         for (int i = 0; i < markers.size(); i++) {
             coords.add(new GeoCoord(markers.get(i).getLatitude(), markers.get(i).getLongitude()));
         }
+        Vector<PathPoint> points = new Vector<>();
+        GeoCoord primPonto = new GeoCoord(markers.get(0).getLatitude(), markers.get(0).getLongitude());
         for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
-            area2 = new Goto();
-            double lat = Math.toRadians(coord.latitudeDegs);
-            double lon = Math.toRadians(coord.longitudeDegs);
-            area2.setLat(lat);
-            area2.setLon(lon);
-            area2.setZ(depth);
-            area2.setZUnits(ZUnits.DEPTH);
-            area2.setSpeed(speed);
-            if (!isRPMSelected) {
-                area2.setSpeedUnits(SpeedUnits.METERS_PS);
-            } else {
-                area2.setSpeedUnits(SpeedUnits.RPM);
-            }
+            double[] offsets = coord.getOffsetFrom(primPonto);
+            PathPoint pt = new PathPoint();
+            pt.setX(offsets[0]);
+            pt.setY(offsets[1]);
+            pt.setZ(offsets[2]);
+            points.add(pt);
 
-            maneuvers.add(area2);
+        }
+        FollowPath area = new FollowPath();
+        double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
+        double lon = Math.toRadians(markers.get(0).getLongitude());
+        area.setLat(lat);
+        area.setLon(lon);
+        area.setSpeed(speed);
+        if (!isRPMSelected) {
+            area.setSpeedUnits(SpeedUnits.METERS_PS);
+        } else {
+            area.setSpeedUnits(SpeedUnits.RPM);
+        }
+        if (isDepthSelected) {
+            area.setZ(depth);
+            area.setZUnits(ZUnits.DEPTH);
+        } else {
+            area.setZ(altitude);
+            area.setZUnits(ZUnits.ALTITUDE);
+        }
+        area.setPoints(points);
+        for (int i = 0; i < area.getPoints().size(); i++) {
+            maneuvers.add(area);
             maneuverArrayList = new ArrayList<>();
             maneuverArrayList.addAll(maneuvers);
 
         }
-        MainActivity.areNewWaypointsFromAreaUpdated = false;
-        MainActivity.hasEnteredServiceMode = false;
-        startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
-        onBackPressed();
+        if (isdoneClicked) {
+            MainActivity.areNewWaypointsFromAreaUpdated = false;
+            MainActivity.hasEnteredServiceMode = false;
+            startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
+            sendmList();
+            onBackPressed();
+        } else {
+            drawPreview(maneuverArrayList);
+        }
+    }
+
+    public void drawPreview(List<Maneuver> maneuverListArea) {
+
+        for (int i = 0; i < maneuverListArea.size(); i++) {
+            wayPointsArea(maneuverListArea.get(i));
+        }
+    }
+
+    public void wayPointsArea(final Maneuver maneuver) {
+        maneuverFromArea = maneuver;
+        makePointsArea();
+    }
+
+    public void makePointsArea() {
+        GeoPoint pontoArea;
+        waypointsFromArea = PlanUtilities.computeWaypoints(maneuverFromArea);
+        for (PlanUtilities.Waypoint point : waypointsFromArea) {
+            double valueOfLatitude = point.getLatitude();
+            double valueOfLongitude = point.getLongitude();
+            pontoArea = new GeoPoint(valueOfLatitude, valueOfLongitude);
+            if (!(areaWaypoints.contains(pontoArea))) {
+                areaWaypoints.add(pontoArea);
+            }
+        }
+
+        for (int i = 0; i < areaWaypoints.size(); i++) {
+            pointsFromArea = new Marker(mapArea);
+            pointsFromArea.setPosition(areaWaypoints.get(i));
+            pointsFromArea.setIcon(nodeIcon2);
+            pointsFromArea.setDraggable(true);
+            mapArea.getOverlays().add(pointsFromArea);
+            markerArea.add(pointsFromArea);
+        }
+        areaWaypointPolyline = new Polyline();
+        areaWaypointPolyline.setWidth(5);
+        areaWaypointPolyline.setPoints(areaWaypoints);
+        mapArea.getOverlays().add(areaWaypointPolyline);
+        mapArea.invalidate();
+        poliList.add(areaWaypointPolyline);
+
 
     }
 
@@ -282,8 +403,13 @@ public class Area extends AppCompatActivity {
         double lon = Math.toRadians(p.getLongitude());
         go.setLat(lat);
         go.setLon(lon);
-        go.setZ(depth);
-        go.setZUnits(ZUnits.DEPTH);
+        if (isDepthSelected) {
+            go.setZ(depth);
+            go.setZUnits(ZUnits.DEPTH);
+        } else {
+            go.setZ(altitude);
+            go.setZUnits(ZUnits.ALTITUDE);
+        }
         go.setSpeed(speed);
         if (!isRPMSelected) {
             go.setSpeedUnits(SpeedUnits.METERS_PS);
@@ -300,10 +426,7 @@ public class Area extends AppCompatActivity {
     @Periodic()
     public void drawBlue() {
         otherVehiclesPosition = MainActivity.drawOtherVehicles();
-        Set<GeoPoint> hs = new HashSet<>();
-        hs.addAll(otherVehiclesPosition);
-        otherVehiclesPosition.clear();
-        otherVehiclesPosition.addAll(hs);
+
         for (int i = 0; i < otherVehiclesPosition.size(); i++) {
             if (otherVehiclesPosition.get(i) != centerInSelectedVehicle) {
                 final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
@@ -313,16 +436,16 @@ public class Area extends AppCompatActivity {
                 Resources resources = this.getResources();
                 Bitmap source2;
                 if (android.os.Build.VERSION.SDK_INT <= M) {
-                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow));
+                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2));
 
                 } else
 
-                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow), 50, 50, false);
+                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2), 50, 50, false);
 
                 Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
                 Drawable marker_ = new BitmapDrawable(getResources(), target);
                 ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
-                map.getOverlays().add(markersOverlay_);
+                mapArea.getOverlays().add(markersOverlay_);
 
             }
         }
@@ -340,17 +463,17 @@ public class Area extends AppCompatActivity {
         Bitmap newMarker2;
         if (android.os.Build.VERSION.SDK_INT <= M) {
 
-            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred));
+            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred2));
 
         } else {
 
-            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred), 50, 50, false);
+            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 0, 0, true);
 
         }
         Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
         Drawable markerLoc = new BitmapDrawable(getResources(), target);
         final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
-        map.getOverlays().add(markersOverlay2);
+        mapArea.getOverlays().add(markersOverlay2);
 
     }
 
@@ -366,15 +489,15 @@ public class Area extends AppCompatActivity {
             Resources resources = this.getResources();
 
             if (android.os.Build.VERSION.SDK_INT <= M) {
-                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen));
+                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2));
 
             } else
 
-                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen), 50, 50, false);
+                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2), 0, 0, true);
             Bitmap target = MainActivity.RotateMyBitmap(newMarker, MainActivity.orientationSelected);
             Drawable markerLoc = new BitmapDrawable(getResources(), target);
             final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, markerLoc, null, this);
-            map.getOverlays().add(markersOverlay2);
+            mapArea.getOverlays().add(markersOverlay2);
 
 
         }

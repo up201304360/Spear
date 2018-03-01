@@ -34,12 +34,22 @@
         android:key="@string/pref_radius_key"
         android:singleLine="true"
         android:title="@string/radius" />
-
+    <CheckBoxPreference
+        android:defaultValue="@bool/pref_show_depth_default"
+        android:key="@string/pref_show_depth_key"
+        android:summaryOff="@string/pref_show_depthfalse"
+        android:summaryOn="@string/pref_show_depthtrue"
+        android:title="@string/pref_show_depth_label" />
     <EditTextPreference
         android:defaultValue="@string/pref_depth_default"
         android:key="@string/pref_depth_key"
         android:singleLine="true"
         android:title="@string/depth" />
+    <EditTextPreference
+        android:defaultValue="@string/pref_altitude_default"
+        android:key="@string/pref_altitude_key"
+        android:singleLine="true"
+        android:title="@string/altitude" />
     <EditTextPreference
         android:defaultValue="@string/pref_width_default"
         android:key="@string/pref_width_key"

@@ -30,6 +30,8 @@
     <string name="duration">duration</string>
     <string name="radius">radius</string>
     <string name="depth">depth</string>
+    <string name="altitude">altitude</string>
+
     <string name="width">swath width</string>
     <string name="pref_speed_key" translatable="false">speed</string>
     <string name="pref_speed_default" translatable="false">1300</string>
@@ -39,19 +41,25 @@
     <string name="pref_radius_default" translatable="false">10</string>
     <string name="pref_depth_key" translatable="false">depth</string>
     <string name="pref_depth_default" translatable="false">5</string>
+    <string name="pref_altitude_key" translatable="false">altitude</string>
+    <string name="pref_altitude_default" translatable="false">5</string>
     <string name="pref_width_key" translatable="false">swath width</string>
     <string name="pref_width_default" translatable="false">25</string>
     <string name="pref_show_rpmms_label" translatable="false">RPM or m/s </string>
+    <string name="pref_show_depth_label" translatable="false">Depth or Altitude </string>
     <string name="pref_show_offline_label" translatable="false">Offline or Online </string>
     <string name="pref_show_offline_key" translatable="false">Offline</string>
     <string name="pref_show_offtrue" translatable="false">Offline</string>
     <string name="pref_show_offfalse" translatable="false">Online</string>
     <string name="pref_show_rpmms_key" translatable="false">RPM</string>
+    <string name="pref_show_depth_key" translatable="false">Depth</string>
+    <string name="pref_show_depthtrue" translatable="false">Depth</string>
+    <string name="pref_show_depthfalse" translatable="false"> Altitude</string>
     <string name="pref_show_true" translatable="false">RPM</string>
     <string name="pref_show_false" translatable="false"> m/s</string>
     <string name="sms"> SMS</string>
     <string name="edit">Line or Area to follow</string>
-<string name="iridium">Iridium</string>
+    <string name="iridium">Iridium</string>
     <string name="pos">Pos</string>
     <string name="vehicle_name">Vehicle Name</string>
     <string name="plus">+</string>
@@ -80,4 +88,5 @@
     <string name="connectedvehicles">ConnectedVehicles</string>
     <string name="plan">Plan</string>
     <string name="start_plan">Start Plan</string>
+    <string name="preview">Preview</string>
 </resources>
