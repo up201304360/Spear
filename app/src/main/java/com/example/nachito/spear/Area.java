@@ -24,7 +24,6 @@ import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,10 +40,13 @@ import pt.lsts.util.PlanUtilities;
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.MainActivity.altitude;
+import static com.example.nachito.spear.MainActivity.areaIcon;
 import static com.example.nachito.spear.MainActivity.depth;
 import static com.example.nachito.spear.MainActivity.isDepthSelected;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.localizacao;
+import static com.example.nachito.spear.MainActivity.planWaypointPolyline;
+import static com.example.nachito.spear.MainActivity.planWaypoints;
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
 import static com.example.nachito.spear.MainActivity.swath_width;
@@ -57,7 +59,6 @@ import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
  */
 @EActivity
 public class Area extends AppCompatActivity {
-
     static double lat;
     static double lon;
     static boolean iscircleDrawn;
@@ -78,20 +79,15 @@ public class Area extends AppCompatActivity {
     ArrayList<GeoPoint> otherVehiclesPosition;
     GeoPoint centerInSelectedVehicle;
     final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centerInSelectedVehicle);
-    Goto area2;
     boolean isdoneClicked = false;
     Button eraseAll;
     String selected;
     List<Marker> markerList = new ArrayList<>();
     List<Marker> markerArea = new ArrayList<>();
     List<Polyline> poliList = new ArrayList<>();
-    Maneuver maneuverFromArea;
-    ArrayList<GeoPoint> areaWaypoints = new ArrayList<>();
-    Collection<PlanUtilities.Waypoint> waypointsFromArea;
     Marker pointsFromArea;
     Polyline areaWaypointPolyline;
     ArrayList<Maneuver> maneuvers;
-
 
     public static ArrayList<GeoPoint> getPointsArea() {
         return markers;
@@ -131,8 +127,7 @@ public class Area extends AppCompatActivity {
             mapArea.getOverlays().remove(areaWaypointPolyline);
             mapArea.invalidate();
         }
-        if (areaWaypoints != null)
-            areaWaypoints.clear();
+
 
 
         if (maneuverArrayList != null)
@@ -150,6 +145,7 @@ public class Area extends AppCompatActivity {
             mapArea.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
         }
         mapController = mapArea.getController();
+        mapArea.setMultiTouchControls(true);
         mapController.setZoom(zoomLevel);
         centerInSelectedVehicle = MainActivity.getVariables();
         if (centerInSelectedVehicle != null)
@@ -200,24 +196,24 @@ public class Area extends AppCompatActivity {
 
 
                 eraseAll.setOnClickListener(v -> {
-                    if (pointsFromArea != null) {
+                    if (planWaypoints != null) {
                         for (Marker l : markerArea) {
                             l.remove(mapArea);
                             mapArea.invalidate();
+                            planWaypoints.clear();
                         }
                     }
 
-                    if (areaWaypointPolyline != null) {
-                        for (Polyline line : poliList) {
-                            line.setPoints(nullArray);
-                            mapArea.getOverlays().remove(areaWaypointPolyline);
-                            mapArea.invalidate();
 
-                        }
+                    if (planWaypointPolyline != null) {
+
+                        planWaypointPolyline.setPoints(nullArray);
+                        mapArea.invalidate();
+
+
 
                     }
-                    if (areaWaypoints != null)
-                        areaWaypoints.clear();
+
                     if (maneuverArrayList != null)
                         maneuverArrayList.clear();
                     if (maneuvers != null)
@@ -271,6 +267,12 @@ public class Area extends AppCompatActivity {
                         } else {
 
                             followArea();
+                            /*) pointsFromArea.setDraggable(true);
+                            pointsFromArea.setOnMarkerClickListener((marker, mapView) -> {
+                             System.out.println("-----------------" );
+                             marker.setDraggable(true);
+                             return false;
+                         });*/
                         }
                     }
                 });
@@ -288,8 +290,6 @@ public class Area extends AppCompatActivity {
         Intent intent = getIntent();
         selected = intent.getExtras().getString("selected");
     }
-
-
 
 
     public void followArea() {
@@ -348,54 +348,36 @@ public class Area extends AppCompatActivity {
             MainActivity.areNewWaypointsFromAreaUpdated = false;
             MainActivity.hasEnteredServiceMode = false;
             startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
-            sendmList();
+            MainActivity.updateWaypoints();
             onBackPressed();
         } else {
-            drawPreview(maneuverArrayList);
-        }
-    }
+            DrawWaypoints.callWaypoint(maneuverArrayList);
 
-    public void drawPreview(List<Maneuver> maneuverListArea) {
+            if (planWaypoints.size() != 0) {
+                Marker pointsFromPlan;
+                for (int i = 0; i < planWaypoints.size(); i++) {
+                    pointsFromPlan = new Marker(mapArea);
+                    if (planWaypoints.size() != 0) {
+                        pointsFromPlan.setPosition(planWaypoints.get(i));
+                        pointsFromPlan.setIcon(areaIcon);
+                        mapArea.getOverlays().add(pointsFromPlan);
+                        markerArea.add(pointsFromPlan);
+                        mapArea.invalidate();
 
-        for (int i = 0; i < maneuverListArea.size(); i++) {
-            wayPointsArea(maneuverListArea.get(i));
-        }
-    }
+                    }
+                    if (planWaypointPolyline != null)
+                        mapArea.getOverlays().add(planWaypointPolyline);
+                    poliList.add(planWaypointPolyline);
+                    mapArea.invalidate();
 
-    public void wayPointsArea(final Maneuver maneuver) {
-        maneuverFromArea = maneuver;
-        makePointsArea();
-    }
+                }
 
-    public void makePointsArea() {
-        GeoPoint pontoArea;
-        waypointsFromArea = PlanUtilities.computeWaypoints(maneuverFromArea);
-        for (PlanUtilities.Waypoint point : waypointsFromArea) {
-            double valueOfLatitude = point.getLatitude();
-            double valueOfLongitude = point.getLongitude();
-            pontoArea = new GeoPoint(valueOfLatitude, valueOfLongitude);
-            if (!(areaWaypoints.contains(pontoArea))) {
-                areaWaypoints.add(pontoArea);
+                
             }
+
         }
-
-        for (int i = 0; i < areaWaypoints.size(); i++) {
-            pointsFromArea = new Marker(mapArea);
-            pointsFromArea.setPosition(areaWaypoints.get(i));
-            pointsFromArea.setIcon(nodeIcon2);
-            pointsFromArea.setDraggable(true);
-            mapArea.getOverlays().add(pointsFromArea);
-            markerArea.add(pointsFromArea);
-        }
-        areaWaypointPolyline = new Polyline();
-        areaWaypointPolyline.setWidth(5);
-        areaWaypointPolyline.setPoints(areaWaypoints);
-        mapArea.getOverlays().add(areaWaypointPolyline);
-        mapArea.invalidate();
-        poliList.add(areaWaypointPolyline);
-
-
     }
+
 
     public void Go(GeoPoint p) {
         Goto go = new Goto();
@@ -507,6 +489,12 @@ public class Area extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        if (planWaypoints != null)
+            planWaypoints.clear();
+        if (planWaypointPolyline != null)
+            planWaypointPolyline.setPoints(nullArray);
+
+
     }
 
     @Override
