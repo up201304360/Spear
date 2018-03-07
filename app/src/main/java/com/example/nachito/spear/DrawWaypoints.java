@@ -45,10 +45,12 @@ public class DrawWaypoints {
                 if (MainActivity.maneuverList.size() != 0) {
                     if (planWaypoints.size() != MainActivity.maneuverList.size()) {
                         planWaypoints.add(ponto);
+
                     }
                 } else if (Area.maneuverArrayList != null) {
                     if (planWaypoints.size() != Area.maneuverArrayList.size()) {
                         planWaypoints.add(ponto);
+
                     }
                 } else if (Line.sendmList() != null) {
                     if (planWaypoints.size() != Line.sendmList().size()) {

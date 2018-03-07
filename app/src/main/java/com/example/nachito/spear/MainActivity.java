@@ -1077,7 +1077,6 @@ public class MainActivity extends AppCompatActivity
                         map.getOverlays().add(pointsFromPlan);
                     }
                     if (planWaypointPolyline != null)
-                        map.getOverlays().remove(planWaypointPolyline);
                     map.getOverlays().add(planWaypointPolyline);
                 }
 

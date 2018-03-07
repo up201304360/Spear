@@ -252,7 +252,6 @@ public class Area extends AppCompatActivity {
                             isdoneClicked = true;
                             iscircleDrawn = true;
                             followArea();
-
                         }
                     }
                 });
@@ -365,14 +364,14 @@ public class Area extends AppCompatActivity {
                         mapArea.invalidate();
 
                     }
-                    if (planWaypointPolyline != null)
+                    if (planWaypointPolyline != null) {
                         mapArea.getOverlays().add(planWaypointPolyline);
-                    poliList.add(planWaypointPolyline);
-                    mapArea.invalidate();
+                        poliList.add(planWaypointPolyline);
+                        mapArea.invalidate();
 
+                    }
                 }
 
-                
             }
 
         }
@@ -489,11 +488,14 @@ public class Area extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        if (planWaypoints != null)
-            planWaypoints.clear();
-        if (planWaypointPolyline != null)
-            planWaypointPolyline.setPoints(nullArray);
 
+
+        if (!isdoneClicked) {
+            if (planWaypoints != null)
+            planWaypoints.clear();
+            if (planWaypointPolyline != null)
+                planWaypointPolyline.setPoints(nullArray);
+        }
 
     }
 
@@ -511,6 +513,7 @@ public class Area extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         mapController.setZoom(zoomLevel);
+
 
     }
     @Override
