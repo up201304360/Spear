@@ -47,7 +47,6 @@
             android:text="@string/minus"
             android:textSize="12sp" />
 
-
         <include layout="@layout/persistent_bottomsheet" />
 
 

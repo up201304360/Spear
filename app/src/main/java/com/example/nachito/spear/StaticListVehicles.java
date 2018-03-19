@@ -104,7 +104,6 @@ public class StaticListVehicles extends AppCompatActivity {
 
         //TODO change string when Lauv-Arpao becomes Lauv-Nemo
 
-
     }
 
 

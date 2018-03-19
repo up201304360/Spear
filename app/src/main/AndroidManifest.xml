@@ -71,6 +71,8 @@
                     android:name="android.support.PARENT_ACTIVITY"
                     android:value=".MainActivity" />
             </activity>
+
+
         </activity>
 
         <activity
@@ -133,6 +135,7 @@
                 android:value="com.example.nachito.spear.MainActivity_" />
         </activity>
         <activity android:name=".Area" />
+
         <activity android:name=".MainActivity" />
 
 

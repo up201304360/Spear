@@ -357,7 +357,6 @@ public class MainActivity extends AppCompatActivity
 
         stopTeleop.setVisibility(View.INVISIBLE);
 
-
         imc.register(this);
         minus.setOnClickListener(v -> mapController.zoomOut());
 

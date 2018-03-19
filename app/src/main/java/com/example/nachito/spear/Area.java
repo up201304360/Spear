@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.EActivity;
+
 import org.osmdroid.api.IMapController;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
@@ -23,11 +24,13 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Vector;
+
 import pt.lsts.coverage.GeoCoord;
 import pt.lsts.imc.FollowPath;
 import pt.lsts.imc.Goto;
@@ -54,7 +57,6 @@ import static com.example.nachito.spear.MainActivity.zoomLevel;
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
 
 /**
- *
  * Created by ines on 11/13/17.
  */
 @EActivity
@@ -88,13 +90,10 @@ public class Area extends AppCompatActivity {
     Marker pointsFromArea;
     Polyline areaWaypointPolyline;
     ArrayList<Maneuver> maneuvers;
+    Boolean isPreviewPressed = false;
 
     public static ArrayList<GeoPoint> getPointsArea() {
         return markers;
-    }
-
-    public static boolean getCircle() {
-        return iscircleDrawn;
     }
 
 
@@ -127,7 +126,6 @@ public class Area extends AppCompatActivity {
             mapArea.getOverlays().remove(areaWaypointPolyline);
             mapArea.invalidate();
         }
-
 
 
         if (maneuverArrayList != null)
@@ -173,9 +171,27 @@ public class Area extends AppCompatActivity {
                 startMarker.setPosition(p);
                 mapArea.getOverlays().add(startMarker);
                 startMarker.setIcon(getResources().getDrawable(R.drawable.orangeled));
+
+
                 markerList.add(startMarker);
                 mapArea.invalidate();
                 numberOfPointsPressed++;
+
+                for (Marker l : markerList) {
+                    l.setOnMarkerClickListener((marker, mapView) -> {
+                        mapArea.getOverlays().remove(marker);
+                        marker.remove(mapArea);
+                        markerList.remove(marker);
+                        markerArea.remove(marker);
+                        markers.remove(marker.getPosition());
+
+                        numberOfPointsPressed--;
+                        System.out.println("................");
+                        mapArea.invalidate();
+                        return false;
+                    });
+                }
+
                 erase.setOnClickListener(v -> {
                     if (!isdoneClicked) {
                         for (int i = 0; i < numberOfPointsPressed; i++) {
@@ -209,7 +225,6 @@ public class Area extends AppCompatActivity {
 
                         planWaypointPolyline.setPoints(nullArray);
                         mapArea.invalidate();
-
 
 
                     }
@@ -258,6 +273,27 @@ public class Area extends AppCompatActivity {
 
 
                 preview.setOnClickListener(v -> {
+                    if (isPreviewPressed) {
+                        if (planWaypoints != null) {
+                            for (Marker l : markerArea) {
+                                l.remove(mapArea);
+                                mapArea.invalidate();
+                                planWaypoints.clear();
+                            }
+                        }
+
+
+                        if (planWaypointPolyline != null) {
+
+                            planWaypointPolyline.setPoints(nullArray);
+                            mapArea.invalidate();
+
+
+                        }
+
+
+                    }
+                    isPreviewPressed = true;
                     if (markers.size() <= 1) {
                         Toast.makeText(Area.this, "Add more points", Toast.LENGTH_SHORT).show();
                     } else if (markers.size() > 1) {
@@ -266,12 +302,7 @@ public class Area extends AppCompatActivity {
                         } else {
 
                             followArea();
-                            /*) pointsFromArea.setDraggable(true);
-                            pointsFromArea.setOnMarkerClickListener((marker, mapView) -> {
-                             System.out.println("-----------------" );
-                             marker.setDraggable(true);
-                             return false;
-                         });*/
+
                         }
                     }
                 });
@@ -359,6 +390,7 @@ public class Area extends AppCompatActivity {
                     if (planWaypoints.size() != 0) {
                         pointsFromPlan.setPosition(planWaypoints.get(i));
                         pointsFromPlan.setIcon(areaIcon);
+                        pointsFromPlan.setDraggable(true);
                         mapArea.getOverlays().add(pointsFromPlan);
                         markerArea.add(pointsFromPlan);
                         mapArea.invalidate();
@@ -367,6 +399,7 @@ public class Area extends AppCompatActivity {
                     if (planWaypointPolyline != null) {
                         mapArea.getOverlays().add(planWaypointPolyline);
                         poliList.add(planWaypointPolyline);
+
                         mapArea.invalidate();
 
                     }
@@ -492,7 +525,7 @@ public class Area extends AppCompatActivity {
 
         if (!isdoneClicked) {
             if (planWaypoints != null)
-            planWaypoints.clear();
+                planWaypoints.clear();
             if (planWaypointPolyline != null)
                 planWaypointPolyline.setPoints(nullArray);
         }
@@ -516,6 +549,7 @@ public class Area extends AppCompatActivity {
 
 
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
