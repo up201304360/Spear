@@ -38,13 +38,11 @@ public class IMCGlobal extends IMCProtocol {
         maneuvers = new PlanList(this);
         register(maneuvers);
 
-
     }
 
     @Override
     public void onMessage(MessageInfo messageInfo, IMCMessage imcMessage) {
         super.onMessage(messageInfo, imcMessage);
-
     }
 
     String getSelectedvehicle() {
@@ -66,6 +64,10 @@ public class IMCGlobal extends IMCProtocol {
 
     List<String> allPlans() {
         return planos.ListaPlanos(selectedvehicle);
+    }
+
+    List<String> allSensores() {
+        return planos.ListaSensores(selectedvehicle);
     }
 
     List<Maneuver> allManeuvers() {

@@ -1,5 +1,7 @@
 package com.example.nachito.spear;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -45,6 +47,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.MainActivity.altitude;
 import static com.example.nachito.spear.MainActivity.areaIcon;
 import static com.example.nachito.spear.MainActivity.depth;
+import static com.example.nachito.spear.MainActivity.imc;
 import static com.example.nachito.spear.MainActivity.isDepthSelected;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.localizacao;
@@ -57,6 +60,7 @@ import static com.example.nachito.spear.MainActivity.zoomLevel;
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
 
 /**
+ *
  * Created by ines on 11/13/17.
  */
 @EActivity
@@ -69,6 +73,7 @@ public class Area extends AppCompatActivity {
     static ArrayList<GeoPoint> markers = new ArrayList<>();
     static ArrayList<Maneuver> maneuverArrayList;
     static ArrayList<GeoPoint> nullArray = new ArrayList<>();
+    final ArrayList seletedItems = new ArrayList();
     IMapController mapController;
     Button done;
     Button preview;
@@ -91,6 +96,8 @@ public class Area extends AppCompatActivity {
     Polyline areaWaypointPolyline;
     ArrayList<Maneuver> maneuvers;
     Boolean isPreviewPressed = false;
+    ArrayList<String> sensorList;
+    AlertDialog dialog;
 
     public static ArrayList<GeoPoint> getPointsArea() {
         return markers;
@@ -154,6 +161,63 @@ public class Area extends AppCompatActivity {
         drawRed();
         drawBlue();
         drawGreen();
+
+        sensorList = new ArrayList<>();
+        for (int i = 0; i < imc.allSensores().size(); i++) {
+            sensorList.addAll(imc.allSensores());
+
+        }
+        LinkedHashSet<String> withoutRepetitions = new LinkedHashSet<>();
+
+        Iterator<String> it = sensorList.iterator();
+        while (it.hasNext()) {
+            String val = it.next();
+            if (withoutRepetitions.contains(val)) {
+                it.remove();
+            } else
+                withoutRepetitions.add(val);
+        }
+        final CharSequence[] items = sensorList.toArray(new CharSequence[0]);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select Profile");
+        builder.setMultiChoiceItems(items, null,
+                new DialogInterface.OnMultiChoiceClickListener() {
+                    // indexSelected contains the index of item (of which checkbox checked)
+                    @Override
+                    public void onClick(DialogInterface dialog, int indexSelected,
+                                        boolean isChecked) {
+                        if (isChecked) {
+                            // If the user checked the item, add it to the selected items
+                            // write your code when user checked the checkbox
+                            seletedItems.add(indexSelected);
+                        } else if (seletedItems.contains(indexSelected)) {
+                            // Else, if the item is already in the array, remove it
+                            // write your code when user Uchecked the checkbox
+                            seletedItems.remove(Integer.valueOf(indexSelected));
+                        }
+                    }
+                })
+                // Set the action buttons
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        //  Your code when user clicked on OK
+                        //  You can write the code  to save the selected item here
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        //  Your code when user clicked on Cancel
+
+                    }
+                });
+
+        dialog = builder.create();//AlertDialog dialog; create like this outside onClick
+        dialog.show();
+
 
 
         MapEventsReceiver mReceive = new MapEventsReceiver() {
@@ -293,6 +357,8 @@ public class Area extends AppCompatActivity {
 
 
                     }
+
+
                     isPreviewPressed = true;
                     if (markers.size() <= 1) {
                         Toast.makeText(Area.this, "Add more points", Toast.LENGTH_SHORT).show();
@@ -436,6 +502,7 @@ public class Area extends AppCompatActivity {
         onBackPressed();
 
     }
+
 
     @Periodic()
     public void drawBlue() {

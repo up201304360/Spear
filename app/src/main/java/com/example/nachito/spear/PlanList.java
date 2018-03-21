@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import pt.lsts.imc.EntityList;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Maneuver;
 import pt.lsts.imc.PlanControlState;
@@ -24,6 +25,8 @@ import pt.lsts.neptus.messages.listener.Periodic;
 public class PlanList {
     private static final LinkedHashMap<String, List<String>> planHashMap = new LinkedHashMap<>();
     private static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, List<String>> sensoresHashMap = new LinkedHashMap<>();
+
     static boolean samePlan;
     static String previousPlan = ".";
     static boolean callMethodWaypoints;
@@ -104,6 +107,50 @@ public class PlanList {
     }
 
 
+    @Consume
+    public void sensores(EntityList entityList) {
+
+
+        if (!entityList.getSourceName().equals(imc.getSelectedvehicle()))
+            return;
+
+
+        if (entityList.getList() != null) {
+            if (entityList.getOp() == EntityList.OP.REPORT) {
+
+                ArrayList<String> sensorNameArray = new ArrayList<>();
+                if (entityList.getList().containsKey("Multibeam")) {
+                    sensorNameArray.add("Multibeam");
+                }
+                if (entityList.getList().containsKey("Sidescan")) {
+
+                    sensorNameArray.add("Sidescan");
+
+                }
+
+                if (entityList.getList().containsKey("Camera")) {
+
+                    sensorNameArray.add("Camera");
+
+                }
+
+                String vehicle = entityList.getSourceName();
+
+
+                synchronized (sensoresHashMap) {
+
+                    sensoresHashMap.put(vehicle, sensorNameArray);
+                }
+                System.out.println(sensoresHashMap);
+
+            }
+
+        }
+
+    }
+
+
+
     @Periodic(60000)
     private void askForPlan() {
 
@@ -119,6 +166,7 @@ public class PlanList {
         }
     }
 
+
     @Periodic(10000)
     public void AskPlans() {
 
@@ -128,6 +176,22 @@ public class PlanList {
         imc.sendToAll(msg);
     }
 
+
+    @Periodic(10000)
+    public void AskEntities() {
+
+        pt.lsts.imc.EntityList entity = new EntityList();
+        entity.setOp(EntityList.OP.QUERY);
+        imc.sendToAll(entity);
+
+    } //entidades
+
+
+    List<String> ListaSensores(String vehicle) {
+        synchronized (sensoresHashMap) {
+            return sensoresHashMap.get(vehicle);
+        }
+    }
 
     List<String> ListaPlanos(String vehicle) {
         synchronized (planHashMap) {

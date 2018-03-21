@@ -30,6 +30,7 @@ public class VehicleList {
         synchronized (connectedVehicles) {
             connectedVehicles.put(nome, new Pair<>(new Date(), msg));
         }
+
         synchronized (hashMapTime) {
             hashMapTime.put(nome, new Pair<>(new Date(), nome));
         }
@@ -77,6 +78,8 @@ public class VehicleList {
         }
         return withoutRepetitions;
     }
+
+
 }
 
 

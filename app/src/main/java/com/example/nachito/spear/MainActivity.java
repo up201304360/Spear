@@ -57,7 +57,6 @@ import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
-import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
@@ -270,6 +269,7 @@ public class MainActivity extends AppCompatActivity
         previous = "S";
         MainActivity.hasEnteredServiceMode = false;
         imc.sendMessage(pc);
+
     }
 
     public static void updateWaypoints() {
@@ -773,6 +773,7 @@ public class MainActivity extends AppCompatActivity
             map.setMultiTouchControls(true);
         } else {
             Intent setIntent = new Intent(Intent.ACTION_MAIN);
+
             setIntent.addCategory(Intent.CATEGORY_HOME);
             setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(setIntent);
@@ -888,7 +889,6 @@ public class MainActivity extends AppCompatActivity
 
     @Background
     public void paintState(final EstimatedState state) {
-
         final String vname = state.getSourceName();
 
         if (imc.stillConnected() != null) {
@@ -985,10 +985,12 @@ public class MainActivity extends AppCompatActivity
         vehicleStateList = imc.connectedVehicles();
 
 
+
         for (VehicleState state : vehicleStateList) {
             if (imc.selectedvehicle != null)
                 if (imc.selectedvehicle.equals(state.getSourceName()))
                     stateList.add(state.getOpModeStr());
+
 
         }
         if (stateList.size() != 0) {
@@ -1021,6 +1023,7 @@ public class MainActivity extends AppCompatActivity
         otherVehiclesPositionList.clear();
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
+
 
         map.setMultiTouchControls(true);
         if (maneuverList != null)
@@ -1091,7 +1094,6 @@ public class MainActivity extends AppCompatActivity
             }
 
         }
-
     }
 
     public void drawCompass() {
@@ -1428,6 +1430,7 @@ public class MainActivity extends AppCompatActivity
                 warning();
             for (VehicleState state : vehicleStateList) {
                 vehicleList.add(state.getSourceName() + ":" + state.getOpMode());
+
             }
             for (int i = 0; i < vehicleList.size(); i++) {
 
