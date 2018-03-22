@@ -220,20 +220,14 @@ public class Area extends AppCompatActivity {
                         }
                     })
                     // Set the action buttons
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            //  Your code when user clicked on OK
-                            //  You can write the code  to save the selected item here
+                    .setPositiveButton("OK", (dialog, id) -> {
+                        //  Your code when user clicked on OK
+                        //  You can write the code  to save the selected item here
 
-                        }
                     })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            //  Your code when user clicked on Cancel
+                    .setNegativeButton("Cancel", (dialog, id) -> {
+                        //  Your code when user clicked on Cancel
 
-                        }
                     });
 
             dialog = builder.create();//AlertDialog dialog; create like this outside onClick
@@ -352,7 +346,13 @@ public class Area extends AppCompatActivity {
                         } else {
                             isdoneClicked = true;
                             iscircleDrawn = true;
-                            followArea();
+                            if(hasCamera) {
+                                followAreaCamera();
+                            }else if(hasMultibeam){
+                                followAreaMultibeam();}
+                                else if(hasSidescan){
+                                followAreaSidescan();}else {
+                            followArea();}
                         }
                     }
                 });
@@ -388,8 +388,14 @@ public class Area extends AppCompatActivity {
                         if (selected == null) {
                             Toast.makeText(Area.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
                         } else {
+                            if(hasCamera) {
+                                followAreaCamera();
+                            }else if(hasMultibeam){
+                                followAreaMultibeam();}
+                            else if(hasSidescan){
+                                followAreaSidescan();}else {
+                                followArea();}
 
-                            followArea();
 
                         }
                     }
@@ -411,6 +417,7 @@ public class Area extends AppCompatActivity {
 
 
     public void followArea() {
+
         LinkedHashSet<String> noRepetitions = new LinkedHashSet<>();
         Iterator<GeoPoint> it = markers.iterator();
         while (it.hasNext()) {
@@ -421,6 +428,100 @@ public class Area extends AppCompatActivity {
                 noRepetitions.add(val);
         }
 
+
+            ArrayList<GeoCoord> coords = new ArrayList<>();
+            maneuvers = new ArrayList<>();
+            for (int i = 0; i < markers.size(); i++) {
+                coords.add(new GeoCoord(markers.get(i).getLatitude(), markers.get(i).getLongitude()));
+            }
+            Vector<PathPoint> points = new Vector<>();
+            GeoCoord primPonto = new GeoCoord(markers.get(0).getLatitude(), markers.get(0).getLongitude());
+            for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
+                double[] offsets = coord.getOffsetFrom(primPonto);
+                PathPoint pt = new PathPoint();
+                pt.setX(offsets[0]);
+                pt.setY(offsets[1]);
+                pt.setZ(offsets[2]);
+                points.add(pt);
+
+            }
+
+
+            FollowPath area = new FollowPath();
+            double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
+            double lon = Math.toRadians(markers.get(0).getLongitude());
+            area.setLat(lat);
+            area.setLon(lon);
+            area.setSpeed(speed);
+            if (!isRPMSelected) {
+                area.setSpeedUnits(SpeedUnits.METERS_PS);
+            } else {
+                area.setSpeedUnits(SpeedUnits.RPM);
+            }
+            if (isDepthSelected) {
+                area.setZ(depth);
+                area.setZUnits(ZUnits.DEPTH);
+            } else {
+                area.setZ(altitude);
+                area.setZUnits(ZUnits.ALTITUDE);
+            }
+            area.setPoints(points);
+            for (int i = 0; i < area.getPoints().size(); i++) {
+                maneuvers.add(area);
+                maneuverArrayList = new ArrayList<>();
+                maneuverArrayList.addAll(maneuvers);
+
+            }
+            if (isdoneClicked) {
+                MainActivity.areNewWaypointsFromAreaUpdated = false;
+                MainActivity.hasEnteredServiceMode = false;
+                startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
+                MainActivity.updateWaypoints();
+                onBackPressed();
+            } else {
+                DrawWaypoints.callWaypoint(maneuverArrayList);
+
+                if (planWaypoints.size() != 0) {
+                    Marker pointsFromPlan;
+                    for (int i = 0; i < planWaypoints.size(); i++) {
+                        pointsFromPlan = new Marker(mapArea);
+                        if (planWaypoints.size() != 0) {
+                            pointsFromPlan.setPosition(planWaypoints.get(i));
+                            pointsFromPlan.setIcon(areaIcon);
+                            pointsFromPlan.setDraggable(true);
+                            mapArea.getOverlays().add(pointsFromPlan);
+                            markerArea.add(pointsFromPlan);
+                            mapArea.invalidate();
+
+                        }
+                        if (planWaypointPolyline != null) {
+                            mapArea.getOverlays().add(planWaypointPolyline);
+                            poliList.add(planWaypointPolyline);
+
+                            mapArea.invalidate();
+
+                        }
+                    }
+
+                }
+
+            }
+        }
+
+
+
+    public void followAreaCamera() {
+        LinkedHashSet<String> noRepetitions = new LinkedHashSet<>();
+        Iterator<GeoPoint> it = markers.iterator();
+        while (it.hasNext()) {
+            String val = it.next().toString();
+            if (noRepetitions.contains(val)) {
+                it.remove();
+            } else
+                noRepetitions.add(val);
+        }
+
+
         ArrayList<GeoCoord> coords = new ArrayList<>();
         maneuvers = new ArrayList<>();
         for (int i = 0; i < markers.size(); i++) {
@@ -428,7 +529,7 @@ public class Area extends AppCompatActivity {
         }
         Vector<PathPoint> points = new Vector<>();
         GeoCoord primPonto = new GeoCoord(markers.get(0).getLatitude(), markers.get(0).getLongitude());
-        for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
+        for (GeoCoord coord : computeCoveragePath(coords, 10)) {
             double[] offsets = coord.getOffsetFrom(primPonto);
             PathPoint pt = new PathPoint();
             pt.setX(offsets[0]);
@@ -438,31 +539,102 @@ public class Area extends AppCompatActivity {
 
         }
 
-        if (hasCamera) {
-            followAreaCamera();
-            return;
-        }
-
-        if (hasMultibeam) {
-            followAreaMultibeam();
-            return;
-        }
-        if (hasSidescan) {
-            followAreaSidescan();
-            return;
-        }
 
         FollowPath area = new FollowPath();
         double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
         double lon = Math.toRadians(markers.get(0).getLongitude());
         area.setLat(lat);
         area.setLon(lon);
-        area.setSpeed(speed);
-        if (!isRPMSelected) {
-            area.setSpeedUnits(SpeedUnits.METERS_PS);
-        } else {
-            area.setSpeedUnits(SpeedUnits.RPM);
+        area.setSpeed(1);
+        area.setSpeedUnits(SpeedUnits.METERS_PS);
+
+
+            area.setZ(2.5);
+            area.setZUnits(ZUnits.ALTITUDE);
+
+        area.setPoints(points);
+        for (int i = 0; i < area.getPoints().size(); i++) {
+            maneuvers.add(area);
+            maneuverArrayList = new ArrayList<>();
+            maneuverArrayList.addAll(maneuvers);
+
         }
+        if (isdoneClicked) {
+            MainActivity.areNewWaypointsFromAreaUpdated = false;
+            MainActivity.hasEnteredServiceMode = false;
+            startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
+            MainActivity.updateWaypoints();
+            onBackPressed();
+        } else {
+            DrawWaypoints.callWaypoint(maneuverArrayList);
+
+            if (planWaypoints.size() != 0) {
+                Marker pointsFromPlan;
+                for (int i = 0; i < planWaypoints.size(); i++) {
+                    pointsFromPlan = new Marker(mapArea);
+                    if (planWaypoints.size() != 0) {
+                        pointsFromPlan.setPosition(planWaypoints.get(i));
+                        pointsFromPlan.setIcon(areaIcon);
+                        pointsFromPlan.setDraggable(true);
+                        mapArea.getOverlays().add(pointsFromPlan);
+                        markerArea.add(pointsFromPlan);
+                        mapArea.invalidate();
+
+                    }
+                    if (planWaypointPolyline != null) {
+                        mapArea.getOverlays().add(planWaypointPolyline);
+                        poliList.add(planWaypointPolyline);
+
+                        mapArea.invalidate();
+
+                    }
+                }
+            }
+        }
+            System.out.println("Camera");
+
+    }
+
+    public void followAreaMultibeam() {
+
+        LinkedHashSet<String> noRepetitions = new LinkedHashSet<>();
+        Iterator<GeoPoint> it = markers.iterator();
+        while (it.hasNext()) {
+            String val = it.next().toString();
+            if (noRepetitions.contains(val)) {
+                it.remove();
+            } else
+                noRepetitions.add(val);
+        }
+
+
+        ArrayList<GeoCoord> coords = new ArrayList<>();
+        maneuvers = new ArrayList<>();
+        for (int i = 0; i < markers.size(); i++) {
+            coords.add(new GeoCoord(markers.get(i).getLatitude(), markers.get(i).getLongitude()));
+        }
+        Vector<PathPoint> points = new Vector<>();
+        GeoCoord primPonto = new GeoCoord(markers.get(0).getLatitude(), markers.get(0).getLongitude());
+        for (GeoCoord coord : computeCoveragePath(coords, 20)) {
+            double[] offsets = coord.getOffsetFrom(primPonto);
+            PathPoint pt = new PathPoint();
+            pt.setX(offsets[0]);
+            pt.setY(offsets[1]);
+            pt.setZ(offsets[2]);
+            points.add(pt);
+
+        }
+
+
+        FollowPath area = new FollowPath();
+        double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
+        double lon = Math.toRadians(markers.get(0).getLongitude());
+        area.setLat(lat);
+        area.setLon(lon);
+        area.setSpeed(1);
+
+            area.setSpeedUnits(SpeedUnits.METERS_PS);
+
         if (isDepthSelected) {
             area.setZ(depth);
             area.setZUnits(ZUnits.DEPTH);
@@ -511,23 +683,94 @@ public class Area extends AppCompatActivity {
             }
 
         }
-    }
-
-
-    public void followAreaCamera() {
-
-
-        System.out.println("Camera");
-
-    }
-
-    public void followAreaMultibeam() {
-
 
         System.out.println("Multibeam");
     }
 
     public void followAreaSidescan() {
+        LinkedHashSet<String> noRepetitions = new LinkedHashSet<>();
+        Iterator<GeoPoint> it = markers.iterator();
+        while (it.hasNext()) {
+            String val = it.next().toString();
+            if (noRepetitions.contains(val)) {
+                it.remove();
+            } else
+                noRepetitions.add(val);
+        }
+
+
+        ArrayList<GeoCoord> coords = new ArrayList<>();
+        maneuvers = new ArrayList<>();
+        for (int i = 0; i < markers.size(); i++) {
+            coords.add(new GeoCoord(markers.get(i).getLatitude(), markers.get(i).getLongitude()));
+        }
+        Vector<PathPoint> points = new Vector<>();
+        GeoCoord primPonto = new GeoCoord(markers.get(0).getLatitude(), markers.get(0).getLongitude());
+        for (GeoCoord coord : computeCoveragePath(coords, 40)) {
+            double[] offsets = coord.getOffsetFrom(primPonto);
+            PathPoint pt = new PathPoint();
+            pt.setX(offsets[0]);
+            pt.setY(offsets[1]);
+            pt.setZ(offsets[2]);
+            points.add(pt);
+
+        }
+
+
+        FollowPath area = new FollowPath();
+        double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
+        double lon = Math.toRadians(markers.get(0).getLongitude());
+        area.setLat(lat);
+        area.setLon(lon);
+        area.setSpeed(1);
+
+            area.setSpeedUnits(SpeedUnits.METERS_PS);
+
+
+            area.setZ(5);
+            area.setZUnits(ZUnits.ALTITUDE);
+
+        area.setPoints(points);
+        for (int i = 0; i < area.getPoints().size(); i++) {
+            maneuvers.add(area);
+            maneuverArrayList = new ArrayList<>();
+            maneuverArrayList.addAll(maneuvers);
+
+        }
+        if (isdoneClicked) {
+            MainActivity.areNewWaypointsFromAreaUpdated = false;
+            MainActivity.hasEnteredServiceMode = false;
+            startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
+            MainActivity.updateWaypoints();
+            onBackPressed();
+        } else {
+            DrawWaypoints.callWaypoint(maneuverArrayList);
+
+            if (planWaypoints.size() != 0) {
+                Marker pointsFromPlan;
+                for (int i = 0; i < planWaypoints.size(); i++) {
+                    pointsFromPlan = new Marker(mapArea);
+                    if (planWaypoints.size() != 0) {
+                        pointsFromPlan.setPosition(planWaypoints.get(i));
+                        pointsFromPlan.setIcon(areaIcon);
+                        pointsFromPlan.setDraggable(true);
+                        mapArea.getOverlays().add(pointsFromPlan);
+                        markerArea.add(pointsFromPlan);
+                        mapArea.invalidate();
+
+                    }
+                    if (planWaypointPolyline != null) {
+                        mapArea.getOverlays().add(planWaypointPolyline);
+                        poliList.add(planWaypointPolyline);
+
+                        mapArea.invalidate();
+
+                    }
+                }
+
+            }
+
+        }
 
 
         System.out.println("Sidescan");

@@ -308,7 +308,7 @@ public class MainActivity extends AppCompatActivity
         } else
 
         {
-            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
+          //  map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
             isOfflineSelected = true;
         }
         map.setTilesScaledToDpi(true);
