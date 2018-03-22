@@ -98,6 +98,9 @@ public class Area extends AppCompatActivity {
     Boolean isPreviewPressed = false;
     ArrayList<String> sensorList;
     AlertDialog dialog;
+    boolean hasMultibeam;
+    boolean hasCamera;
+    boolean hasSidescan;
 
     public static ArrayList<GeoPoint> getPointsArea() {
         return markers;
@@ -141,7 +144,6 @@ public class Area extends AppCompatActivity {
         markerArea.clear();
         markers.clear();
         numberOfPointsPressed = 0;
-        Toast.makeText(this, " Long click on the map to choose an area", Toast.LENGTH_SHORT).show();
         getIntentSelected();
         nodeIcon2 = getResources().getDrawable(R.drawable.reddot);
         preview = findViewById(R.id.previewArea);
@@ -161,64 +163,85 @@ public class Area extends AppCompatActivity {
         drawRed();
         drawBlue();
         drawGreen();
+        if (imc.allSensores().size() == 0) {
+            Toast.makeText(this, "No sensors detected", Toast.LENGTH_SHORT).show();
+        } else {
 
-        sensorList = new ArrayList<>();
-        for (int i = 0; i < imc.allSensores().size(); i++) {
-            sensorList.addAll(imc.allSensores());
+            sensorList = new ArrayList<>();
+            for (int i = 0; i < imc.allSensores().size(); i++) {
+                sensorList.addAll(imc.allSensores());
 
-        }
-        LinkedHashSet<String> withoutRepetitions = new LinkedHashSet<>();
+            }
+            LinkedHashSet<String> withoutRepetitions = new LinkedHashSet<>();
 
-        Iterator<String> it = sensorList.iterator();
-        while (it.hasNext()) {
-            String val = it.next();
-            if (withoutRepetitions.contains(val)) {
-                it.remove();
-            } else
-                withoutRepetitions.add(val);
-        }
-        final CharSequence[] items = sensorList.toArray(new CharSequence[0]);
+            Iterator<String> it = sensorList.iterator();
+            while (it.hasNext()) {
+                String val = it.next();
+                if (withoutRepetitions.contains(val)) {
+                    it.remove();
+                } else
+                    withoutRepetitions.add(val);
+            }
+            final CharSequence[] items = sensorList.toArray(new CharSequence[0]);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Profile");
-        builder.setMultiChoiceItems(items, null,
-                new DialogInterface.OnMultiChoiceClickListener() {
-                    // indexSelected contains the index of item (of which checkbox checked)
-                    @Override
-                    public void onClick(DialogInterface dialog, int indexSelected,
-                                        boolean isChecked) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Select Profile");
+            // indexSelected contains the index of item (of which checkbox checked)
+            builder.setMultiChoiceItems(items, null,
+                    (dialog, indexSelected, isChecked) -> {
                         if (isChecked) {
                             // If the user checked the item, add it to the selected items
                             // write your code when user checked the checkbox
-                            seletedItems.add(indexSelected);
+                            Toast.makeText(this, "Choose only one ", Toast.LENGTH_SHORT).show();
+
+                            if (seletedItems.size() == 0) {
+                                seletedItems.add(indexSelected);
+                                if (sensorList.get(indexSelected).equals("Camera")) {
+                                    hasCamera = true;
+                                }
+                                if (sensorList.get(indexSelected).equals("Multibeam")) {
+                                    hasMultibeam = true;
+                                }
+                                if (sensorList.get(indexSelected).equals("Sidescan")) {
+                                    hasSidescan = true;
+                                }
+                            } else {
+                                Toast.makeText(this, "Choose only one ", Toast.LENGTH_SHORT).show();
+
+                                seletedItems.remove(Integer.valueOf(indexSelected));
+
+                            }
+
+
                         } else if (seletedItems.contains(indexSelected)) {
                             // Else, if the item is already in the array, remove it
                             // write your code when user Uchecked the checkbox
                             seletedItems.remove(Integer.valueOf(indexSelected));
                         }
-                    }
-                })
-                // Set the action buttons
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        //  Your code when user clicked on OK
-                        //  You can write the code  to save the selected item here
+                    })
+                    // Set the action buttons
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            //  Your code when user clicked on OK
+                            //  You can write the code  to save the selected item here
 
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        //  Your code when user clicked on Cancel
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int id) {
+                            //  Your code when user clicked on Cancel
 
-                    }
-                });
+                        }
+                    });
 
-        dialog = builder.create();//AlertDialog dialog; create like this outside onClick
-        dialog.show();
+            dialog = builder.create();//AlertDialog dialog; create like this outside onClick
+            dialog.show();
 
 
+        }
+        Toast.makeText(this, " Long click on the map to choose an area", Toast.LENGTH_SHORT).show();
 
         MapEventsReceiver mReceive = new MapEventsReceiver() {
             @Override
@@ -250,7 +273,6 @@ public class Area extends AppCompatActivity {
                         markers.remove(marker.getPosition());
 
                         numberOfPointsPressed--;
-                        System.out.println("................");
                         mapArea.invalidate();
                         return false;
                     });
@@ -415,6 +437,21 @@ public class Area extends AppCompatActivity {
             points.add(pt);
 
         }
+
+        if (hasCamera) {
+            followAreaCamera();
+            return;
+        }
+
+        if (hasMultibeam) {
+            followAreaMultibeam();
+            return;
+        }
+        if (hasSidescan) {
+            followAreaSidescan();
+            return;
+        }
+
         FollowPath area = new FollowPath();
         double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
         double lon = Math.toRadians(markers.get(0).getLongitude());
@@ -474,6 +511,26 @@ public class Area extends AppCompatActivity {
             }
 
         }
+    }
+
+
+    public void followAreaCamera() {
+
+
+        System.out.println("Camera");
+
+    }
+
+    public void followAreaMultibeam() {
+
+
+        System.out.println("Multibeam");
+    }
+
+    public void followAreaSidescan() {
+
+
+        System.out.println("Sidescan");
     }
 
 

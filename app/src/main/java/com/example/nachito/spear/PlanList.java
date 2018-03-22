@@ -108,7 +108,7 @@ public class PlanList {
 
 
     @Consume
-    public void sensores(EntityList entityList) {
+    public void sensors(EntityList entityList) {
 
 
         if (!entityList.getSourceName().equals(imc.getSelectedvehicle()))
