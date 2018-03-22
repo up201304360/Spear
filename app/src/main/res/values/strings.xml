@@ -89,4 +89,5 @@
     <string name="plan">Plan</string>
     <string name="start_plan">Start Plan</string>
     <string name="preview">Preview</string>
+    <string name="choose_vehicle">Click here to choose a vehicle</string>
 </resources>

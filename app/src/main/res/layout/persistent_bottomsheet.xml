@@ -30,6 +30,7 @@
             android:clickable="true"
             android:focusable="true"
             android:onClick="onClick"
+            android:text="@string/choose_vehicle"
             android:textColor="#FFFFFF"
             android:textSize="25sp" />
 
@@ -50,9 +51,7 @@
             android:layout_height="35dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="31dp"
-            android:layout_marginRight="31dp"
+            android:layout_alignTop="@+id/wifiImage"
             android:background="@drawable/nowifi"
             android:contentDescription="@string/wifioff"
             android:fitsSystemWindows="true" />
