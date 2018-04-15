@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.0'
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.example.nachito.spear"
         minSdkVersion 16
@@ -54,52 +54,56 @@ android {
 
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:multidex:1.0.3'
-    compile 'com.android.support:design:27.1.0'
-    implementation 'com.android.support:mediarouter-v7:27.1.0'
-    compile 'com.android.support:appcompat-v7:27.1.0'
-    compile 'com.android.support:recyclerview-v7:27.1.0'
-    compile 'com.android.support:support-v4:27.1.0'
-    testCompile 'junit:junit:4.12'
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:mediarouter-v7:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    testImplementation 'junit:junit:4.12'
     apply plugin: 'com.android.application'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-
-    compile 'com.android.support:support-annotations:27.1.0'
-    compile 'org.androidannotations:androidannotations:4.3.1'
+   // implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'com.android.support:support-annotations:27.1.1'
+    implementation 'org.androidannotations:androidannotations:4.3.1'
     annotationProcessor 'org.androidannotations:androidannotations:4.3.1'
-    compile 'org.androidannotations:androidannotations-roboguice:4.3.1'
-    compile 'com.google.code.gson:gson:2.8.0'
-    compile 'org.osmdroid:osmdroid-android:5.6.5'
-    compile 'org.osmdroid:osmdroid-third-party:5.6.5'
-    compile 'org.slf4j:slf4j-android:1.7.25'
-    compile 'com.android.support:preference-v7:27.1.0'
-    compile files('libs/AreaCoverage-v1.2.jar')
+    implementation 'org.androidannotations:androidannotations-roboguice:4.3.1'
+ //   implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'org.osmdroid:osmdroid-android:5.6.5'
+    implementation 'org.osmdroid:osmdroid-third-party:5.6.5'
+    implementation 'org.slf4j:slf4j-android:1.7.25'
+    implementation 'com.android.support:preference-v7:27.1.1'
+    implementation files('libs/AreaCoverage-v1.2.jar')
     compileOnly files('libs/msgsender.jar')
     implementation files('libs/libimc.jar')
-    compile 'javax.xml.bind:jaxb-api:2.2.9'
-    compile 'com.github.MKergall:osmbonuspack:6.4'
-    def AAVersion = '3.2'
+
+    implementation 'javax.xml.bind:jaxb-api:2.2.12-b140109.1041'
+    implementation 'com.github.MKergall:osmbonuspack:6.4'
+  /*  def AAVersion = '3.2'
     annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
-    compile "org.androidannotations:androidannotations-api:$AAVersion"
-    compile 'org.jetbrains:annotations-java5:15.0'
+    implementation "org.androidannotations:androidannotations-api:$AAVersion"*/
+    implementation 'org.jetbrains:annotations-java5:15.0'
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
-    compile group: 'commons-codec', name: 'commons-codec', version: '1.9'
-    compile 'org.greenrobot:essentials:3.0.0-RC1'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
+    implementation 'org.greenrobot:essentials:3.0.0-RC1'
 }
-buildscript {
+/*buildscript {
     repositories {
+        google()
         mavenCentral()
+        jcenter()
     }
     dependencies {
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
     }
-}
+}*/
 repositories {
+    google()
     mavenCentral()
     maven { url "https://jitpack.io" }
+    jcenter()
 }
 
