@@ -25,6 +25,10 @@
         android:orderInCategory="100"
         android:title="@string/sms"
         app:showAsAction="never"/>
-
+    <item
+        android:id="@+id/ais"
+        android:orderInCategory="100"
+        android:title="@string/show_ais"
+        app:showAsAction="never"/>
 
 </menu>

@@ -90,4 +90,5 @@
     <string name="start_plan">Start Plan</string>
     <string name="preview">Preview</string>
     <string name="choose_vehicle">Click here to choose a vehicle</string>
+    <string name="show_ais">Show AIS</string>
 </resources>

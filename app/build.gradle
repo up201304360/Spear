@@ -41,8 +41,7 @@ android {
 
     buildTypes {
         release {
-            //debuggable true
-
+            debuggable true
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
@@ -89,6 +88,8 @@ dependencies {
     // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.9'
     implementation 'org.greenrobot:essentials:3.0.0-RC1'
+
+    implementation 'com.firebase:firebase-client-android:2.5.2'
 }
 /*buildscript {
     repositories {

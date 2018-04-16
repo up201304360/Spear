@@ -2,6 +2,7 @@ package com.example.nachito.spear;
 
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -224,6 +225,17 @@ public class MainActivity extends AppCompatActivity
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
     float selectedVehicleOrientation;
     private Context context;
+    AISPlot ais;
+    boolean isAISSelected;
+    private Handler customHandlerAIS;
+    private Marker startMarkerAIS[];
+    private GeoPoint systemPosAIS;
+    private int timeoutAISPull = 10;
+    private int countAisTime = 0;
+    GPSConvert gpsConvert = new GPSConvert();
+
+
+
 
     public static GeoPoint getVariables() {
         return selectedVehiclePosition;
@@ -398,7 +410,6 @@ public class MainActivity extends AppCompatActivity
 
         overlays.add(scaleBarOverlay);
 
-
         ReceiveSms.bindListener(new SmsListener() {
             @Override
             public void messageReceived(String messageText) {
@@ -504,6 +515,46 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void showAIS(){
+
+        if(isAISSelected) {
+
+            if (countAisTime >= 2) {
+if(startMarkerAIS==null) {
+    startMarkerAIS = new Marker[10024];
+    for (int i = 0; i < 10024; i++)
+        startMarkerAIS[i] = new Marker(map);
+    //TODO Tiago - udp
+}
+                AISPlot.SystemInfoAIS mAIS = ais.GetDataAIS();
+                if (mAIS.systemSizeAIS > 0) {
+                    for (int i = 0; i < mAIS.systemSizeAIS; i++) {
+                        if (((System.currentTimeMillis() / 1000L) - (mAIS.lastUpdateAisShip.get(i) / 1000L)) < 3600) {
+                            //showError.showErrorLogcat("MEU", mAIS.shipName.get(i) + " | " + (System.currentTimeMillis() / 1000L) + " - " + (mAIS.lastUpdateAisShip.get(i) / 1000L) + " = " + ((System.currentTimeMillis() / 1000L) - (mAIS.lastUpdateAisShip.get(i) / 1000L)));
+                            systemPosAIS.setCoords(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude());
+                            startMarkerAIS[i].remove(map);
+                            startMarkerAIS[i].setPosition(systemPosAIS);
+                            startMarkerAIS[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                            startMarkerAIS[i].setIcon(getResources().getDrawable(R.drawable.ship_icon));
+                            startMarkerAIS[i].setTitle(mAIS.shipName.get(i) + "\n" + gpsConvert.latLonToDM(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude()) +
+                                    "\n" + ais.parseTime(mAIS.lastUpdateAisShip.get(i)) + "\nHeading: " + mAIS.headingAisShip.get(i) + " | Speed: " + mAIS.speedAisShip.get(i) + " m/s");
+                            map.getOverlays().add(startMarkerAIS[i]);
+                        }
+                    }
+                }
+                countAisTime = -1;
+            } else {
+                for (int i = 0; i < ais.GetNumberShipsAIS(); i++)
+                    map.getOverlays().add(startMarkerAIS[i]);
+            }
+
+            countAisTime++;
+
+        }
+
+    }
+
+    //TODO  - por anotaçao quando wifi
     public void onResume() {
         super.onResume();
         if (selectedVehiclePosition != null) {
@@ -816,6 +867,17 @@ public class MainActivity extends AppCompatActivity
             i.putExtra("selected", imc.selectedvehicle);
             startActivity(i);
 
+        }else if (id == R.id.ais) {
+
+
+            //TODO ou boolean
+
+
+            ais = new AISPlot(this.context);
+            systemPosAIS = new GeoPoint(0,0);;
+            ais.getAISInfo();
+             isAISSelected = true;
+
         }
 
 
@@ -965,6 +1027,7 @@ public class MainActivity extends AppCompatActivity
                 map.getOverlays().add(markersOverlay2);
             }
         }
+
     }
 
     public void zoomVehicle(final EstimatedState state) {
@@ -1021,6 +1084,7 @@ public class MainActivity extends AppCompatActivity
     @Periodic(500)
     public void updateMap() {
         otherVehiclesPositionList.clear();
+//TODO ver se é como o otherVehicles
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
 
@@ -1040,6 +1104,8 @@ public class MainActivity extends AppCompatActivity
             }
 
         }
+        showAIS();
+
 
         if (location != null)
             onLocationChanged(location);
@@ -1096,6 +1162,28 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    //Run task periodically - AIS
+    private Runnable updateTimerThreadAIS = new Runnable() {
+        @SuppressLint("SetTextI18n")
+        public void run() {
+            if(isAISSelected) {
+                customHandlerAIS = new Handler();
+                customHandlerAIS.postDelayed(updateTimerThreadAIS, 2000);
+
+
+            }
+                if (isAISSelected) {
+                customHandlerAIS.postDelayed(this, timeoutAISPull * 1000);
+                //if(timeoutAISPull != 1) {
+                //    showError.showErrorLogcat("MEU", "size ais: "+ais.GetNumberShipsAIS());
+                //}
+                timeoutAISPull = Integer.parseInt("12"); //TODO
+            }
+            showAIS();
+
+        }
+    };
+
     public void drawCompass() {
         if (mCompassOverlay != null) {
             map.getOverlays().add(mCompassOverlay);
@@ -1132,6 +1220,8 @@ public class MainActivity extends AppCompatActivity
             map.getOverlays().add(markerSMS);
 
         }
+
+
 
 
     }
