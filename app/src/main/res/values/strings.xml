@@ -91,4 +91,5 @@
     <string name="preview">Preview</string>
     <string name="choose_vehicle">Click here to choose a vehicle</string>
     <string name="show_ais">Show AIS</string>
+    <string name="ripples_position">Ripples Position</string>
 </resources>

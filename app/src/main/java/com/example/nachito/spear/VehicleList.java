@@ -27,6 +27,7 @@ public class VehicleList {
     public void vehicle(VehicleState msg) {
         String nome = msg.getSourceName();
 
+
         synchronized (connectedVehicles) {
             connectedVehicles.put(nome, new Pair<>(new Date(), msg));
         }

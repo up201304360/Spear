@@ -49,6 +49,8 @@ public class AISPlot {
         systemInfoAIS.systemSizeAIS = 0;
     }
 
+
+
     public void getAISInfo(){
         //showError.showErrorLogcat("MEU", "AIS");
         myFirebaseRef.child(message).addChildEventListener(new ChildEventListener() {

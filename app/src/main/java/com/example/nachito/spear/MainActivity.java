@@ -233,6 +233,18 @@ public class MainActivity extends AppCompatActivity
     private int timeoutAISPull = 10;
     private int countAisTime = 0;
     GPSConvert gpsConvert = new GPSConvert();
+    RipplesPosition ripples;
+    private Handler customHandlerRipples;
+    private Marker startMarkerRipples[];
+    private String UrlRipples = "http://ripples.lsts.pt/api/v1/systems/active";
+    private boolean newRipplesData = false;
+    private RipplesPosition.SystemInfo systemInfo;
+    private RipplesPosition.SystemInfo backSystemInfo;
+    private GeoPoint systemPosRipples;
+    private boolean firstRunRipplesPull = true;
+    private int timeoutRipplesPull = 10;
+boolean isRipplesSelected;
+    private Handler customHandlerGarbagde;
 
 
 
@@ -316,6 +328,10 @@ public class MainActivity extends AppCompatActivity
         if (isWifiAvailable()) {
             map.setTileSource(TileSourceFactory.MAPNIK);
             isOfflineSelected = false;
+
+            ripples = new RipplesPosition(this, UrlRipples);
+            systemPosRipples = new GeoPoint(0,0);
+            isRipplesSelected=true;
 
         } else
 
@@ -515,6 +531,64 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void showRipplesPos(){
+if(isRipplesSelected) {
+    if(startMarkerRipples==null) {
+
+        startMarkerRipples = new Marker[2048];
+        for (int i = 0; i < 2048; i++)
+            startMarkerRipples[i] = new Marker(map);
+    }
+    if(newRipplesData){
+        newRipplesData = false;
+        firstRunRipplesPull = false;
+        backSystemInfo = systemInfo;
+        for(int i = 0; i < systemInfo.systemSize; i++){
+            systemPosRipples.setCoords(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude());
+            startMarkerRipples[i].setPosition(systemPosRipples);
+            startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            if(systemInfo.sysName[i].contains("lauv"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
+            else if(systemInfo.sysName[i].contains("ccu"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_ccu));
+            else if(systemInfo.sysName[i].contains("manta"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_manta));
+            else if(systemInfo.sysName[i].contains("spot"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.spot_icon));
+            else
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
+
+            startMarkerRipples[i].setTitle(systemInfo.sysName[i]+"\n"+systemInfo.last_update[i]+"\n"+
+                    gpsConvert.latLonToDM(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude()));
+            map.getOverlays().add(startMarkerRipples[i]);
+        }
+    }
+    else if(!newRipplesData && !firstRunRipplesPull){
+        for(int i = 0; i < backSystemInfo.systemSize; i++){
+            systemPosRipples.setCoords(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude());
+            startMarkerRipples[i].setPosition(systemPosRipples);
+            startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            if(backSystemInfo.sysName[i].contains("lauv"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
+            else if(backSystemInfo.sysName[i].contains("ccu"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_ccu));
+            else if(backSystemInfo.sysName[i].contains("manta"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_manta));
+            else if(backSystemInfo.sysName[i].contains("spot"))
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.spot_icon));
+            else
+                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
+
+            startMarkerRipples[i].setTitle(backSystemInfo.sysName[i]+"\n"+backSystemInfo.last_update[i]+"\n"+
+                    gpsConvert.latLonToDM(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude()));
+            map.getOverlays().add(startMarkerRipples[i]);
+        }
+    }
+
+
+}
+    }
+//TODO ver backup
     public void showAIS(){
 
         if(isAISSelected) {
@@ -526,31 +600,34 @@ if(startMarkerAIS==null) {
         startMarkerAIS[i] = new Marker(map);
     //TODO Tiago - udp
 }
-                AISPlot.SystemInfoAIS mAIS = ais.GetDataAIS();
-                if (mAIS.systemSizeAIS > 0) {
-                    for (int i = 0; i < mAIS.systemSizeAIS; i++) {
-                        if (((System.currentTimeMillis() / 1000L) - (mAIS.lastUpdateAisShip.get(i) / 1000L)) < 3600) {
-                            //showError.showErrorLogcat("MEU", mAIS.shipName.get(i) + " | " + (System.currentTimeMillis() / 1000L) + " - " + (mAIS.lastUpdateAisShip.get(i) / 1000L) + " = " + ((System.currentTimeMillis() / 1000L) - (mAIS.lastUpdateAisShip.get(i) / 1000L)));
-                            systemPosAIS.setCoords(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude());
-                            startMarkerAIS[i].remove(map);
-                            startMarkerAIS[i].setPosition(systemPosAIS);
-                            startMarkerAIS[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                            startMarkerAIS[i].setIcon(getResources().getDrawable(R.drawable.ship_icon));
-                            startMarkerAIS[i].setTitle(mAIS.shipName.get(i) + "\n" + gpsConvert.latLonToDM(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude()) +
-                                    "\n" + ais.parseTime(mAIS.lastUpdateAisShip.get(i)) + "\nHeading: " + mAIS.headingAisShip.get(i) + " | Speed: " + mAIS.speedAisShip.get(i) + " m/s");
-                            map.getOverlays().add(startMarkerAIS[i]);
+                    AISPlot.SystemInfoAIS mAIS = ais.GetDataAIS();
+                    if (mAIS.systemSizeAIS > 0) {
+                        for (int i = 0; i < mAIS.systemSizeAIS; i++) {
+                            if (((System.currentTimeMillis() / 1000L) - (mAIS.lastUpdateAisShip.get(i) / 1000L)) < 3600) {
+                                  systemPosAIS.setCoords(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude());
+                                  startMarkerAIS[i].remove(map);
+
+                                    startMarkerAIS[i].setPosition(systemPosAIS);
+                                  startMarkerAIS[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                                  startMarkerAIS[i].setIcon(getResources().getDrawable(R.drawable.ship_icon));
+                                  startMarkerAIS[i].setTitle(mAIS.shipName.get(i) + "\n" + gpsConvert.latLonToDM(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude()) +
+                                          "\n" + ais.parseTime(mAIS.lastUpdateAisShip.get(i)) + "\nHeading: " + mAIS.headingAisShip.get(i) + " | Speed: " + mAIS.speedAisShip.get(i) + " m/s");
+                                  map.getOverlays().add(startMarkerAIS[i]);
+                              }
+
                         }
                     }
+
+                    countAisTime = -1;
+                } else {
+                    for (int i = 0; i < ais.GetNumberShipsAIS(); i++)
+                        map.getOverlays().add(startMarkerAIS[i]);
                 }
-                countAisTime = -1;
-            } else {
-                for (int i = 0; i < ais.GetNumberShipsAIS(); i++)
-                    map.getOverlays().add(startMarkerAIS[i]);
+
+                countAisTime++;
+
             }
 
-            countAisTime++;
-
-        }
 
     }
 
@@ -870,7 +947,6 @@ if(startMarkerAIS==null) {
         }else if (id == R.id.ais) {
 
 
-            //TODO ou boolean
 
 
             ais = new AISPlot(this.context);
@@ -878,10 +954,16 @@ if(startMarkerAIS==null) {
             ais.getAISInfo();
              isAISSelected = true;
 
+        }else if (id == R.id.ripples) {
+
+
+            ripples = new RipplesPosition(this, UrlRipples);
+            systemPosRipples = new GeoPoint(0,0);
+            isRipplesSelected=true;
         }
 
 
-        return super.onOptionsItemSelected(item);
+            return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -1084,7 +1166,6 @@ if(startMarkerAIS==null) {
     @Periodic(500)
     public void updateMap() {
         otherVehiclesPositionList.clear();
-//TODO ver se é como o otherVehicles
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
 
@@ -1162,6 +1243,22 @@ if(startMarkerAIS==null) {
         }
     }
 
+    //Run task periodically - garbage collection
+
+    private Runnable updateTimerThreadGarbagde = new Runnable() {
+        public void run() {
+            customHandlerGarbagde = new Handler();
+            customHandlerGarbagde.postDelayed(updateTimerThreadGarbagde, 100);
+
+            customHandlerGarbagde.postDelayed(this, 20000);
+            System.gc();
+            Runtime.getRuntime().gc();
+        }
+    };
+
+//TODO - parser ver qual mensagem mais recente e mostrar essa entre wifi e iridium
+
+
     //Run task periodically - AIS
     private Runnable updateTimerThreadAIS = new Runnable() {
         @SuppressLint("SetTextI18n")
@@ -1171,18 +1268,44 @@ if(startMarkerAIS==null) {
                 customHandlerAIS.postDelayed(updateTimerThreadAIS, 2000);
 
 
-            }
-                if (isAISSelected) {
                 customHandlerAIS.postDelayed(this, timeoutAISPull * 1000);
                 //if(timeoutAISPull != 1) {
                 //    showError.showErrorLogcat("MEU", "size ais: "+ais.GetNumberShipsAIS());
                 //}
-                timeoutAISPull = Integer.parseInt("12"); //TODO
-            }
-            showAIS();
+                timeoutAISPull = Integer.parseInt("12");
 
+                showAIS();
+            }
         }
     };
+
+
+    //Run task periodically - Ripples
+    private Runnable updateTimerThreadRipples = new Runnable() {
+        @SuppressLint("SetTextI18n")
+        public void run() {
+            if (isRipplesSelected) {
+                customHandlerRipples = new Handler();
+                customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
+                customHandlerRipples.postDelayed(this, timeoutRipplesPull * 1000);
+                if(timeoutRipplesPull != 1) {
+                    if (ripples.PullData(UrlRipples)) {
+                        systemInfo = ripples.GetSystemInfoRipples();
+                        newRipplesData = true;
+                    }
+
+                }
+                timeoutRipplesPull = Integer.parseInt("12");
+                showRipplesPos();
+            }
+        }
+    };
+
+
+
+
+
+
 
     public void drawCompass() {
         if (mCompassOverlay != null) {
@@ -1463,11 +1586,15 @@ if(startMarkerAIS==null) {
                 if (serviceBar != null) {
                     wifiDrawable.setVisibility(View.INVISIBLE);
                     noWifiImage.setVisibility(View.VISIBLE);
+                    isRipplesSelected=false;
+
                 }
             } else {
                 if (serviceBar != null) {
                     noWifiImage.setVisibility(View.INVISIBLE);
                     wifiDrawable.setVisibility(View.VISIBLE);
+                    isRipplesSelected=true;
+
                 }
             }
         });
