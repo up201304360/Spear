@@ -80,6 +80,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pt.lsts.imc.EstimatedState;
+import pt.lsts.imc.FollowReference;
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
@@ -348,6 +349,20 @@ boolean isRipplesSelected;
             actionBar.setDisplayShowHomeEnabled(false);
         }
 
+        customHandlerAIS = new Handler();
+        customHandlerAIS.postDelayed(updateTimerThreadAIS, 2000);
+
+        customHandlerRipples = new Handler();
+        customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
+
+            startMarkerRipples = new Marker[2048];
+            for (int i = 0; i < 2048; i++)
+                startMarkerRipples[i] = new Marker(map);
+
+            startMarkerAIS = new Marker[10024];
+            for (int i = 0; i < 10024; i++)
+                startMarkerAIS[i] = new Marker(map);
+
         resources = getResources();
         context = this;
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -530,15 +545,11 @@ boolean isRipplesSelected;
             return true;
         }
     }
+    //TODO  - por anotaçao quando wifi
 
     public void showRipplesPos(){
 if(isRipplesSelected) {
-    if(startMarkerRipples==null) {
 
-        startMarkerRipples = new Marker[2048];
-        for (int i = 0; i < 2048; i++)
-            startMarkerRipples[i] = new Marker(map);
-    }
     if(newRipplesData){
         newRipplesData = false;
         firstRunRipplesPull = false;
@@ -588,18 +599,12 @@ if(isRipplesSelected) {
 
 }
     }
-//TODO ver backup
     public void showAIS(){
 
         if(isAISSelected) {
 
-            if (countAisTime >= 2) {
-if(startMarkerAIS==null) {
-    startMarkerAIS = new Marker[10024];
-    for (int i = 0; i < 10024; i++)
-        startMarkerAIS[i] = new Marker(map);
-    //TODO Tiago - udp
-}
+            if (countAisTime >= 5) {
+
                     AISPlot.SystemInfoAIS mAIS = ais.GetDataAIS();
                     if (mAIS.systemSizeAIS > 0) {
                         for (int i = 0; i < mAIS.systemSizeAIS; i++) {
@@ -625,13 +630,11 @@ if(startMarkerAIS==null) {
                 }
 
                 countAisTime++;
-
             }
 
 
     }
 
-    //TODO  - por anotaçao quando wifi
     public void onResume() {
         super.onResume();
         if (selectedVehiclePosition != null) {
@@ -1058,6 +1061,8 @@ if(startMarkerAIS==null) {
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
                 marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
                 items2.add(marker2);
+
+
                 vehicleOrientation = (float) state.getPsi();
                 int ori2 = (int) Math.round(Math.toDegrees(vehicleOrientation));
                 ori2 = ori2 - 180;
@@ -1169,7 +1174,8 @@ if(startMarkerAIS==null) {
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
 
-
+        showAIS();
+        showRipplesPos();
         map.setMultiTouchControls(true);
         if (maneuverList != null)
 
@@ -1185,7 +1191,6 @@ if(startMarkerAIS==null) {
             }
 
         }
-        showAIS();
 
 
         if (location != null)
@@ -1256,7 +1261,7 @@ if(startMarkerAIS==null) {
         }
     };
 
-//TODO - parser ver qual mensagem mais recente e mostrar essa entre wifi e iridium
+//TODO - parser ver qual mensagem mais recente e mostrar essa entre wifi e iridium - ver exemplo ACM SOIActivity
 
 
     //Run task periodically - AIS
@@ -1264,8 +1269,7 @@ if(startMarkerAIS==null) {
         @SuppressLint("SetTextI18n")
         public void run() {
             if(isAISSelected) {
-                customHandlerAIS = new Handler();
-                customHandlerAIS.postDelayed(updateTimerThreadAIS, 2000);
+
 
 
                 customHandlerAIS.postDelayed(this, timeoutAISPull * 1000);
@@ -1274,7 +1278,6 @@ if(startMarkerAIS==null) {
                 //}
                 timeoutAISPull = Integer.parseInt("12");
 
-                showAIS();
             }
         }
     };
@@ -1285,8 +1288,7 @@ if(startMarkerAIS==null) {
         @SuppressLint("SetTextI18n")
         public void run() {
             if (isRipplesSelected) {
-                customHandlerRipples = new Handler();
-                customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
+
                 customHandlerRipples.postDelayed(this, timeoutRipplesPull * 1000);
                 if(timeoutRipplesPull != 1) {
                     if (ripples.PullData(UrlRipples)) {
@@ -1402,6 +1404,10 @@ if(startMarkerAIS==null) {
     }
 
     public void near() {
+        //TODO FollowReference go = new FollowReference();
+
+
+
         final Goto go = new Goto();
         go.setLat(latitude);
         go.setLon(longitude);
