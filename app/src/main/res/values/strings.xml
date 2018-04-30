@@ -89,7 +89,7 @@
     <string name="plan">Plan</string>
     <string name="start_plan">Start Plan</string>
     <string name="preview">Preview</string>
-    <string name="choose_vehicle">Click here to choose a vehicle</string>
+    <string name="choose_vehicle">Tap here to choose a vehicle</string>
     <string name="show_ais">Show AIS</string>
     <string name="ripples_position">Ripples Position</string>
 </resources>

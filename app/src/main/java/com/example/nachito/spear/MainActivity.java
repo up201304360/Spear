@@ -66,6 +66,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
 
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -79,6 +80,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import pt.lsts.imc.DesiredSpeed;
+import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
 import pt.lsts.imc.Goto;
@@ -88,6 +91,7 @@ import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
 import pt.lsts.imc.PlanControl;
 import pt.lsts.imc.PlanDB;
+import pt.lsts.imc.Reference;
 import pt.lsts.imc.StationKeeping;
 import pt.lsts.imc.Teleoperation;
 import pt.lsts.imc.VehicleState;
@@ -100,6 +104,8 @@ import pt.lsts.util.WGS84Utilities;
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.wifiImage;
+import static pt.lsts.util.WGS84Utilities.WGS84displace;
+import static pt.lsts.util.WGS84Utilities.WGS84displacement;
 
 
 @EActivity
@@ -246,6 +252,9 @@ public class MainActivity extends AppCompatActivity
     private int timeoutRipplesPull = 10;
 boolean isRipplesSelected;
     private Handler customHandlerGarbagde;
+    boolean comeNearOn;
+    double n;
+    double e;
 
 
 
@@ -545,8 +554,7 @@ boolean isRipplesSelected;
             return true;
         }
     }
-    //TODO  - por anotaçao quando wifi
-
+    //TODO  - atualizar o mais recente
     public void showRipplesPos(){
 if(isRipplesSelected) {
 
@@ -569,7 +577,7 @@ if(isRipplesSelected) {
             else
                 startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
 
-            startMarkerRipples[i].setTitle(systemInfo.sysName[i]+"\n"+systemInfo.last_update[i]+"\n"+
+            startMarkerRipples[i].setTitle(systemInfo.sysName[i]+"\n"+
                     gpsConvert.latLonToDM(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude()));
             map.getOverlays().add(startMarkerRipples[i]);
         }
@@ -579,8 +587,12 @@ if(isRipplesSelected) {
             systemPosRipples.setCoords(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude());
             startMarkerRipples[i].setPosition(systemPosRipples);
             startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            if(backSystemInfo.sysName[i].contains("lauv"))
+            if(backSystemInfo.sysName[i].contains("lauv")){
+
+
+                if(!(imc.connectedVehicles().toString().contains(backSystemInfo.sysName[i])))
                 startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
+            }
             else if(backSystemInfo.sysName[i].contains("ccu"))
                 startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_ccu));
             else if(backSystemInfo.sysName[i].contains("manta"))
@@ -590,8 +602,7 @@ if(isRipplesSelected) {
             else
                 startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
 
-            startMarkerRipples[i].setTitle(backSystemInfo.sysName[i]+"\n"+backSystemInfo.last_update[i]+"\n"+
-                    gpsConvert.latLonToDM(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude()));
+            startMarkerRipples[i].setTitle(backSystemInfo.sysName[i]+"\n"+ gpsConvert.latLonToDM(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude()));
             map.getOverlays().add(startMarkerRipples[i]);
         }
     }
@@ -1109,8 +1120,10 @@ if(isRipplesSelected) {
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
+
                 Drawable marker_ = new BitmapDrawable(resources, target);
                 markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
+
                 map.getOverlays().add(markersOverlay2);
             }
         }
@@ -1152,6 +1165,9 @@ if(isRipplesSelected) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
                     if ((previous != null) && !hasEnteredServiceMode && stateconnected.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
+                        if(comeNearOn){
+                            comeNearOn=false;
+                        }
                         previous = null;
                         areNewWaypointsFromAreaUpdated = false;
                         isPolylineDrawn = false;
@@ -1219,7 +1235,9 @@ if(isRipplesSelected) {
 
             }
         }
-
+if(comeNearOn){
+    afterChoice();
+}
         if (!isStopPressed && !hasEnteredServiceMode) {
 
             if (planWaypoints.size() != 0) {
@@ -1298,7 +1316,7 @@ if(isRipplesSelected) {
 
                 }
                 timeoutRipplesPull = Integer.parseInt("12");
-                showRipplesPos();
+
             }
         }
     };
@@ -1404,29 +1422,82 @@ if(isRipplesSelected) {
     }
 
     public void near() {
-        //TODO FollowReference go = new FollowReference();
 
+        FollowReference go = new FollowReference();
+        go.setAltitudeInterval(1);
+        go.setControlSrc(imc.getLocalId());
+        go.setLoiterRadius(0);
+        go.setTimeout(30);
 
-
-        final Goto go = new Goto();
-        go.setLat(latitude);
-        go.setLon(longitude);
-        go.setZ(0);
-        if (isDepthSelected) {
-            go.setZUnits(ZUnits.DEPTH);
-        } else {
-            go.setZUnits(ZUnits.ALTITUDE);
-        }
-        go.setSpeed(speed);
-        if (!isRPMSelected) {
-            go.setSpeedUnits(SpeedUnits.METERS_PS);
-        } else {
-            go.setSpeedUnits(SpeedUnits.RPM);
-        }
         String planid = "SpearComeNear-" + imc.selectedvehicle;
+        comeNearOn=true;
+        startReference();
+
         startBehaviour(planid, go);
 
 
+    }
+
+
+    public void startReference() {
+        if (comeNearOn) {
+
+
+
+                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+                    alertDialogBuilder
+                            .setMessage("North or east?")
+                            .setCancelable(true)
+                            .setPositiveButton("North", (dialog, id) -> {
+                                n = 50;
+                                e = 0;
+                                afterChoice();
+                            })
+                            .setNegativeButton("East", (dialog, id) -> {
+                                e = 50;
+                                n = 0;
+                                afterChoice();
+
+                                dialog.cancel();
+                            });
+                    AlertDialog alertDialog = alertDialogBuilder.create();
+                    alertDialog.show();
+
+
+
+        }
+
+
+    }
+    public void afterChoice() {
+        if (comeNearOn) {
+            Reference ref = new Reference();
+
+            System.out.println("enviou ref");
+            double[] latlonDisplace = WGS84displace(latitude, longitude, depth, n, e, 0);
+
+            ref.setLat(latlonDisplace[0]);
+            ref.setLon(latlonDisplace[1]);
+            DesiredSpeed ds = new DesiredSpeed();
+            if (!isRPMSelected) {
+                ds.setSpeedUnits(SpeedUnits.METERS_PS);
+            } else {
+                ds.setSpeedUnits(SpeedUnits.RPM);
+            }
+            ds.setValue(speed);
+            ref.setSpeed(ds);
+            DesiredZ dz = new DesiredZ();
+            dz.setValue(0);
+            if (isDepthSelected) {
+                dz.setZUnits(ZUnits.DEPTH);
+            } else {
+                dz.setZUnits(ZUnits.ALTITUDE);
+            }
+            ref.setZ(dz);
+
+            imc.sendMessage(ref);
+
+        }
     }
 
     public void stopPlan() {
@@ -1445,7 +1516,9 @@ if(isRipplesSelected) {
         isPolylineDrawn = false;
         otherVehiclesPositionList.clear();
         wasPlanChanged = false;
-
+        if(comeNearOn){
+            comeNearOn=false;
+        }
         cleanMap();
 
 

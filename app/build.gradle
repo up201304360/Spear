@@ -58,21 +58,20 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
+
     })
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:mediarouter-v7:27.1.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
+     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:support-v4:27.1.1'
     testImplementation 'junit:junit:4.12'
     apply plugin: 'com.android.application'
-    // implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     implementation 'com.android.support:support-annotations:27.1.1'
     implementation 'org.androidannotations:androidannotations:4.3.1'
     annotationProcessor 'org.androidannotations:androidannotations:4.3.1'
     implementation 'org.androidannotations:androidannotations-roboguice:4.3.1'
-    //   implementation 'com.google.code.gson:gson:2.8.0'
     implementation 'org.osmdroid:osmdroid-android:5.6.5'
     implementation 'org.osmdroid:osmdroid-third-party:5.6.5'
     implementation 'org.slf4j:slf4j-android:1.7.25'
@@ -81,31 +80,19 @@ dependencies {
     compileOnly files('libs/msgsender.jar')
     implementation files('libs/libimc.jar')
     implementation 'javax.xml.bind:jaxb-api:2.2.12-b140109.1041'
-    implementation 'com.github.MKergall:osmbonuspack:6.4'
-    /*  def AAVersion = '3.2'
-        annotationProcessor "org.androidannotations:androidannotations:$AAVersion"
-        implementation "org.androidannotations:androidannotations-api:$AAVersion"*/
+      implementation 'com.github.MKergall:osmbonuspack:6.4'
+
     implementation 'org.jetbrains:annotations-java5:15.0'
-    // https://mvnrepository.com/artifact/commons-codec/commons-codec
     implementation 'commons-codec:commons-codec:1.9'
     implementation 'org.greenrobot:essentials:3.0.0-RC1'
     implementation 'com.firebase:firebase-client-android:2.5.2'
     implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
 }
-/*buildscript {
-    repositories {
-        google()
-        mavenCentral()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
-    }
-}*/
 repositories {
     google()
     mavenCentral()
     maven { url "https://jitpack.io" }
     jcenter()
+
 }
 
