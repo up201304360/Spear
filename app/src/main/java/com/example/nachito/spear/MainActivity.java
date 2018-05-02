@@ -1165,9 +1165,8 @@ if(isRipplesSelected) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
                     if ((previous != null) && !hasEnteredServiceMode && stateconnected.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
-                        if(comeNearOn){
                             comeNearOn=false;
-                        }
+
                         previous = null;
                         areNewWaypointsFromAreaUpdated = false;
                         isPolylineDrawn = false;
@@ -1186,6 +1185,7 @@ if(isRipplesSelected) {
     @Background
     @Periodic(500)
     public void updateMap() {
+        System.gc();
         otherVehiclesPositionList.clear();
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
@@ -1235,9 +1235,8 @@ if(isRipplesSelected) {
 
             }
         }
-if(comeNearOn){
     afterChoice();
-}
+
         if (!isStopPressed && !hasEnteredServiceMode) {
 
             if (planWaypoints.size() != 0) {
@@ -1438,7 +1437,6 @@ if(comeNearOn){
 
     }
 
-
     public void startReference() {
         if (comeNearOn) {
 
@@ -1449,12 +1447,12 @@ if(comeNearOn){
                             .setMessage("North or east?")
                             .setCancelable(true)
                             .setPositiveButton("North", (dialog, id) -> {
-                                n = 50;
+                                n = 1.5;
                                 e = 0;
                                 afterChoice();
                             })
                             .setNegativeButton("East", (dialog, id) -> {
-                                e = 50;
+                                e = 1.5;
                                 n = 0;
                                 afterChoice();
 
@@ -1472,8 +1470,7 @@ if(comeNearOn){
     public void afterChoice() {
         if (comeNearOn) {
             Reference ref = new Reference();
-
-            System.out.println("enviou ref");
+System.out.println(" comenear");
             double[] latlonDisplace = WGS84displace(latitude, longitude, depth, n, e, 0);
 
             ref.setLat(latlonDisplace[0]);
@@ -1516,9 +1513,8 @@ if(comeNearOn){
         isPolylineDrawn = false;
         otherVehiclesPositionList.clear();
         wasPlanChanged = false;
-        if(comeNearOn){
             comeNearOn=false;
-        }
+
         cleanMap();
 
 
