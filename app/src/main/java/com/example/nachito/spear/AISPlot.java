@@ -97,7 +97,7 @@ public class AISPlot {
     }
 
     private void getInfoOfShip(String shipName, DataSnapshot dataSnapshot) {
-        //ZEZERE, value = {updated_at=1519841484000, type=69, position={latitude=38.66656, heading=511.0, speed=0.4, cog=323.3, mmsi=263047004, longitude=-9.14569}} }
+        //ZEZERE, value = {updated_at=1519841484000, type=69, position={latitudeAndroid=38.66656, heading=511.0, speed=0.4, cog=323.3, mmsi=263047004, longitudeAndroid=-9.14569}} }
         try {
             Map<String, Object> result = (Map<String, Object>) dataSnapshot.getValue();
             Map<String, Object> result2 = (Map<String, Object>) result.get("position");
@@ -109,8 +109,8 @@ public class AISPlot {
                 systemInfoAIS.headingAisShip.add(0, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
                 systemInfoAIS.lastUpdateAisShip.add(0, (Long) result.get("updated_at"));
                 Location back = new Location("AIS: " + shipName);
-                back.setLatitude(Double.parseDouble(result2.get("latitude").toString()));
-                back.setLongitude(Double.parseDouble(result2.get("longitude").toString()));
+                back.setLatitude(Double.parseDouble(result2.get("latitudeAndroid").toString()));
+                back.setLongitude(Double.parseDouble(result2.get("longitudeAndroid").toString()));
                 systemInfoAIS.shipLocation.add(0, back);
                 systemInfoAIS.systemSizeAIS++;
             } else {
@@ -134,8 +134,8 @@ public class AISPlot {
                     systemInfoAIS.headingAisShip.add(systemInfoAIS.systemSizeAIS, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
                     systemInfoAIS.lastUpdateAisShip.add(systemInfoAIS.systemSizeAIS, (Long) result.get("updated_at"));
                     Location back = new Location("AIS: " + shipName);
-                    back.setLatitude(Double.parseDouble(result2.get("latitude").toString()));
-                    back.setLongitude(Double.parseDouble(result2.get("longitude").toString()));
+                    back.setLatitude(Double.parseDouble(result2.get("latitudeAndroid").toString()));
+                    back.setLongitude(Double.parseDouble(result2.get("longitudeAndroid").toString()));
                     systemInfoAIS.shipLocation.add(systemInfoAIS.systemSizeAIS, back);
                     systemInfoAIS.systemSizeAIS++;
                 } else {
@@ -145,8 +145,8 @@ public class AISPlot {
                     systemInfoAIS.headingAisShip.set(backID, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
                     systemInfoAIS.lastUpdateAisShip.set(backID, (Long) result.get("updated_at"));
                     Location back = new Location("AIS: " + shipName);
-                    back.setLatitude(Double.parseDouble(result2.get("latitude").toString()));
-                    back.setLongitude(Double.parseDouble(result2.get("longitude").toString()));
+                    back.setLatitude(Double.parseDouble(result2.get("latitudeAndroid").toString()));
+                    back.setLongitude(Double.parseDouble(result2.get("longitudeAndroid").toString()));
                     systemInfoAIS.shipLocation.set(backID, back);
                 }
             }

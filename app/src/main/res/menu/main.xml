@@ -35,5 +35,9 @@
         android:orderInCategory="100"
         android:title="@string/ripples_position"
         app:showAsAction="never"/>
-
+    <item
+        android:id="@+id/compass"
+        android:orderInCategory="100"
+        android:title="@string/compass"
+        app:showAsAction="never"/>
 </menu>

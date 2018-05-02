@@ -340,7 +340,7 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
             if (latitudeBar && bgPaint != null)
                 c.drawRect(latitudeBarRect, bgPaint);
             if (longitudeBar && bgPaint != null) {
-                // Don't draw on top of latitude background...
+                // Don't draw on top of latitudeAndroid background...
                 int offsetTop = latitudeBar ? latitudeBarRect.height() : 0;
                 c.drawRect(longitudeBarRect.left, longitudeBarRect.top + offsetTop,
                         longitudeBarRect.right, longitudeBarRect.bottom, bgPaint);
@@ -443,7 +443,7 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
 
     private void rebuildBarPath(final Projection projection) {   //** modified to protected
         // We want the scale bar to be as long as the closest round-number miles/kilometers
-        // to 1-inch at the latitude at the current center of the screen.
+        // to 1-inch at the latitudeAndroid at the current center of the screen.
         // calculate dots per centimeter
         int xdpcm = (int) (xdpi / 2.54);
         int ydpcm = (int) (ydpi / 2.54);
@@ -509,7 +509,7 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
             barToX = barOriginX - xBarLengthPixels;
         }
         if (latitudeBar) {
-            // draw latitude bar
+            // draw latitudeAndroid bar
             barPath.moveTo(barToX, barOriginY + xTextHeight + xTextSpacing * 2);
             barPath.lineTo(barToX, barOriginY);
             barPath.lineTo(barOriginX, barOriginY);
@@ -521,7 +521,7 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
         }
 
         if (longitudeBar) {
-            // draw longitude bar
+            // draw longitudeAndroid bar
             if (!latitudeBar) {
                 barPath.moveTo(barOriginX + yTextHeight + yTextSpacing * 2, barOriginY);
                 barPath.lineTo(barOriginX, barOriginY);

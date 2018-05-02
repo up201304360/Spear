@@ -2,7 +2,6 @@ package com.example.nachito.spear;
 
 import android.Manifest.permission;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -66,7 +65,6 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
 
-import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,7 +82,6 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
-import pt.lsts.imc.Goto;
 import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
@@ -105,7 +102,6 @@ import pt.lsts.util.WGS84Utilities;
 import static android.os.Build.VERSION_CODES.M;
 import static com.example.nachito.spear.R.id.wifiImage;
 import static pt.lsts.util.WGS84Utilities.WGS84displace;
-import static pt.lsts.util.WGS84Utilities.WGS84displacement;
 
 
 @EActivity
@@ -207,8 +203,8 @@ public class MainActivity extends AppCompatActivity
     IMapController mapController;
     OverlayItem lastPosition = null;
     OsmMapsItemizedOverlay mItemizedOverlay;
-    double latitude;
-    double longitude;
+    static  double latitudeAndroid;
+    static double longitudeAndroid;
     @ViewById(R.id.velocity)
     TextView velocity;
     @ViewById(R.id.bottomsheet)
@@ -964,7 +960,7 @@ if(isRipplesSelected) {
 
 
             ais = new AISPlot(this.context);
-            systemPosAIS = new GeoPoint(0,0);;
+            systemPosAIS = new GeoPoint(0,0);
             ais.getAISInfo();
              isAISSelected = true;
 
@@ -974,6 +970,10 @@ if(isRipplesSelected) {
             ripples = new RipplesPosition(this, UrlRipples);
             systemPosRipples = new GeoPoint(0,0);
             isRipplesSelected=true;
+        }else if (id == R.id.compass) {
+
+            Intent i = new Intent(this, Compass.class);
+            startActivity(i);
         }
 
 
@@ -1002,8 +1002,8 @@ if(isRipplesSelected) {
     @Background
     @Override
     public void onLocationChanged(Location location) {
-        latitude = Math.toRadians(location.getLatitude());
-        longitude = Math.toRadians(location.getLongitude());
+        latitudeAndroid = Math.toRadians(location.getLatitude());
+        longitudeAndroid = Math.toRadians(location.getLongitude());
         myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
         bearingMyLoc = location.getBearing();
         final ArrayList<OverlayItem> items = new ArrayList<>();
@@ -1471,7 +1471,7 @@ if(isRipplesSelected) {
         if (comeNearOn) {
             Reference ref = new Reference();
 System.out.println(" comenear");
-            double[] latlonDisplace = WGS84displace(latitude, longitude, depth, n, e, 0);
+            double[] latlonDisplace = WGS84displace(latitudeAndroid, longitudeAndroid, depth, n, e, 0);
 
             ref.setLat(latlonDisplace[0]);
             ref.setLon(latlonDisplace[1]);

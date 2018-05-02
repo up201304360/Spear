@@ -80,8 +80,7 @@ dependencies {
     compileOnly files('libs/msgsender.jar')
     implementation files('libs/libimc.jar')
     implementation 'javax.xml.bind:jaxb-api:2.2.12-b140109.1041'
-      implementation 'com.github.MKergall:osmbonuspack:6.4'
-
+    implementation 'com.github.MKergall:osmbonuspack:6.4'
     implementation 'org.jetbrains:annotations-java5:15.0'
     implementation 'commons-codec:commons-codec:1.9'
     implementation 'org.greenrobot:essentials:3.0.0-RC1'

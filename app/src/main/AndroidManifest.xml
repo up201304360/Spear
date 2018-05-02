@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.nachito.spear">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -88,6 +87,16 @@
         </activity>
         <activity
             android:name="com.example.nachito.spear.StaticListVehicles"
+            android:launchMode="singleTask"
+            android:parentActivityName="com.example.nachito.spear.MainActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.nachito.spear.MainActivity_" />
+        </activity>
+        <activity
+            android:name="com.example.nachito.spear.Compass"
             android:launchMode="singleTask"
             android:parentActivityName="com.example.nachito.spear.MainActivity_"
             android:screenOrientation="portrait"
