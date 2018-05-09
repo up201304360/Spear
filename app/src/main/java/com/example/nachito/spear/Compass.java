@@ -1,5 +1,6 @@
 package com.example.nachito.spear;
 
+import android.annotation.SuppressLint;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,7 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
     // record the angle turned of the compass picture
     private float DegreeStart = 0f;
     TextView DegreeTV;
+    double ori  = MainActivity.orientationSelected;//TODO mudar para ser a orientaçao do veiculo
 
     TextView DistanceTV;
 
@@ -34,7 +36,7 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         // TextView that will display the degree
         DegreeTV =  findViewById(R.id.DegreeTV);
         // initialize your android device sensor capabilities
-        SensorManage = (SensorManager) getSystemService(SENSOR_SERVICE); //TODO mudar para ser a orientaçao do veiculo
+        SensorManage = (SensorManager) getSystemService(SENSOR_SERVICE);
         DistanceTV =  findViewById(R.id.DirectionTV);
     }
     @Override
@@ -50,6 +52,7 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         SensorManage.registerListener(this, SensorManage.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                 SensorManager.SENSOR_DELAY_GAME);
     }
+    @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent event) {
         // get angle around the z-axis rotated
@@ -87,9 +90,9 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         // rotation animation - reverse turn degree degrees
         RotateAnimation ra = new RotateAnimation(
                 DegreeStart,
-                -degree,
+                (float) -ori,
                 Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f); //TODO
         // set the compass animation after the end of the reservation status
         ra.setFillAfter(true);
         // set how long the animation for the compass image will take place

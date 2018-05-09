@@ -82,6 +82,7 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
+import pt.lsts.imc.Goto;
 import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
@@ -248,7 +249,7 @@ public class MainActivity extends AppCompatActivity
     private int timeoutRipplesPull = 10;
 boolean isRipplesSelected;
     private Handler customHandlerGarbagde;
-    boolean comeNearOn;
+    boolean followMeOn;
     double n;
     double e;
 
@@ -975,6 +976,10 @@ if(isRipplesSelected) {
             Intent i = new Intent(this, Compass.class);
             startActivity(i);
         }
+        else if (id == R.id.followme) {
+
+       followme();
+        }
 
 
             return super.onOptionsItemSelected(item);
@@ -1165,7 +1170,7 @@ if(isRipplesSelected) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
                     if ((previous != null) && !hasEnteredServiceMode && stateconnected.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
-                            comeNearOn=false;
+                            followMeOn =false;
 
                         previous = null;
                         areNewWaypointsFromAreaUpdated = false;
@@ -1419,26 +1424,47 @@ if(isRipplesSelected) {
 
 
     }
+public void followme(){
 
+    FollowReference go = new FollowReference();
+    go.setAltitudeInterval(1);
+    go.setControlSrc(imc.getLocalId());
+    go.setLoiterRadius(0);
+    go.setTimeout(30);
+
+    String planid = "SpearFollowMe-" + imc.selectedvehicle;
+    followMeOn =true;
+    startReference();
+
+    startBehaviour(planid, go);
+
+
+}
     public void near() {
 
-        FollowReference go = new FollowReference();
-        go.setAltitudeInterval(1);
-        go.setControlSrc(imc.getLocalId());
-        go.setLoiterRadius(0);
-        go.setTimeout(30);
-
+        final Goto go = new Goto();
+        go.setLat(latitudeAndroid);
+        go.setLon(longitudeAndroid);
+        go.setZ(0);
+        if (isDepthSelected) {
+            go.setZUnits(ZUnits.DEPTH);
+        } else {
+            go.setZUnits(ZUnits.ALTITUDE);
+        }
+        go.setSpeed(speed);
+        if (!isRPMSelected) {
+            go.setSpeedUnits(SpeedUnits.METERS_PS);
+        } else {
+            go.setSpeedUnits(SpeedUnits.RPM);
+        }
         String planid = "SpearComeNear-" + imc.selectedvehicle;
-        comeNearOn=true;
-        startReference();
-
         startBehaviour(planid, go);
 
 
     }
 
     public void startReference() {
-        if (comeNearOn) {
+        if (followMeOn) {
 
 
 
@@ -1468,7 +1494,7 @@ if(isRipplesSelected) {
 
     }
     public void afterChoice() {
-        if (comeNearOn) {
+        if (followMeOn) {
             Reference ref = new Reference();
 System.out.println(" comenear");
             double[] latlonDisplace = WGS84displace(latitudeAndroid, longitudeAndroid, depth, n, e, 0);
@@ -1513,7 +1539,7 @@ System.out.println(" comenear");
         isPolylineDrawn = false;
         otherVehiclesPositionList.clear();
         wasPlanChanged = false;
-            comeNearOn=false;
+            followMeOn =false;
 
         cleanMap();
 

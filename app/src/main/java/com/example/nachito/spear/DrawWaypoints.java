@@ -26,13 +26,13 @@ public class DrawWaypoints {
         }
     }
 
-    public static void wayPoints(final Maneuver maneuver) {
+    private static void wayPoints(final Maneuver maneuver) {
         maneuverFromPlan = maneuver;
         makePoints();
     }
 
 
-    public static void makePoints() {
+    private static void makePoints() {
         GeoPoint ponto;
         double valueOfLatitude;
         double valueOfLongitude;
