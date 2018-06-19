@@ -775,7 +775,6 @@ public class Area extends AppCompatActivity {
         }
 
 
-        System.out.println("Sidescan");
     }
 
 

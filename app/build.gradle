@@ -21,7 +21,7 @@ android {
     }
 
     packagingOptions {
-        pickFirst  'META-INF/INDEX'
+        pickFirst 'META-INF/INDEX'
     }
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES.txt'
@@ -39,6 +39,7 @@ android {
     }
     dexOptions {
         javaMaxHeapSize "4g"
+        preDexLibraries = false
     }
 
     buildTypes {
@@ -59,6 +60,10 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    implementation ("com.google.code.gson:gson:2.8.4"){
+        exclude module: 'gson:2.7'
+
+    }
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:mediarouter-v7:27.1.1'
@@ -87,7 +92,6 @@ dependencies {
     implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
 }
 repositories {
-    google()
     mavenCentral()
     maven { url "https://jitpack.io" }
     jcenter()

@@ -9,7 +9,6 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseError;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,14 +16,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+
 /**
  * Created by pedro on 2/27/18.
  * LSTS - FEUP
- *
- * Created by Pedro Gonçalves - http://github.com/pmfg/acm
  */
 
-public class AISPlot {
+class AISPlot {
 
     static class SystemInfoAIS {
         ArrayList<String> shipName = new ArrayList<>();
@@ -37,7 +35,6 @@ public class AISPlot {
     }
 
     private SystemInfoAIS systemInfoAIS;
-    private FirebaseAuth mAuth;
     private Firebase myFirebaseRef;
     String message = "ships";
 
@@ -49,40 +46,31 @@ public class AISPlot {
         systemInfoAIS.systemSizeAIS = 0;
     }
 
-
-
     public void getAISInfo(){
-        //showError.showErrorLogcat("MEU", "AIS");
         myFirebaseRef.child(message).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                //showError.showErrorLogcat("MEU","added: "+dataSnapshot);
                 parseInfoAIS(dataSnapshot.getKey(), dataSnapshot);
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                //showError.showErrorLogcat("MEU","changed: "+dataSnapshot.getKey());
                 parseInfoAIS(dataSnapshot.getKey(), dataSnapshot);
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-                //showError.showErrorLogcat("MEU","removed: "+dataSnapshot.getKey());
-                //parseInfoAIS(dataSnapshot.getKey(), dataSnapshot);
+
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                //showError.showErrorLogcat("MEU","moved: "+dataSnapshot.toString());
             }
 
             @Override
             public void onCancelled(FirebaseError firebaseError) {
 
             }
-
-
         });
     }
 
@@ -91,13 +79,12 @@ public class AISPlot {
             if (!shipName.equals("position") && !shipName.equals("type") && !shipName.equals("updated_at"))
                 getInfoOfShip(shipName, dataSnapshot);
         }catch (Exception io){
-            //showError.showErrorLogcat("MEU", io.toString());
             io.printStackTrace();
         }
     }
 
     private void getInfoOfShip(String shipName, DataSnapshot dataSnapshot) {
-        //ZEZERE, value = {updated_at=1519841484000, type=69, position={latitudeAndroid=38.66656, heading=511.0, speed=0.4, cog=323.3, mmsi=263047004, longitudeAndroid=-9.14569}} }
+        //ZEZERE, value = {updated_at=1519841484000, type=69, position={latitude=38.66656, heading=511.0, speed=0.4, cog=323.3, mmsi=263047004, longitude=-9.14569}} }
         try {
             Map<String, Object> result = (Map<String, Object>) dataSnapshot.getValue();
             Map<String, Object> result2 = (Map<String, Object>) result.get("position");
@@ -109,52 +96,52 @@ public class AISPlot {
                 systemInfoAIS.headingAisShip.add(0, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
                 systemInfoAIS.lastUpdateAisShip.add(0, (Long) result.get("updated_at"));
                 Location back = new Location("AIS: " + shipName);
-                back.setLatitude(Double.parseDouble(result2.get("latitudeAndroid").toString()));
-                back.setLongitude(Double.parseDouble(result2.get("longitudeAndroid").toString()));
+                back.setLatitude(Double.parseDouble(result2.get("latitude").toString()));
+                back.setLongitude(Double.parseDouble(result2.get("longitude").toString()));
                 systemInfoAIS.shipLocation.add(0, back);
                 systemInfoAIS.systemSizeAIS++;
             } else {
                 boolean haveShipMMSI = false;
-                long mmsi = (Long) result2.get("mmsi");
-                int backID = -1;
-                for (int t = 0; t < systemInfoAIS.systemSizeAIS; t++) {
-                    if (systemInfoAIS.idMMSI.get(t) == mmsi) {
-                        haveShipMMSI = true;
-                        backID = t;
-                        break;
-                    }
-                    if (haveShipMMSI)
-                        break;
-                }
+                if (result2.get("mmsi") != null) {
+                    long mmsi = (Long) result2.get("mmsi");
+                    int backID = -1;
+                    for (int t = 0; t < systemInfoAIS.systemSizeAIS; t++) {
+                        if (systemInfoAIS.idMMSI.get(t) == mmsi) {
+                            haveShipMMSI = true;
+                            backID = t;
+                            break;
+                        }
 
-                if (!haveShipMMSI) {
-                    systemInfoAIS.shipName.add(systemInfoAIS.systemSizeAIS, shipName);
-                    systemInfoAIS.idMMSI.add(systemInfoAIS.systemSizeAIS, (Long) result2.get("mmsi"));
-                    systemInfoAIS.speedAisShip.add(systemInfoAIS.systemSizeAIS, Math.round((Double) result2.get("speed") * 100.0) / 100.0);
-                    systemInfoAIS.headingAisShip.add(systemInfoAIS.systemSizeAIS, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
-                    systemInfoAIS.lastUpdateAisShip.add(systemInfoAIS.systemSizeAIS, (Long) result.get("updated_at"));
-                    Location back = new Location("AIS: " + shipName);
-                    back.setLatitude(Double.parseDouble(result2.get("latitudeAndroid").toString()));
-                    back.setLongitude(Double.parseDouble(result2.get("longitudeAndroid").toString()));
-                    systemInfoAIS.shipLocation.add(systemInfoAIS.systemSizeAIS, back);
-                    systemInfoAIS.systemSizeAIS++;
-                } else {
-                    systemInfoAIS.shipName.set(backID, shipName);
-                    systemInfoAIS.idMMSI.set(backID, (Long) result2.get("mmsi"));
-                    systemInfoAIS.speedAisShip.set(backID, Math.round((Double) result2.get("speed") * 100.0) / 100.0);
-                    systemInfoAIS.headingAisShip.set(backID, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
-                    systemInfoAIS.lastUpdateAisShip.set(backID, (Long) result.get("updated_at"));
-                    Location back = new Location("AIS: " + shipName);
-                    back.setLatitude(Double.parseDouble(result2.get("latitudeAndroid").toString()));
-                    back.setLongitude(Double.parseDouble(result2.get("longitudeAndroid").toString()));
-                    systemInfoAIS.shipLocation.set(backID, back);
+                    }
+
+
+                    if (!haveShipMMSI) {
+                        systemInfoAIS.shipName.add(systemInfoAIS.systemSizeAIS, shipName);
+                        systemInfoAIS.idMMSI.add(systemInfoAIS.systemSizeAIS, (Long) result2.get("mmsi"));
+                        systemInfoAIS.speedAisShip.add(systemInfoAIS.systemSizeAIS, Math.round((Double) result2.get("speed") * 100.0) / 100.0);
+                        systemInfoAIS.headingAisShip.add(systemInfoAIS.systemSizeAIS, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
+                        systemInfoAIS.lastUpdateAisShip.add(systemInfoAIS.systemSizeAIS, (Long) result.get("updated_at"));
+                        Location back = new Location("AIS: " + shipName);
+                        back.setLatitude(Double.parseDouble(result2.get("latitude").toString()));
+                        back.setLongitude(Double.parseDouble(result2.get("longitude").toString()));
+                        systemInfoAIS.shipLocation.add(systemInfoAIS.systemSizeAIS, back);
+                        systemInfoAIS.systemSizeAIS++;
+                    } else {
+                        systemInfoAIS.shipName.set(backID, shipName);
+                        systemInfoAIS.idMMSI.set(backID, (Long) result2.get("mmsi"));
+                        systemInfoAIS.speedAisShip.set(backID, Math.round((Double) result2.get("speed") * 100.0) / 100.0);
+                        systemInfoAIS.headingAisShip.set(backID, Math.round((Double) result2.get("heading") * 100.0) / 100.0);
+                        systemInfoAIS.lastUpdateAisShip.set(backID, (Long) result.get("updated_at"));
+                        Location back = new Location("AIS: " + shipName);
+                        back.setLatitude(Double.parseDouble(result2.get("latitude").toString()));
+                        back.setLongitude(Double.parseDouble(result2.get("longitude").toString()));
+                        systemInfoAIS.shipLocation.set(backID, back);
+                    }
                 }
             }
         }catch(Exception io){
             io.printStackTrace();
         }
-
-
     }
 
     public SystemInfoAIS GetDataAIS(){
@@ -166,9 +153,10 @@ public class AISPlot {
         //return 0;
     }
 
+    @SuppressLint("DefaultLocale")
     public String parseTime(Long unixTime) {
         Date today = Calendar.getInstance().getTime();
-         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String currentDateTimeString = formatter.format(today);
         Date date = new Date(unixTime);
         String dateTimeString = formatter.format(date);

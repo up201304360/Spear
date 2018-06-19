@@ -47,6 +47,17 @@
             android:text="@string/minus"
             android:textSize="12sp" />
 
+        <Button
+            android:id="@+id/plus"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignLeft="@+id/location"
+            android:layout_alignStart="@+id/location"
+            android:layout_below="@+id/minus"
+            android:background="#4D000000"
+            android:text="@string/plus"
+            android:textSize="12sp" />
+
         <include layout="@layout/persistent_bottomsheet" />
 
 

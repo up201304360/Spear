@@ -8,7 +8,11 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -32,6 +36,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -52,11 +57,13 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.OverlayItem.HotspotPlace;
+import org.osmdroid.views.overlay.Polygon;
 import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
@@ -136,7 +143,6 @@ public class MainActivity extends AppCompatActivity
     @SuppressLint("StaticFieldLeak")
     static String depthString;
     static String velocityString;
-    //previous- when Spear starts it doesn't enter the updateState() method
     static String previous = null;
     //points we choose in Activity Line
     static ArrayList<GeoPoint> pointsLine = Line.getPointsLine();
@@ -168,6 +174,8 @@ public class MainActivity extends AppCompatActivity
     Button dive;
     @ViewById(R.id.minus)
     Button minus;
+    @ViewById(R.id.plus)
+    Button plus;
     @ViewById(R.id.near)
     Button comeNear;
     @ViewById(R.id.startplan)
@@ -247,13 +255,11 @@ public class MainActivity extends AppCompatActivity
     private GeoPoint systemPosRipples;
     private boolean firstRunRipplesPull = true;
     private int timeoutRipplesPull = 10;
-boolean isRipplesSelected;
-    private Handler customHandlerGarbagde;
+    boolean isRipplesSelected = false;
     boolean followMeOn;
     double n;
     double e;
-
-
+    GeoPoint geo;
 
 
     public static GeoPoint getVariables() {
@@ -320,6 +326,74 @@ boolean isRipplesSelected;
 
     }
 
+    private Runnable updateTimerThreadGarbagde = new Runnable() {
+        public void run() {
+            Handler customHandlerGarbagde = new Handler();
+            customHandlerGarbagde.postDelayed(updateTimerThreadGarbagde, 100);
+
+            customHandlerGarbagde.postDelayed(this, 20000);
+            System.gc();
+            Runtime.getRuntime().gc();
+        }
+    };
+
+
+    //if a plan is changed without stopping the plan that was executing
+    @Periodic()
+    public void changePlans() {
+        if ((!isStopPressed && PlanList.planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(PlanList.planBeingExecuted)) || (!isStopPressed && PlanList.planBeingExecuted != null && wasPlanChanged)) {
+//wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
+            cleanMap();
+            updateMap();
+            wasPlanChanged = false;
+        }
+    }
+
+    public void updatePosition(GeoPoint aPoint) {
+        if (mItemizedOverlay == null) {
+            return;
+        }
+        OverlayItem overlayItem;
+        overlayItem = new OverlayItem("Center", "Center", aPoint);
+        lastPosition = overlayItem;
+        mItemizedOverlay.addOverlay(overlayItem);
+        map.getOverlays().add(mItemizedOverlay);
+        map.getController().animateTo(aPoint);
+    }
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+    }
+
+    public boolean checkLocationPermission() {
+
+
+        if (ContextCompat.checkSelfPermission(this,
+                permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Asking user if explanation is needed
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    permission.ACCESS_FINE_LOCATION)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user  timer.startPlan()
+                // sees the explanation, try again to request the permission.
+                //Prompt the user once explanation has been shown
+                ActivityCompat.requestPermissions(this,
+                        new String[]{permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            }
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -332,13 +406,11 @@ boolean isRipplesSelected;
             requestForSpecificPermission();
         }
 
-        if (isWifiAvailable()) {
+        if (isNetworkAvailable()) {
             map.setTileSource(TileSourceFactory.MAPNIK);
             isOfflineSelected = false;
 
-            ripples = new RipplesPosition(this, UrlRipples);
-            systemPosRipples = new GeoPoint(0,0);
-            isRipplesSelected=true;
+
 
         } else
 
@@ -347,6 +419,7 @@ boolean isRipplesSelected;
             isOfflineSelected = true;
         }
         map.setTilesScaledToDpi(true);
+
 
 
         android.app.ActionBar actionBar = getActionBar();
@@ -361,11 +434,16 @@ boolean isRipplesSelected;
         customHandlerRipples = new Handler();
         customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
 
+
             startMarkerRipples = new Marker[2048];
             for (int i = 0; i < 2048; i++)
                 startMarkerRipples[i] = new Marker(map);
+        ripples = new RipplesPosition(this, UrlRipples);
+        systemPosRipples = new GeoPoint(0, 0);
+        isRipplesSelected = true;
 
-            startMarkerAIS = new Marker[10024];
+
+        startMarkerAIS = new Marker[10024];
             for (int i = 0; i < 10024; i++)
                 startMarkerAIS[i] = new Marker(map);
 
@@ -398,6 +476,7 @@ boolean isRipplesSelected;
         decelerate.setVisibility(View.INVISIBLE);
         Joystick joystick = findViewById(R.id.joystick);
         joystick.setVisibility(View.INVISIBLE);
+
         noWifiImage.setVisibility(View.INVISIBLE);
 
         txt2.setVisibility(View.INVISIBLE);
@@ -408,6 +487,7 @@ boolean isRipplesSelected;
 
         imc.register(this);
         minus.setOnClickListener(v -> mapController.zoomOut());
+        plus.setOnClickListener(v -> mapController.zoomIn());
 
 
         if (android.os.Build.VERSION.SDK_INT >= M) {
@@ -496,63 +576,9 @@ boolean isRipplesSelected;
         });
     }
 
-    //if a plan is changed without stopping the plan that was executing
-    @Periodic()
-    public void changePlans() {
-        if ((!isStopPressed && PlanList.planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(PlanList.planBeingExecuted)) || (!isStopPressed && PlanList.planBeingExecuted != null && wasPlanChanged)) {
-//wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
-            cleanMap();
-            updateMap();
-            wasPlanChanged = false;
-        }
-    }
-
-    public void updatePosition(GeoPoint aPoint) {
-        if (mItemizedOverlay == null) {
-            return;
-        }
-        OverlayItem overlayItem;
-        overlayItem = new OverlayItem("Center", "Center", aPoint);
-        lastPosition = overlayItem;
-        mItemizedOverlay.addOverlay(overlayItem);
-        map.getOverlays().add(mItemizedOverlay);
-        map.getController().animateTo(aPoint);
-    }
-
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-    }
-
-    public boolean checkLocationPermission() {
-
-
-        if (ContextCompat.checkSelfPermission(this,
-                permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Asking user if explanation is needed
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    permission.ACCESS_FINE_LOCATION)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user  timer.startPlan()
-                // sees the explanation, try again to request the permission.
-                //Prompt the user once explanation has been shown
-                ActivityCompat.requestPermissions(this,
-                        new String[]{permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                        new String[]{permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            }
-            return false;
-        } else {
-            return true;
-        }
-    }
     //TODO  - atualizar o mais recente
     public void showRipplesPos(){
+
 if(isRipplesSelected) {
 
     if(newRipplesData){
@@ -563,6 +589,7 @@ if(isRipplesSelected) {
             systemPosRipples.setCoords(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude());
             startMarkerRipples[i].setPosition(systemPosRipples);
             startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
             if(systemInfo.sysName[i].contains("lauv"))
                 startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
             else if(systemInfo.sysName[i].contains("ccu"))
@@ -574,9 +601,11 @@ if(isRipplesSelected) {
             else
                 startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
 
-            startMarkerRipples[i].setTitle(systemInfo.sysName[i]+"\n"+
-                    gpsConvert.latLonToDM(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude()));
-            map.getOverlays().add(startMarkerRipples[i]);
+            if (!(systemInfo.sysName[i].equals(vehicleList.get(i)))) {//TODO
+                startMarkerRipples[i].setTitle(systemInfo.sysName[i] + "\n" +
+                        gpsConvert.latLonToDM(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude()));
+                map.getOverlays().add(startMarkerRipples[i]);
+            }
         }
     }
     else if(!newRipplesData && !firstRunRipplesPull){
@@ -606,41 +635,6 @@ if(isRipplesSelected) {
 
 
 }
-    }
-    public void showAIS(){
-
-        if(isAISSelected) {
-
-            if (countAisTime >= 5) {
-
-                    AISPlot.SystemInfoAIS mAIS = ais.GetDataAIS();
-                    if (mAIS.systemSizeAIS > 0) {
-                        for (int i = 0; i < mAIS.systemSizeAIS; i++) {
-                            if (((System.currentTimeMillis() / 1000L) - (mAIS.lastUpdateAisShip.get(i) / 1000L)) < 3600) {
-                                  systemPosAIS.setCoords(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude());
-                                  startMarkerAIS[i].remove(map);
-
-                                    startMarkerAIS[i].setPosition(systemPosAIS);
-                                  startMarkerAIS[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-                                  startMarkerAIS[i].setIcon(getResources().getDrawable(R.drawable.ship_icon));
-                                  startMarkerAIS[i].setTitle(mAIS.shipName.get(i) + "\n" + gpsConvert.latLonToDM(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude()) +
-                                          "\n" + ais.parseTime(mAIS.lastUpdateAisShip.get(i)) + "\nHeading: " + mAIS.headingAisShip.get(i) + " | Speed: " + mAIS.speedAisShip.get(i) + " m/s");
-                                  map.getOverlays().add(startMarkerAIS[i]);
-                              }
-
-                        }
-                    }
-
-                    countAisTime = -1;
-                } else {
-                    for (int i = 0; i < ais.GetNumberShipsAIS(); i++)
-                        map.getOverlays().add(startMarkerAIS[i]);
-                }
-
-                countAisTime++;
-            }
-
-
     }
 
     public void onResume() {
@@ -926,63 +920,40 @@ if(isRipplesSelected) {
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            try {
-                startActivity(new Intent(this, SettingsActivity.class));
-            } catch (Exception e) {
-                e.printStackTrace();
+    public void showAIS() {
+        if (isAISSelected) {
+
+            if (countAisTime >= 5) {
+
+                AISPlot.SystemInfoAIS mAIS = ais.GetDataAIS();
+                if (mAIS.systemSizeAIS > 0) {
+                    for (int i = 0; i < mAIS.systemSizeAIS; i++) {
+                        if (((System.currentTimeMillis() / 1000L) - (mAIS.lastUpdateAisShip.get(i) / 1000L)) < 3600) {
+                            systemPosAIS.setCoords(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude());
+                            startMarkerAIS[i].remove(map);
+
+                            startMarkerAIS[i].setPosition(systemPosAIS);
+                            startMarkerAIS[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                            startMarkerAIS[i].setIcon(getResources().getDrawable(R.drawable.ship_icon));
+                            startMarkerAIS[i].setTitle(mAIS.shipName.get(i) + "\n" + ais.parseTime(mAIS.lastUpdateAisShip.get(i)) + "\nHeading: " + mAIS.headingAisShip.get(i) + " | Speed: " + mAIS.speedAisShip.get(i) + " m/s" + '\n' + gpsConvert.latLonToDM(mAIS.shipLocation.get(i).getLatitude(), mAIS.shipLocation.get(i).getLongitude()));
+                        }
+                        map.getOverlays().add(startMarkerAIS[i]);
+
+                    }
+                }
+
+                countAisTime = -1;
+            } else {
+
+                for (int i = 0; i < ais.GetNumberShipsAIS(); i++)
+                    map.getOverlays().add(startMarkerAIS[i]);
+
             }
-            return true;
-        } else if (id == R.id.sms) {
-            Intent i = new Intent(this, SendSms.class);
-            startActivity(i);
 
-            return true;
-        } else if (id == R.id.area) {
-            Intent i = new Intent(this, Area_.class);
-            i.putExtra("selected", imc.selectedvehicle);
-            startActivity(i);
-
-        } else if (id == R.id.line) {
-            Intent i = new Intent(this, Line.class);
-            i.putExtra("selected", imc.selectedvehicle);
-            startActivity(i);
-
-        }else if (id == R.id.ais) {
-
-
-
-
-            ais = new AISPlot(this.context);
-            systemPosAIS = new GeoPoint(0,0);
-            ais.getAISInfo();
-             isAISSelected = true;
-
-        }else if (id == R.id.ripples) {
-
-
-            ripples = new RipplesPosition(this, UrlRipples);
-            systemPosRipples = new GeoPoint(0,0);
-            isRipplesSelected=true;
-        }else if (id == R.id.compass) {
-
-            Intent i = new Intent(this, Compass.class);
-            startActivity(i);
-        }
-        else if (id == R.id.followme) {
-
-       followme();
+            countAisTime++;
         }
 
 
-            return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -1050,6 +1021,77 @@ if(isRipplesSelected) {
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            try {
+                startActivity(new Intent(this, SettingsActivity.class));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return true;
+        } else if (id == R.id.sms) {
+            Intent i = new Intent(this, SendSms.class);
+            startActivity(i);
+
+            return true;
+        } else if (id == R.id.area) {
+            Intent i = new Intent(this, Area_.class);
+            i.putExtra("selected", imc.selectedvehicle);
+            startActivity(i);
+
+        } else if (id == R.id.line) {
+            Intent i = new Intent(this, Line.class);
+            i.putExtra("selected", imc.selectedvehicle);
+            startActivity(i);
+
+        } else if (id == R.id.ais) {
+
+
+            if (!isAISSelected) {
+                ais = new AISPlot(this.context);
+                systemPosAIS = new GeoPoint(0, 0);
+                ais.getAISInfo();
+                isAISSelected = true;
+            } else {
+                isAISSelected = false;
+
+            }
+
+        } else if (id == R.id.ripples) {
+
+            isRipplesSelected = !isRipplesSelected;
+
+
+        } else if (id == R.id.compass) {
+
+            Intent i = new Intent(this, Compass.class);
+            startActivity(i);
+        } else if (id == R.id.followme) {
+
+            followme();
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    public void zoomVehicle(final EstimatedState state) {
+        if (imc.getSelectedvehicle().equals(state.getSourceName())) {
+            double[] lld = WGS84Utilities.toLatLonDepth(state);
+
+            GeoPoint posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
+            mapController.setZoom(14);
+            zoomLevel = 14;
+            mapController.setCenter(posicaoVeiculo2);
+        }
+    }
+
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
@@ -1085,6 +1127,7 @@ if(isRipplesSelected) {
                 if (!orientationOtherVehicles.contains(ori2))
                     orientationOtherVehicles.add(ori2);
 
+                // todo  ripples
 
                 if (context == MainActivity.this) {
 
@@ -1108,6 +1151,14 @@ if(isRipplesSelected) {
                         lonVehicle = Math.toRadians(selectedVehiclePosition.getLongitude());
                     }
                     if (context == MainActivity.this) {
+                        runOnUiThread(() -> {
+
+                            // Stuff that updates the UI
+                            serviceBar.setText(imc.getSelectedvehicle());
+
+                        });
+
+
                         if (android.os.Build.VERSION.SDK_INT <= M) {
                             bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2));
 
@@ -1133,17 +1184,6 @@ if(isRipplesSelected) {
             }
         }
 
-    }
-
-    public void zoomVehicle(final EstimatedState state) {
-        if (imc.getSelectedvehicle().equals(state.getSourceName())) {
-            double[] lld = WGS84Utilities.toLatLonDepth(state);
-
-            GeoPoint posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
-            mapController.setZoom(14);
-            zoomLevel = 14;
-            mapController.setCenter(posicaoVeiculo2);
-        }
     }
 
     @Background
@@ -1180,12 +1220,15 @@ if(isRipplesSelected) {
                         cleanMap();
 
 
+
                     }
 
                 }
             }
         }
     }
+
+    //Run task periodically - garbage collection
 
     @Background
     @Periodic(500)
@@ -1195,9 +1238,7 @@ if(isRipplesSelected) {
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
 
-        showAIS();
-        showRipplesPos();
-        map.setMultiTouchControls(true);
+
         if (maneuverList != null)
 
             if (context == MainActivity.this) {
@@ -1213,7 +1254,8 @@ if(isRipplesSelected) {
 
         }
 
-
+        showAIS();
+        showRipplesPos();
         if (location != null)
             onLocationChanged(location);
 
@@ -1242,6 +1284,7 @@ if(isRipplesSelected) {
         }
     afterChoice();
 
+
         if (!isStopPressed && !hasEnteredServiceMode) {
 
             if (planWaypoints.size() != 0) {
@@ -1269,19 +1312,6 @@ if(isRipplesSelected) {
 
         }
     }
-
-    //Run task periodically - garbage collection
-
-    private Runnable updateTimerThreadGarbagde = new Runnable() {
-        public void run() {
-            customHandlerGarbagde = new Handler();
-            customHandlerGarbagde.postDelayed(updateTimerThreadGarbagde, 100);
-
-            customHandlerGarbagde.postDelayed(this, 20000);
-            System.gc();
-            Runtime.getRuntime().gc();
-        }
-    };
 
 //TODO - parser ver qual mensagem mais recente e mostrar essa entre wifi e iridium - ver exemplo ACM SOIActivity
 
@@ -1424,6 +1454,7 @@ if(isRipplesSelected) {
 
 
     }
+
 public void followme(){
 
     FollowReference go = new FollowReference();
@@ -1438,35 +1469,46 @@ public void followme(){
 
     startBehaviour(planid, go);
 
+    //TODO raio
 
 }
     public void near() {
 
-        final Goto go = new Goto();
-        go.setLat(latitudeAndroid);
-        go.setLon(longitudeAndroid);
-        go.setZ(0);
-        if (isDepthSelected) {
-            go.setZUnits(ZUnits.DEPTH);
-        } else {
-            go.setZUnits(ZUnits.ALTITUDE);
-        }
-        go.setSpeed(speed);
+
+        StationKeeping comeNear = new StationKeeping();
+
+
+        comeNear.setLat(latitudeAndroid);
+        comeNear.setLon(longitudeAndroid);
+
+        comeNear.setSpeed(speed);
         if (!isRPMSelected) {
-            go.setSpeedUnits(SpeedUnits.METERS_PS);
+            comeNear.setSpeedUnits(SpeedUnits.METERS_PS);
         } else {
-            go.setSpeedUnits(SpeedUnits.RPM);
+            comeNear.setSpeedUnits(SpeedUnits.RPM);
         }
+        comeNear.setDuration(duration);
+        comeNear.setRadius(radius);
+        if (isDepthSelected) {
+            comeNear.setZ(depth);
+            comeNear.setZUnits(ZUnits.DEPTH);
+        } else {
+            comeNear.setZ(altitude);
+            comeNear.setZUnits(ZUnits.ALTITUDE);
+        }
+
+
         String planid = "SpearComeNear-" + imc.selectedvehicle;
-        startBehaviour(planid, go);
+        startBehaviour(planid, comeNear);
+
+
+
 
 
     }
 
     public void startReference() {
         if (followMeOn) {
-
-
 
                     AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
                     alertDialogBuilder
@@ -1486,9 +1528,6 @@ public void followme(){
                             });
                     AlertDialog alertDialog = alertDialogBuilder.create();
                     alertDialog.show();
-
-
-
         }
 
 
@@ -1496,11 +1535,14 @@ public void followme(){
     public void afterChoice() {
         if (followMeOn) {
             Reference ref = new Reference();
-System.out.println(" comenear");
+            System.out.println(" comenear");
             double[] latlonDisplace = WGS84displace(latitudeAndroid, longitudeAndroid, depth, n, e, 0);
 
             ref.setLat(latlonDisplace[0]);
             ref.setLon(latlonDisplace[1]);
+            geo = new GeoPoint(latlonDisplace[0], latlonDisplace[1]);
+
+
             DesiredSpeed ds = new DesiredSpeed();
             if (!isRPMSelected) {
                 ds.setSpeedUnits(SpeedUnits.METERS_PS);
@@ -1520,8 +1562,59 @@ System.out.println(" comenear");
 
             imc.sendMessage(ref);
 
+
+            draw((float) latlonDisplace[0], (float) latlonDisplace[1]);
+
+
         }
+
+
+        }
+
+
+    public void draw(float lat, float lon) {
+        if (SecurityCircle.surfaceHolder.getSurface().isValid()) {
+            Canvas canvas = SecurityCircle.surfaceHolder.lockCanvas();
+            canvas.drawColor(Color.BLACK);
+            canvas.drawCircle(lat, lon, 50, SecurityCircle.paint);
+            SecurityCircle.surfaceHolder.unlockCanvasAndPost(canvas);
+
+        }
+
+
+        ArrayList<GeoPoint> markers = new ArrayList<>();
+        //fazer isto para cada ponto
+        //ao geo adicionar 50 a cada lado e sao esses os pontos
+
+        GeoPoint point1 = new GeoPoint(geo.getLatitude() + 0.01, geo.getLongitude());
+        GeoPoint point3 = new GeoPoint(geo.getLatitude(), geo.getLongitude() + 0.01);
+        GeoPoint point2 = new GeoPoint(geo.getLatitude() - 0.01, geo.getLongitude());
+        GeoPoint point4 = new GeoPoint(geo.getLatitude(), geo.getLongitude() - 0.01);
+
+        System.out.println(point1 + " -------- " + geo.getLatitude());
+        markers.add(point1);
+        markers.add(point2);
+        markers.add(point3);
+        markers.add(point4);
+        //markers.add()
+
+        Polygon circle2 = new Polygon();
+        circle2.isVisible();
+        circle2.setFillColor(Color.BLACK);
+        circle2.setStrokeWidth(7);
+        circle2.setPoints(markers);
+        runOnUiThread(() -> {
+//TODO
+            map.getOverlays().add(circle2);
+            map.getOverlayManager().add(circle2);
+            map.invalidate();
+
+
+        });
+
+
     }
+
 
     public void stopPlan() {
         PlanControl pc = new PlanControl();
@@ -1539,7 +1632,9 @@ System.out.println(" comenear");
         isPolylineDrawn = false;
         otherVehiclesPositionList.clear();
         wasPlanChanged = false;
-            followMeOn =false;
+
+
+        followMeOn = false;
 
         cleanMap();
 
@@ -1687,14 +1782,12 @@ System.out.println(" comenear");
                 if (serviceBar != null) {
                     wifiDrawable.setVisibility(View.INVISIBLE);
                     noWifiImage.setVisibility(View.VISIBLE);
-                    isRipplesSelected=false;
 
                 }
             } else {
                 if (serviceBar != null) {
                     noWifiImage.setVisibility(View.INVISIBLE);
                     wifiDrawable.setVisibility(View.VISIBLE);
-                    isRipplesSelected=true;
 
                 }
             }
@@ -1799,7 +1892,6 @@ System.out.println(" comenear");
             String[] getName2 = selected.split(":");
             String selectedName2 = getName2[0];
             imc.setSelectedvehicle(selectedName2.trim());
-            serviceBar.setText(selectedName2);
             previous = null;
 
 
