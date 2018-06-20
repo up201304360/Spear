@@ -11,8 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -27,6 +25,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.annotation.UiThread;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -36,7 +35,6 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -57,7 +55,6 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
@@ -74,6 +71,7 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -89,7 +87,6 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
-import pt.lsts.imc.Goto;
 import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
@@ -144,6 +141,7 @@ public class MainActivity extends AppCompatActivity
     static String depthString;
     static String velocityString;
     static String previous = null;
+    static double orientationCompass;
     //points we choose in Activity Line
     static ArrayList<GeoPoint> pointsLine = Line.getPointsLine();
     static GeoPoint selectedVehiclePosition;
@@ -154,6 +152,8 @@ public class MainActivity extends AppCompatActivity
     static Bitmap bitmapArrow;
     static boolean isPolylineDrawn = Line.getPoly();
     static double latVehicle;
+    static String vehicleName;
+    static double bearing;
     static double lonVehicle;
     static boolean isStopPressed = false;
     static boolean areNewWaypointsFromAreaUpdated = false;
@@ -410,15 +410,14 @@ public class MainActivity extends AppCompatActivity
             map.setTileSource(TileSourceFactory.MAPNIK);
             isOfflineSelected = false;
 
-
-
         } else
 
         {
-          //  map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
+            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{"http://otile1.mqcdn.com/tiles/1.0.0/map/", "http://otile2.mqcdn.com/tiles/1.0.0/map/"}));
+
             isOfflineSelected = true;
         }
-        map.setTilesScaledToDpi(true);
+        // map.setTilesScaledToDpi(true);
 
 
 
@@ -438,9 +437,7 @@ public class MainActivity extends AppCompatActivity
             startMarkerRipples = new Marker[2048];
             for (int i = 0; i < 2048; i++)
                 startMarkerRipples[i] = new Marker(map);
-        ripples = new RipplesPosition(this, UrlRipples);
-        systemPosRipples = new GeoPoint(0, 0);
-        isRipplesSelected = true;
+
 
 
         startMarkerAIS = new Marker[10024];
@@ -456,6 +453,7 @@ public class MainActivity extends AppCompatActivity
         map.setClickable(true);
         myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
         myLocationOverlay.enableMyLocation();
+
         map.getOverlays().add(this.myLocationOverlay);
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
@@ -522,6 +520,7 @@ public class MainActivity extends AppCompatActivity
         mapController.setCenter(new GeoPoint(location));
 
 
+
         scaleBarOverlay = new ScaleBarOverlay(map);
         List<Overlay> overlays = map.getOverlays();
 
@@ -571,6 +570,13 @@ public class MainActivity extends AppCompatActivity
                 mapController.setCenter(coordSMS);
                 mapController.setZoom(12);
                 zoomLevel = 12;
+
+                markerSMS = new Marker(map);
+                markerSMS.setPosition(coordSMS);
+                markerSMS.setIcon(areaIcon);
+                markerSMS.setTitle(vehicle + "\n" + "Lat: " + lat + '\n' + "Lon: " + lon + "\n" + Arrays.toString(systemInfo.last_update));
+//TODO pedir cartao Peter
+                map.getOverlays().add(markerSMS);
             }
 
         });
@@ -702,10 +708,14 @@ if(isRipplesSelected) {
     public void setOfflineMap(boolean isOfflineMap) {
         isOfflineSelected = isOfflineMap;
         if (isOfflineSelected) {
-            map.setTileSource(new XYTileSource("4uMaps", 2, 18, 256, ".png", new String[]{}));
-        } else {
+//            map.setTileSource(new XYTileSource("MapQuest", 0, 18, 256, ".jpg", new String[] { "http://otile1.mqcdn.com/tiles/1.0.0/map/", "http://otile2.mqcdn.com/tiles/1.0.0/map/"}));
+
+            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{"http://otile1.mqcdn.com/tiles/1.0.0/map/", "http://otile2.mqcdn.com/tiles/1.0.0/map/"}));
+
+
+        } else
             map.setTileSource(TileSourceFactory.MAPNIK);
-        }
+
     }
 
     @Override
@@ -981,7 +991,8 @@ if(isRipplesSelected) {
         latitudeAndroid = Math.toRadians(location.getLatitude());
         longitudeAndroid = Math.toRadians(location.getLongitude());
         myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
-        bearingMyLoc = location.getBearing();
+
+
         final ArrayList<OverlayItem> items = new ArrayList<>();
         OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
         marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
@@ -1065,7 +1076,12 @@ if(isRipplesSelected) {
 
         } else if (id == R.id.ripples) {
 
-            isRipplesSelected = !isRipplesSelected;
+            if (!isRipplesSelected) {
+                ripples = new RipplesPosition(UrlRipples);
+                systemPosRipples = new GeoPoint(0, 0);
+                isRipplesSelected = true;
+            } else
+                isRipplesSelected = false;
 
 
         } else if (id == R.id.compass) {
@@ -1122,6 +1138,7 @@ if(isRipplesSelected) {
 
 
                 vehicleOrientation = (float) state.getPsi();
+
                 int ori2 = (int) Math.round(Math.toDegrees(vehicleOrientation));
                 ori2 = ori2 - 180;
                 if (!orientationOtherVehicles.contains(ori2))
@@ -1239,7 +1256,6 @@ if(isRipplesSelected) {
         map.getOverlays().clear();
 
 
-        if (maneuverList != null)
 
             if (context == MainActivity.this) {
                 drawWifiSignal();
@@ -1303,6 +1319,7 @@ if(isRipplesSelected) {
             }
         }
 
+
         if (!areNewWaypointsFromAreaUpdated) {
             if (stateconnected != null && stateconnected.charAt(1) != 'S')
             if (Area.sendmList() != null) {
@@ -1364,12 +1381,19 @@ if(isRipplesSelected) {
     public void drawCompass() {
         if (mCompassOverlay != null) {
             map.getOverlays().add(mCompassOverlay);
+            orientationCompass = mCompassOverlay.getOrientation();
+            System.out.println("compass" + orientationCompass);
+
 
         } else {
             mCompassOverlay = new CompassOverlay(this, new InternalCompassOrientationProvider(this), map);
             mCompassOverlay.enableCompass();
 
             map.getOverlays().add(mCompassOverlay);
+            orientationCompass = mCompassOverlay.getOrientation();
+            System.out.println("compass" + orientationCompass);
+
+
         }
 
         if (scaleBarOverlay != null) {
@@ -1393,7 +1417,7 @@ if(isRipplesSelected) {
 
             markerSMS = new Marker(map);
             markerSMS.setPosition(ponto);
-            markerSMS.setIcon(lineIcon);
+            markerSMS.setIcon(areaIcon);
             map.getOverlays().add(markerSMS);
 
         }
@@ -1894,7 +1918,7 @@ public void followme(){
             imc.setSelectedvehicle(selectedName2.trim());
             previous = null;
 
-
+            vehicleName = selectedName2;
             synchronized (estates) {
                 for (EstimatedState state : estates.values()) {
                     zoomVehicle(state);

@@ -97,12 +97,11 @@ public class StaticListVehicles extends AppCompatActivity {
             super.onBackPressed();
         });
         nemo.setOnCheckedChangeListener(((compoundButton, b) -> {
-            selectedSMS = "lauv-nemo";
+            selectedSMS = "lauv-nemo-1";
             super.onBackPressed();
         }));
 
 
-        //TODO change string when Lauv-Arpao becomes Lauv-Nemo
 
     }
 

@@ -36,12 +36,10 @@ public class RipplesPosition {
     }
 
     private SystemInfo systemInfo = new SystemInfo();
-    private Context mContext;
     private String UrlPath;
     private boolean updateBuffer = true;
 
-    RipplesPosition(Context context, String urlRipples) {
-        mContext = context;
+    RipplesPosition(String urlRipples) {
         UrlPath = urlRipples;
     }
 

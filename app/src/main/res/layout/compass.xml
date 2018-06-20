@@ -1,37 +1,61 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0f0f0f" >
+    android:background="#80000000">
+
     <TextView
+        android:id="@+id/DegreeTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:id="@+id/DegreeTV"
-        android:layout_marginBottom="40dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="51dp"
         android:text="@string/heading_0_0"
+        android:textColor="#000000"
         android:textSize="25sp"
-        android:textColor="@color/colorAccent"
         android:textStyle="normal|bold" />
 
-   <TextView
+    <TextView
+        android:id="@+id/NameTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="@string/name"
+        android:textColor="#000000"
+        android:textSize="25sp"
+        android:textStyle="normal|bold" />
+
+    <TextView
         android:id="@+id/DirectionTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/DegreeTV"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="-40dp"
+        android:layout_marginTop="95dp"
         android:text="@string/distance_0_0"
-        android:textColor="@color/colorAccent"
+        android:textColor="#000000"
+        android:textSize="25sp"
+        android:textStyle="normal|bold" />
+
+    <TextView
+        android:id="@+id/DirectionVehicleTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="139dp"
+        android:text="@string/vehicle_s_direction"
+        android:textColor="#000000"
         android:textSize="25sp"
         android:textStyle="normal|bold" />
 
     <ImageView
         android:id="@+id/compass_image"
-        android:layout_width="279dp"
-        android:layout_height="303dp"
+        android:layout_width="255dp"
+        android:layout_height="271dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="57dp"
-        android:src="@drawable/compass_icon" />
+        android:layout_marginBottom="66dp"
+        android:src="@drawable/arrowblue" />
 </RelativeLayout>

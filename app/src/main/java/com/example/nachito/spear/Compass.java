@@ -5,6 +5,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.hardware.SensorEvent;
 import android.widget.ImageView;
@@ -12,8 +13,11 @@ import android.widget.TextView;
 import android.hardware.SensorEventListener;
 import android.os.Bundle;
 
+import org.slf4j.helpers.MarkerIgnoringBase;
+
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.jar.Attributes;
 
 public class Compass extends AppCompatActivity implements SensorEventListener {
     // device sensor manager
@@ -21,10 +25,10 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
     // define the compass picture that will be use
     private ImageView compassimage;
     // record the angle turned of the compass picture
-    private float DegreeStart = 0f;
     TextView DegreeTV;
-    double ori  = MainActivity.orientationSelected;//TODO mudar para ser a orientaçao do veiculo
-
+    TextView NameTV;
+    TextView VehicleDirectTV;
+    float az;
     TextView DistanceTV;
 
     @Override
@@ -35,9 +39,13 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         compassimage =  findViewById(R.id.compass_image);
         // TextView that will display the degree
         DegreeTV =  findViewById(R.id.DegreeTV);
+        NameTV = findViewById(R.id.NameTV);
+        VehicleDirectTV = findViewById(R.id.DirectionVehicleTV);
+
         // initialize your android device sensor capabilities
         SensorManage = (SensorManager) getSystemService(SENSOR_SERVICE);
         DistanceTV =  findViewById(R.id.DirectionTV);
+
     }
     @Override
     protected void onPause() {
@@ -56,50 +64,62 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         // get angle around the z-axis rotated
-       double earthRadius = 6371000; //meters
-        double latV = (MainActivity.latVehicle);
-        double latA = (MainActivity.latitudeAndroid);
-        double dLat = (latV-latA);
-        double lonV=( MainActivity.lonVehicle);
-        double lonA=( MainActivity.longitudeAndroid);
+        final int R = 6371; // Radius of the earth
 
-        double dLng = (lonV-lonA);
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos((latV)) * Math.cos((latA)) *
-                        Math.sin(dLng/2) * Math.sin(dLng/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        double dist =  earthRadius * c;
+        double latDistance = MainActivity.latVehicle - (MainActivity.latitudeAndroid);
+        double lonDistance = MainActivity.lonVehicle - (MainActivity.longitudeAndroid);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos((MainActivity.latitudeAndroid)) * Math.cos(MainActivity.latVehicle)
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+        distance = distance - 10;
 
-
+        DecimalFormat twoDForm = new DecimalFormat("#.##");
+        String distFinal = (twoDForm.format(distance));
 
 
-        DecimalFormat df = new DecimalFormat("#.####");
-        df.setRoundingMode(RoundingMode.CEILING);
-
-          String distance =df.format(dist);
+        DistanceTV.setText("Distance to Vehicle: " + distFinal + " m");
 
 
+        NameTV.setText("Name: " + MainActivity.vehicleName);
 
 
+        double degree = Math.toDegrees(MainActivity.vehicleOrientation);
+        DecimalFormat twoDFormHeading = new DecimalFormat("#.##");
+        String headingFinal = twoDFormHeading.format(degree);
 
-        DistanceTV.setText("Distance: " + distance + " meters");
 
-        float degree = Math.round(event.values[0]);
-        DegreeTV.setText("Heading: " + Float.toString(degree) + " degrees");
+        DegreeTV.setText("Vehicle Heading: " + headingFinal);
 
-        // rotation animation - reverse turn degree degrees
-        RotateAnimation ra = new RotateAnimation(
-                DegreeStart,
-                (float) -ori,
+
+        double angle = Math.atan2(Math.sin(MainActivity.lonVehicle - MainActivity.longitudeAndroid) * Math.cos(MainActivity.latVehicle), ((Math.cos(MainActivity.latitudeAndroid) * Math.sin(MainActivity.latVehicle)) - (Math.sin(MainActivity.latitudeAndroid) * Math.cos(MainActivity.latVehicle) * Math.cos((MainActivity.lonVehicle - MainActivity.longitudeAndroid)))));
+        double angleDegree = Math.toDegrees(angle) - (MainActivity.orientationCompass);
+        double angleMod = (angleDegree + 360) % 360;
+
+
+        DecimalFormat twoDFormHeading2 = new DecimalFormat("#.##");
+        String headingFinal2 = twoDFormHeading2.format(angleMod);
+
+        VehicleDirectTV.setText("Angle to Vehicle:  " + headingFinal2);
+
+
+        RotateAnimation ra = new RotateAnimation(az, MainActivity.vehicleOrientation
+                ,
                 Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f); //TODO
-        // set the compass animation after the end of the reservation status
-        ra.setFillAfter(true);
-        // set how long the animation for the compass image will take place
+                Animation.RELATIVE_TO_SELF,
+                0.5f);
+
+        // how long the animation will take place
         ra.setDuration(210);
-        // Start animation of compass image
+
+        // set the animation after the end of the reservation status
+        ra.setFillAfter(true);
+
+        // Start the animation
         compassimage.startAnimation(ra);
-        DegreeStart = -degree;
+
+        az = (float) angleMod;
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
