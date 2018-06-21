@@ -227,6 +227,8 @@ public class MainActivity extends AppCompatActivity
     OSMHandler updateHandler;
     List<String> stateList;
     SendSms sendSms;
+    List<Marker> markerListSMS = new ArrayList<>();
+
     Marker markerSMS;
     ScaleBarOverlay scaleBarOverlay;
     @ViewById(R.id.location)
@@ -552,9 +554,9 @@ public class MainActivity extends AppCompatActivity
                 String lonParts[] = lonMins.split(" ");
 
                 double lat = Double.parseDouble(latParts[0]);
-                lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 60.0 : -Double.parseDouble(latParts[1]) / 60.0;
+                lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 100.0 : -Double.parseDouble(latParts[1]) / 100.0;
                 double lon = Double.parseDouble(lonParts[0]);
-                lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
+                lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 100.0 : -Double.parseDouble(lonParts[1]) / 100.0;
 
                 int source = IMCDefinition.getInstance().getResolver().resolve(vehicle);
 
@@ -570,13 +572,16 @@ public class MainActivity extends AppCompatActivity
                 mapController.setCenter(coordSMS);
                 mapController.setZoom(12);
                 zoomLevel = 12;
-
+//TODO  color
                 markerSMS = new Marker(map);
                 markerSMS.setPosition(coordSMS);
                 markerSMS.setIcon(areaIcon);
-                markerSMS.setTitle(vehicle + "\n" + "Lat: " + lat + '\n' + "Lon: " + lon + "\n" + Arrays.toString(systemInfo.last_update));
-//TODO pedir cartao Peter
+                markerSMS.setTitle(vehicle + "\n" + "Lat: " + lat + '\n' + "Lon: " + lon + "\n" + "Hour: " + timeParts[0] + ":" + timeParts[1] + ":" + timeParts[2]);
                 map.getOverlays().add(markerSMS);
+                markerListSMS.add(markerSMS);
+
+
+
             }
 
         });
@@ -1319,7 +1324,10 @@ if(isRipplesSelected) {
             }
         }
 
-
+        if (!markerListSMS.isEmpty()) {
+            for (int i = 0; i < markerListSMS.size(); i++)
+                map.getOverlays().add(markerListSMS.get(i));
+        }
         if (!areNewWaypointsFromAreaUpdated) {
             if (stateconnected != null && stateconnected.charAt(1) != 'S')
             if (Area.sendmList() != null) {
@@ -1382,7 +1390,6 @@ if(isRipplesSelected) {
         if (mCompassOverlay != null) {
             map.getOverlays().add(mCompassOverlay);
             orientationCompass = mCompassOverlay.getOrientation();
-            System.out.println("compass" + orientationCompass);
 
 
         } else {
@@ -1391,7 +1398,6 @@ if(isRipplesSelected) {
 
             map.getOverlays().add(mCompassOverlay);
             orientationCompass = mCompassOverlay.getOrientation();
-            System.out.println("compass" + orientationCompass);
 
 
         }
