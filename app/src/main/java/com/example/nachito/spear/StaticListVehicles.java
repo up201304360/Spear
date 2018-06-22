@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.RadioButton;
-import android.widget.Toast;
 
 /**
  * Created by ines on 2/6/18.
  */
 
 public class StaticListVehicles extends AppCompatActivity {
-    static String selectedSMS = ".";
+    String selectedSMS = ".";
     RadioButton xp1;
     RadioButton xp2;
     RadioButton xp3;
@@ -46,67 +45,105 @@ public class StaticListVehicles extends AppCompatActivity {
 
         xp1.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-xplore-1";
-            super.onBackPressed();
+
+
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+            startActivity(yourIntent);
+
         });
 
 
         xp2.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-xplore-2";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
 
         xp3.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-xplore-3";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
 
         xp4.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-xplore-4";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
 
         xp5.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-xplore-5";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
 
         seacon2.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-seacon-2";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
 
         seacon3.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-seacon-3";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
 
         nop1.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-noptilus-1";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
         nop2.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-noptilus-2";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
         nop3.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-noptilus-3";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
         xtreme2.setOnCheckedChangeListener((compoundButton, b) -> {
             selectedSMS = "lauv-xtreme-2";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         });
         nemo.setOnCheckedChangeListener(((compoundButton, b) -> {
             selectedSMS = "lauv-nemo-1";
-            super.onBackPressed();
+            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+            yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+            startActivity(yourIntent);
         }));
 
 
 
     }
 
-
     public void onBackPressed() {
         super.onBackPressed();
+
     }
 }

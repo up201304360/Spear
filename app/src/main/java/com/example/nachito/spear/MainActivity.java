@@ -554,9 +554,9 @@ public class MainActivity extends AppCompatActivity
                 String lonParts[] = lonMins.split(" ");
 
                 double lat = Double.parseDouble(latParts[0]);
-                lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 100.0 : -Double.parseDouble(latParts[1]) / 100.0;
+                lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 60.0 : -Double.parseDouble(latParts[1]) / 60.0;
                 double lon = Double.parseDouble(lonParts[0]);
-                lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 100.0 : -Double.parseDouble(lonParts[1]) / 100.0;
+                lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
 
                 int source = IMCDefinition.getInstance().getResolver().resolve(vehicle);
 
@@ -1052,7 +1052,7 @@ if(isRipplesSelected) {
             }
             return true;
         } else if (id == R.id.sms) {
-            Intent i = new Intent(this, SendSms.class);
+            Intent i = new Intent(this, StaticListVehicles.class);
             startActivity(i);
 
             return true;

@@ -205,26 +205,27 @@ public class MapSMS extends AppCompatActivity {
     }
 
     public void drawBlue() {
+        if (posicaoOutrosVeiculos != null) {
+            for (int i = 0; i < posicaoOutrosVeiculos.size(); i++) {
+                if (posicaoOutrosVeiculos.get(i) != centro) {
+                    final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
+                    OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", posicaoOutrosVeiculos.get(i));
+                    System.out.println(posicaoOutrosVeiculos.get(i));
+                    markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
+                    itemsPoints.add(markerPoints);
+                    Resources resources = this.getResources();
+                    Bitmap source2;
+                    if (android.os.Build.VERSION.SDK_INT <= M) {
+                        source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2));
 
-        for (int i = 0; i < posicaoOutrosVeiculos.size(); i++) {
-            if (posicaoOutrosVeiculos.get(i) != centro) {
-                final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
-                OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", posicaoOutrosVeiculos.get(i));
-                System.out.println(posicaoOutrosVeiculos.get(i));
-                markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
-                itemsPoints.add(markerPoints);
-                Resources resources = this.getResources();
-                Bitmap source2;
-                if (android.os.Build.VERSION.SDK_INT <= M) {
-                    source2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2));
+                    } else
 
-                } else
-
-                    source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2), 0, 0, true);
-                Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
-                Drawable marker_ = new BitmapDrawable(getResources(), target);
-                ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
-                map.getOverlays().add(markersOverlay_);
+                        source2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.downarrow2), 0, 0, true);
+                    Bitmap target = MainActivity.RotateMyBitmap(source2, MainActivity.orientationOtherVehicles.get(i));
+                    Drawable marker_ = new BitmapDrawable(getResources(), target);
+                    ItemizedIconOverlay markersOverlay_ = new ItemizedIconOverlay<>(itemsPoints, marker_, null, this);
+                    map.getOverlays().add(markersOverlay_);
+                }
             }
         }
     }
