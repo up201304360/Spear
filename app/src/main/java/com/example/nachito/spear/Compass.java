@@ -65,7 +65,6 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         // get angle around the z-axis rotated
         final int R = 6371; // Radius of the earth
-
         double latDistance = MainActivity.latVehicle - (MainActivity.latitudeAndroid);
         double lonDistance = MainActivity.lonVehicle - (MainActivity.longitudeAndroid);
         double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
@@ -120,6 +119,7 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         compassimage.startAnimation(ra);
 
         az = (float) angleMod;
+
     }
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {

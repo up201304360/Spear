@@ -262,7 +262,7 @@ public class MainActivity extends AppCompatActivity
     double n;
     double e;
     GeoPoint geo;
-
+    String vehicleAnterior;
 
     public static GeoPoint getVariables() {
         return selectedVehiclePosition;
@@ -422,7 +422,6 @@ public class MainActivity extends AppCompatActivity
         // map.setTilesScaledToDpi(true);
 
 
-
         android.app.ActionBar actionBar = getActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowTitleEnabled(false);
@@ -436,15 +435,14 @@ public class MainActivity extends AppCompatActivity
         customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
 
 
-            startMarkerRipples = new Marker[2048];
-            for (int i = 0; i < 2048; i++)
-                startMarkerRipples[i] = new Marker(map);
-
+        startMarkerRipples = new Marker[2048];
+        for (int i = 0; i < 2048; i++)
+            startMarkerRipples[i] = new Marker(map);
 
 
         startMarkerAIS = new Marker[10024];
-            for (int i = 0; i < 10024; i++)
-                startMarkerAIS[i] = new Marker(map);
+        for (int i = 0; i < 10024; i++)
+            startMarkerAIS[i] = new Marker(map);
 
         resources = getResources();
         context = this;
@@ -522,11 +520,11 @@ public class MainActivity extends AppCompatActivity
         mapController.setCenter(new GeoPoint(location));
 
 
-
         scaleBarOverlay = new ScaleBarOverlay(map);
         List<Overlay> overlays = map.getOverlays();
 
         overlays.add(scaleBarOverlay);
+
 
         ReceiveSms.bindListener(new SmsListener() {
             @Override
@@ -540,6 +538,7 @@ public class MainActivity extends AppCompatActivity
 
                     return;
                 }
+
                 String type = matcher.group(1);
                 String vehicle = matcher.group(2);
                 String timeOfDay = matcher.group(3);
@@ -558,12 +557,6 @@ public class MainActivity extends AppCompatActivity
                 double lon = Double.parseDouble(lonParts[0]);
                 lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
 
-                int source = IMCDefinition.getInstance().getResolver().resolve(vehicle);
-
-                if (source == -1) {
-                    System.err.println("Received report from unknown system name: " + vehicle);
-                    return;
-                }
 
                 GeoPoint coordSMS = new GeoPoint(lat, lon);
 
@@ -572,14 +565,21 @@ public class MainActivity extends AppCompatActivity
                 mapController.setCenter(coordSMS);
                 mapController.setZoom(12);
                 zoomLevel = 12;
-//TODO  color
                 markerSMS = new Marker(map);
                 markerSMS.setPosition(coordSMS);
-                markerSMS.setIcon(areaIcon);
+                if (vehicleAnterior != null) {
+                    if (vehicle.equals(vehicleAnterior))
+                        markerSMS.setIcon(nodeIcon);
+                    else
+                        markerSMS.setIcon(areaIcon);
+                } else
+                    markerSMS.setIcon(nodeIcon);
+
                 markerSMS.setTitle(vehicle + "\n" + "Lat: " + lat + '\n' + "Lon: " + lon + "\n" + "Hour: " + timeParts[0] + ":" + timeParts[1] + ":" + timeParts[2]);
                 map.getOverlays().add(markerSMS);
                 markerListSMS.add(markerSMS);
 
+                vehicleAnterior = vehicle;
 
 
             }
