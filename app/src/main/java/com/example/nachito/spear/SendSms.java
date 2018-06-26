@@ -64,8 +64,8 @@ public class SendSms extends AppCompatActivity {
     String checked;
     String[] mPermission = {READ_SMS, SEND_SMS};
     Button sms;
-    Button iridium;
-    String[] imeiNumb;
+    //  Button iridium;
+    // String[] imeiNumb;
     String[] vehicleNames;
     String FNumber;
     IMCMessage msg;
@@ -146,18 +146,18 @@ public class SendSms extends AppCompatActivity {
         sendPlan = findViewById(R.id.sendPlanRadioButton);
         startPlan = findViewById(R.id.startPlanRadioButton);
         sms = findViewById(R.id.button3);
-        iridium = findViewById(R.id.button2);
+        //  iridium = findViewById(R.id.button2);
 
 
         //sms
         vehicleNumber = getApplicationContext().getResources().getStringArray(R.array.phonenumbers);
         names = getApplicationContext().getResources().getStringArray(R.array.names);
 
-        //iridium
+     /*   //iridium
         imeiNumb = getApplicationContext().getResources().getStringArray(R.array.imei);
         vehicleNames = getApplicationContext().getResources().getStringArray(R.array.namesIMEI);
 
-
+*/
 
 
         pos.setOnCheckedChangeListener((compoundButton, b) -> {
@@ -176,9 +176,9 @@ public class SendSms extends AppCompatActivity {
                     if (names[i].contains(selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(selectedSMS)) {
-                        FNumber = imeiNumb[i];
-                    }
+                    //    if (vehicleNames[i].contains(selectedSMS)) {
+                    //       FNumber = imeiNumb[i];
+                    //   }
 
                 }
             }
@@ -199,9 +199,9 @@ public class SendSms extends AppCompatActivity {
                     if (names[i].contains(selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(selectedSMS)) {
-                        FNumber = imeiNumb[i];
-                    }
+                    //  if (vehicleNames[i].contains(selectedSMS)) {
+                    //     FNumber = imeiNumb[i];
+                    // }
 
                 }
             }
@@ -242,9 +242,9 @@ public class SendSms extends AppCompatActivity {
                 if (names[i].contains(selectedSMS)) {
                     finalNumber = vehicleNumber[i];
                 }
-                if (vehicleNames[i].contains(selectedSMS)) {
-                    FNumber = imeiNumb[i];
-                }
+                // if (vehicleNames[i].contains(selectedSMS)) {
+                //    FNumber = imeiNumb[i];
+                // }
 
             }
 
@@ -283,9 +283,9 @@ public class SendSms extends AppCompatActivity {
                 if (names[i].contains(selectedSMS)) {
                     finalNumber = vehicleNumber[i];
                 }
-                if (vehicleNames[i].contains(selectedSMS)) {
-                    FNumber = imeiNumb[i];
-                }
+                //   if (vehicleNames[i].contains(selectedSMS)) {
+                //      FNumber = imeiNumb[i];
+                // }
 
 
             }
@@ -307,9 +307,9 @@ public class SendSms extends AppCompatActivity {
                     if (names[i].contains(selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(selectedSMS)) {
-                        FNumber = imeiNumb[i];
-                    }
+                    //      if (vehicleNames[i].contains(selectedSMS)) {
+                    //         FNumber = imeiNumb[i];
+                    //    }
 
                 }
             }
@@ -331,9 +331,9 @@ public class SendSms extends AppCompatActivity {
                     if (names[i].contains(selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(selectedSMS)) {
-                        FNumber = imeiNumb[i];
-                    }
+                    //   if (vehicleNames[i].contains(selectedSMS)) {
+                    //     FNumber = imeiNumb[i];
+                    // }
 
                 }
             }
@@ -355,9 +355,9 @@ public class SendSms extends AppCompatActivity {
                     if (names[i].contains(selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(selectedSMS)) {
-                        FNumber = imeiNumb[i];
-                    }
+                    //   if (vehicleNames[i].contains(selectedSMS)) {
+                    //      FNumber = imeiNumb[i];
+                    //  }
 
                 }
             }
@@ -380,9 +380,9 @@ public class SendSms extends AppCompatActivity {
                     if (names[i].contains(selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
-                    if (vehicleNames[i].contains(selectedSMS)) {
-                        FNumber = imeiNumb[i];
-                    }
+                    //    if (vehicleNames[i].contains(selectedSMS)) {
+                    //      FNumber = imeiNumb[i];
+                    // }
 
                 }
             }
@@ -419,7 +419,7 @@ public class SendSms extends AppCompatActivity {
             }
         });
 
-        iridium.setOnClickListener(view -> {
+       /* iridium.setOnClickListener(view -> {
             switch (checked) {
                 case "dive":
                     try {
@@ -473,7 +473,7 @@ public class SendSms extends AppCompatActivity {
                     break;
             }
         });
-
+*/
     }
 
     private void sendSMS(String phoneNumber, double vel, String smsText) {
@@ -627,7 +627,7 @@ public class SendSms extends AppCompatActivity {
 
     }
 
-
+/*
     private void sendIMEI(String imeiNumber, double depth, double vel, String smsText) throws Exception {
 
         String serverUrl = "http://ripples.lsts.pt/api/v1/iridium";
@@ -737,7 +737,7 @@ public class SendSms extends AppCompatActivity {
         }
 
 
-    }
+    }*/
 
     @Override
     public void onBackPressed() {

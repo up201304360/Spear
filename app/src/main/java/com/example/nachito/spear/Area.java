@@ -850,7 +850,7 @@ public class Area extends AppCompatActivity {
 
         } else {
 
-            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 0, 0, true);
+            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 50, 50, true);
 
         }
         Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
@@ -876,7 +876,7 @@ public class Area extends AppCompatActivity {
 
             } else
 
-                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2), 0, 0, true);
+                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2), 50, 50, true);
             Bitmap target = MainActivity.RotateMyBitmap(newMarker, MainActivity.orientationSelected);
             Drawable markerLoc = new BitmapDrawable(getResources(), target);
             final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, markerLoc, null, this);

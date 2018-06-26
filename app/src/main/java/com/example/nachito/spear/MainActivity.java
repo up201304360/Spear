@@ -11,6 +11,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -43,6 +45,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
+import com.google.android.gms.maps.model.Circle;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -55,6 +58,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
@@ -77,6 +81,7 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -228,7 +233,6 @@ public class MainActivity extends AppCompatActivity
     List<String> stateList;
     SendSms sendSms;
     List<Marker> markerListSMS = new ArrayList<>();
-
     Marker markerSMS;
     ScaleBarOverlay scaleBarOverlay;
     @ViewById(R.id.location)
@@ -263,6 +267,7 @@ public class MainActivity extends AppCompatActivity
     double e;
     GeoPoint geo;
     String vehicleAnterior;
+    Polygon circle2;
 
     public static GeoPoint getVariables() {
         return selectedVehiclePosition;
@@ -415,7 +420,7 @@ public class MainActivity extends AppCompatActivity
         } else
 
         {
-            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{"http://otile1.mqcdn.com/tiles/1.0.0/map/", "http://otile2.mqcdn.com/tiles/1.0.0/map/"}));
+            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
 
             isOfflineSelected = true;
         }
@@ -715,7 +720,7 @@ if(isRipplesSelected) {
         if (isOfflineSelected) {
 //            map.setTileSource(new XYTileSource("MapQuest", 0, 18, 256, ".jpg", new String[] { "http://otile1.mqcdn.com/tiles/1.0.0/map/", "http://otile2.mqcdn.com/tiles/1.0.0/map/"}));
 
-            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{"http://otile1.mqcdn.com/tiles/1.0.0/map/", "http://otile2.mqcdn.com/tiles/1.0.0/map/"}));
+            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
 
 
         } else
@@ -995,6 +1000,7 @@ if(isRipplesSelected) {
     public void onLocationChanged(Location location) {
         latitudeAndroid = Math.toRadians(location.getLatitude());
         longitudeAndroid = Math.toRadians(location.getLongitude());
+
         myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
 
 
@@ -1009,7 +1015,7 @@ if(isRipplesSelected) {
 
         } else {
 
-            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 0, 0, true);
+            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 50, 50, true);
 
         }
 
@@ -1304,8 +1310,10 @@ if(isRipplesSelected) {
             }
         }
     afterChoice();
-
-
+        if (circle2 != null) {
+            map.getOverlays().add(circle2);
+            map.getOverlayManager().add(circle2);
+        }
         if (!isStopPressed && !hasEnteredServiceMode) {
 
             if (planWaypoints.size() != 0) {
@@ -1499,7 +1507,6 @@ public void followme(){
 
     startBehaviour(planid, go);
 
-    //TODO raio
 
 }
     public void near() {
@@ -1548,11 +1555,13 @@ public void followme(){
                                 n = 1.5;
                                 e = 0;
                                 afterChoice();
+
                             })
                             .setNegativeButton("East", (dialog, id) -> {
                                 e = 1.5;
                                 n = 0;
                                 afterChoice();
+
 
                                 dialog.cancel();
                             });
@@ -1565,12 +1574,11 @@ public void followme(){
     public void afterChoice() {
         if (followMeOn) {
             Reference ref = new Reference();
-            System.out.println(" comenear");
             double[] latlonDisplace = WGS84displace(latitudeAndroid, longitudeAndroid, depth, n, e, 0);
 
             ref.setLat(latlonDisplace[0]);
             ref.setLon(latlonDisplace[1]);
-            geo = new GeoPoint(latlonDisplace[0], latlonDisplace[1]);
+            geo = new GeoPoint(Math.toDegrees(latlonDisplace[0]), Math.toDegrees(latlonDisplace[1]));
 
 
             DesiredSpeed ds = new DesiredSpeed();
@@ -1593,7 +1601,7 @@ public void followme(){
             imc.sendMessage(ref);
 
 
-            draw((float) latlonDisplace[0], (float) latlonDisplace[1]);
+            draw();
 
 
         }
@@ -1602,42 +1610,23 @@ public void followme(){
         }
 
 
-    public void draw(float lat, float lon) {
-        if (SecurityCircle.surfaceHolder.getSurface().isValid()) {
-            Canvas canvas = SecurityCircle.surfaceHolder.lockCanvas();
-            canvas.drawColor(Color.BLACK);
-            canvas.drawCircle(lat, lon, 50, SecurityCircle.paint);
-            SecurityCircle.surfaceHolder.unlockCanvasAndPost(canvas);
-
-        }
+    public void draw() {
 
 
-        ArrayList<GeoPoint> markers = new ArrayList<>();
-        //fazer isto para cada ponto
-        //ao geo adicionar 50 a cada lado e sao esses os pontos
-
-        GeoPoint point1 = new GeoPoint(geo.getLatitude() + 0.01, geo.getLongitude());
-        GeoPoint point3 = new GeoPoint(geo.getLatitude(), geo.getLongitude() + 0.01);
-        GeoPoint point2 = new GeoPoint(geo.getLatitude() - 0.01, geo.getLongitude());
-        GeoPoint point4 = new GeoPoint(geo.getLatitude(), geo.getLongitude() - 0.01);
-
-        System.out.println(point1 + " -------- " + geo.getLatitude());
-        markers.add(point1);
-        markers.add(point2);
-        markers.add(point3);
-        markers.add(point4);
-        //markers.add()
-
-        Polygon circle2 = new Polygon();
+        GeoPoint point1 = new GeoPoint(geo.getLatitude(), geo.getLongitude());
+        System.out.println("1-----------");
+        circle2 = new Polygon();
         circle2.isVisible();
-        circle2.setFillColor(Color.BLACK);
-        circle2.setStrokeWidth(7);
-        circle2.setPoints(markers);
+        circle2.setFillColor(Color.LTGRAY);
+        circle2.setStrokeWidth(2);
+        Polygon.pointsAsCircle(point1, 25);
         runOnUiThread(() -> {
-//TODO
+            System.out.println("2-----------");
+
+//TODO mudar isto para  updatemap
             map.getOverlays().add(circle2);
             map.getOverlayManager().add(circle2);
-            map.invalidate();
+            //  map.invalidate();
 
 
         });
