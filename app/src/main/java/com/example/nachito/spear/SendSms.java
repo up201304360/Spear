@@ -331,6 +331,8 @@ public class SendSms extends AppCompatActivity {
                     if (names[i].contains(selectedSMS)) {
                         finalNumber = vehicleNumber[i];
                     }
+                    Intent intent = new Intent(SendSms.this, MapSMS.class);
+                    startActivity(intent);
                     //   if (vehicleNames[i].contains(selectedSMS)) {
                     //     FNumber = imeiNumb[i];
                     // }
@@ -349,7 +351,8 @@ public class SendSms extends AppCompatActivity {
             else {
 
                 checked = "goTo";
-
+                Intent i2 = new Intent(SendSms.this, MapSMS.class);
+                startActivity(i2);
                 for (int i = 0; i < names.length; i++) {
 
                     if (names[i].contains(selectedSMS)) {
@@ -401,6 +404,7 @@ public class SendSms extends AppCompatActivity {
                     sendSMS(finalNumber, 0, "surface");
                     break;
                 case "stationKeeping":
+
                     sendSMS(finalNumber, MainActivity.speed, "sk");
                     break;
                 case "abort":
@@ -408,6 +412,7 @@ public class SendSms extends AppCompatActivity {
                     sendSMS(finalNumber, 0, "abort");
                     break;
                 case "goTo":
+
                     sendSMS(finalNumber, MainActivity.speed, "go");
                     break;
                 case "send":

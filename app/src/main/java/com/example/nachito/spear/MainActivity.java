@@ -1019,9 +1019,10 @@ if(isRipplesSelected) {
 
         }
 
+        Bitmap target = RotateMyBitmap(newMarker, (float) orientationCompass);
 
 
-        Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
+        Drawable marker3 = new BitmapDrawable(getResources(), target);
         ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
         map.getOverlays().add(markersOverlay);
 
@@ -1494,19 +1495,22 @@ if(isRipplesSelected) {
     }
 
 public void followme(){
+    if (imc.selectedvehicle == null) {
+        Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
 
-    FollowReference go = new FollowReference();
-    go.setAltitudeInterval(1);
-    go.setControlSrc(imc.getLocalId());
-    go.setLoiterRadius(0);
-    go.setTimeout(30);
+    } else {
+        FollowReference go = new FollowReference();
+        go.setAltitudeInterval(1);
+        go.setControlSrc(imc.getLocalId());
+        go.setLoiterRadius(0);
+        go.setTimeout(30);
 
-    String planid = "SpearFollowMe-" + imc.selectedvehicle;
-    followMeOn =true;
-    startReference();
+        String planid = "SpearFollowMe-" + imc.selectedvehicle;
+        followMeOn = true;
+        startReference();
 
-    startBehaviour(planid, go);
-
+        startBehaviour(planid, go);
+    }
 
 }
     public void near() {

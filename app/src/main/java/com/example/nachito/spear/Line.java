@@ -418,6 +418,14 @@ public class Line extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         stopRepeatingTask();
+        for (Marker m : markerList) {
+            m.remove(map);
+            map.invalidate();
+        }
+        markerList.clear();
+        markers.clear();
+        numberOfPoints = 0;
+
         super.onBackPressed();
     }
 

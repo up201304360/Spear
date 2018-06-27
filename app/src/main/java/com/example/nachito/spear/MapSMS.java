@@ -257,6 +257,8 @@ public class MapSMS extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        Intent i = new Intent(MapSMS.this, SendSms.class);
+        startActivity(i);
         super.onBackPressed();
 
     }
