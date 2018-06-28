@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity
     //Drawables
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.orangeled)
     static Drawable nodeIcon;
-
+    Marker markerFromLine;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.reddot)
     static Drawable areaIcon;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.blueled)
@@ -1287,10 +1287,10 @@ if(isRipplesSelected) {
         if (location != null)
             onLocationChanged(location);
 
-        if (!isStopPressed && Line.getPointsLine().size() != 0 && !hasEnteredServiceMode) {
+        if (!isStopPressed && pointsLine.size() != 0 && !hasEnteredServiceMode) {
 
             for (int i = 0; i < pointsLine.size(); i++) {
-                Marker markerFromLine = new Marker(map);
+                markerFromLine = new Marker(map);
 
 //java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
 
