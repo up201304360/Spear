@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 
 import pt.lsts.imc.Goto;
 import pt.lsts.imc.Maneuver;
@@ -41,7 +42,9 @@ import static com.example.nachito.spear.MainActivity.altitude;
 import static com.example.nachito.spear.MainActivity.depth;
 import static com.example.nachito.spear.MainActivity.isDepthSelected;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
+import static com.example.nachito.spear.MainActivity.isStopPressed;
 import static com.example.nachito.spear.MainActivity.localizacao;
+
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
 import static com.example.nachito.spear.MainActivity.zoomLevel;
@@ -113,9 +116,6 @@ public class Line extends AppCompatActivity {
         return markers;
     }
 
-    public static Polyline getPolyline() {
-        return polyline;
-    }
 
     public static boolean getPoly() {
         return isPolylineDrawn;
@@ -123,7 +123,6 @@ public class Line extends AppCompatActivity {
 
     public static List<Maneuver> sendmList() {
         return lineListManeuvers;
-
 
     }
 
@@ -175,6 +174,7 @@ public class Line extends AppCompatActivity {
                 markerList.add(startMarker);
                 map.invalidate();
                 numberOfPoints++;
+
                 erase.setOnClickListener(v -> {
                     if (!isDoneClicked) {
                         for (int i = 0; i < numberOfPoints; i++) {
@@ -206,6 +206,8 @@ public class Line extends AppCompatActivity {
                         drawBlue();
                         drawRed();
                     }
+
+
                 });
                 done.setOnClickListener(v -> {
                     if (markers.size() <= 1) {
@@ -239,7 +241,7 @@ public class Line extends AppCompatActivity {
 
     public void getIntentSelected() {
         Intent intent = getIntent();
-        selected = intent.getExtras().getString("selected");
+        selected = Objects.requireNonNull(intent.getExtras()).getString("selected");
     }
 
     void startRepeatingTask() {
@@ -304,8 +306,11 @@ public class Line extends AppCompatActivity {
 
         isPolylineDrawn = true;
         MainActivity.hasEnteredServiceMode = false;
+        isStopPressed = true;
         startBehaviour("followPoints" + selected, PlanUtilities.createPlan("followPoints" + selected, maneuvers.toArray(new Maneuver[0])));
         onBackPressed();
+
+
     }
 
     public void Go(GeoPoint p) {
@@ -423,8 +428,8 @@ public class Line extends AppCompatActivity {
             map.invalidate();
         }
         markerList.clear();
-        markers.clear();
         numberOfPoints = 0;
+
 
         super.onBackPressed();
     }

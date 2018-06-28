@@ -8,6 +8,7 @@ import java.util.List;
 import pt.lsts.imc.Maneuver;
 import pt.lsts.util.PlanUtilities;
 
+import static com.example.nachito.spear.MainActivity.planWaypointPolyline;
 import static com.example.nachito.spear.MainActivity.planWaypoints;
 
 /**
@@ -61,9 +62,10 @@ public class DrawWaypoints {
             }
 
         }
-        MainActivity.planWaypointPolyline.setWidth(5);
         if (planWaypoints.size() != 0)
-            MainActivity.planWaypointPolyline.setPoints(planWaypoints);
+            planWaypointPolyline.setPoints(planWaypoints);
+        planWaypointPolyline.setWidth(5);
+
 
     }
 }

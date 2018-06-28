@@ -45,7 +45,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.LocationSource.OnLocationChangedListener;
-import com.google.android.gms.maps.model.Circle;
 
 import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
@@ -58,7 +57,6 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
@@ -75,13 +73,11 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,6 +98,7 @@ import pt.lsts.imc.Reference;
 import pt.lsts.imc.StationKeeping;
 import pt.lsts.imc.Teleoperation;
 import pt.lsts.imc.VehicleState;
+import pt.lsts.imc.Voltage;
 import pt.lsts.imc.def.SpeedUnits;
 import pt.lsts.imc.def.ZUnits;
 import pt.lsts.imc.net.Consume;
@@ -158,7 +155,6 @@ public class MainActivity extends AppCompatActivity
     static boolean isPolylineDrawn = Line.getPoly();
     static double latVehicle;
     static String vehicleName;
-    static double bearing;
     static double lonVehicle;
     static boolean isStopPressed = false;
     static boolean areNewWaypointsFromAreaUpdated = false;
@@ -228,7 +224,6 @@ public class MainActivity extends AppCompatActivity
     List<String> vehicleList;
     List<String> planList;
     int listSize;
-    Marker markerFromLine;
     OSMHandler updateHandler;
     List<String> stateList;
     SendSms sendSms;
@@ -239,7 +234,6 @@ public class MainActivity extends AppCompatActivity
     Button centerLocation;
     ItemizedIconOverlay markersOverlay2;
     android.content.res.Resources resources;
-    Polyline polyline = Line.getPolyline();
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
     float selectedVehicleOrientation;
     private Context context;
@@ -330,6 +324,7 @@ public class MainActivity extends AppCompatActivity
 
 
         }
+
 
     }
 
@@ -439,6 +434,7 @@ public class MainActivity extends AppCompatActivity
         customHandlerRipples = new Handler();
         customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
 
+        planWaypointPolyline = new Polyline();
 
         startMarkerRipples = new Marker[2048];
         for (int i = 0; i < 2048; i++)
@@ -471,7 +467,6 @@ public class MainActivity extends AppCompatActivity
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
         init();
-        planWaypointPolyline = new Polyline();
 
 
         accelerate.setVisibility(View.INVISIBLE);
@@ -1023,8 +1018,11 @@ if(isRipplesSelected) {
 
 
         Drawable marker3 = new BitmapDrawable(getResources(), target);
-        ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
-        map.getOverlays().add(markersOverlay);
+        ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, marker3, null, context);
+        map.getOverlays().add(markersOverlay2);
+
+
+
 
 
     }
@@ -1144,7 +1142,7 @@ if(isRipplesSelected) {
                 final ArrayList<OverlayItem> items2 = new ArrayList<>();
                 if (!vname.equals(imc.getSelectedvehicle()))
                     otherVehiclesPositionList.add(new GeoPoint(lld[0], lld[1]));
-                OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint(lld[0], lld[1]));
+                OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint((lld[0]), (lld[1])));
                 marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
                 items2.add(marker2);
 
@@ -1200,8 +1198,10 @@ if(isRipplesSelected) {
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
+                    Voltage v = new Voltage();
+                    v.setSrcEnt(state.getSrcEnt());
                     if (velocity != null)
-                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected));
+                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n " + "V:" + v.getValue()));
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
@@ -1287,25 +1287,26 @@ if(isRipplesSelected) {
         if (location != null)
             onLocationChanged(location);
 
-        if (!isStopPressed && !hasEnteredServiceMode) {
-            if (Line.getPointsLine().size() != 0) {
-                for (int i = 0; i < Line.getPointsLine().size(); i++) {
-                    markerFromLine = new Marker(map);
+        if (!isStopPressed && Line.getPointsLine().size() != 0 && !hasEnteredServiceMode) {
+
+            for (int i = 0; i < pointsLine.size(); i++) {
+                Marker markerFromLine = new Marker(map);
+
 //java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
-                    if (Line.getPointsLine().size() != 0) {
-                        markerFromLine.setPosition(Line.getPointsLine().get(i));
+
+                markerFromLine.setPosition(pointsLine.get(i));
                         markerFromLine.setIcon(lineIcon);
                         map.getOverlays().add(markerFromLine);
-                    }
-                }
+
             }
+
 
         }
         if (!isStopPressed && Line.getPoly() && !hasEnteredServiceMode) {
             if (pointsLine.size() != 0) {
-                polyline = new Polyline();
-                polyline.setPoints(pointsLine);
-                map.getOverlays().add(polyline);
+
+                planWaypointPolyline.setPoints(pointsLine);
+                map.getOverlays().add(planWaypointPolyline);
                 isPolylineDrawn = true;
 
             }
@@ -1618,14 +1619,12 @@ public void followme(){
 
 
         GeoPoint point1 = new GeoPoint(geo.getLatitude(), geo.getLongitude());
-        System.out.println("1-----------");
         circle2 = new Polygon();
         circle2.isVisible();
         circle2.setFillColor(Color.LTGRAY);
         circle2.setStrokeWidth(2);
         Polygon.pointsAsCircle(point1, 25);
         runOnUiThread(() -> {
-            System.out.println("2-----------");
 
 //TODO mudar isto para  updatemap
             map.getOverlays().add(circle2);
@@ -1703,17 +1702,14 @@ public void followme(){
 
         if (Line.getPoly()) {
             isPolylineDrawn = false;
-            map.getOverlays().remove(polyline);
+
             nullArray.clear();
-            if (polyline != null)
-                polyline.setPoints(nullArray);
 
         }
 
 
 
         if (Line.getPointsLine() != null) {
-            map.getOverlays().remove(markerFromLine);
             Line.getPointsLine().clear();
             pointsLine.clear();
         }
