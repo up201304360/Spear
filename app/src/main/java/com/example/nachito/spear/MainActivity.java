@@ -8,11 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -27,7 +23,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.annotation.UiThread;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -88,6 +83,7 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
+import pt.lsts.imc.Heartbeat;
 import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
@@ -586,6 +582,44 @@ public class MainActivity extends AppCompatActivity
 
         });
     }
+    //Run task periodically - AIS
+
+    private Runnable updateTimerThreadAIS = new Runnable() {
+        @Periodic
+        @SuppressLint("SetTextI18n")
+        public void run() {
+
+
+            customHandlerAIS.postDelayed(this, timeoutAISPull * 1000);
+            //if(timeoutAISPull != 1) {
+            //    showError.showErrorLogcat("MEU", "size ais: "+ais.GetNumberShipsAIS());
+            //}
+            timeoutAISPull = Integer.parseInt("12");
+
+        }
+
+    };
+
+
+    //Run task periodically - Ripples
+    private Runnable updateTimerThreadRipples = new Runnable() {
+        @SuppressLint("SetTextI18n")
+        public void run() {
+            if (isRipplesSelected) {
+                customHandlerRipples.postDelayed(this, timeoutRipplesPull * 1000);
+                if (timeoutRipplesPull != 1) {
+                    if (ripples.PullData(UrlRipples)) {
+                        systemInfo = ripples.GetSystemInfoRipples();
+                        newRipplesData = true;
+                    }
+
+                }
+                timeoutRipplesPull = Integer.parseInt("12");
+
+            }
+        }
+    };
+
 
     //TODO  - atualizar o mais recente
     public void showRipplesPos(){
@@ -937,7 +971,6 @@ if(isRipplesSelected) {
 
     public void showAIS() {
         if (isAISSelected) {
-
             if (countAisTime >= 5) {
 
                 AISPlot.SystemInfoAIS mAIS = ais.GetDataAIS();
@@ -960,9 +993,14 @@ if(isRipplesSelected) {
                 countAisTime = -1;
             } else {
 
-                for (int i = 0; i < ais.GetNumberShipsAIS(); i++)
-                    map.getOverlays().add(startMarkerAIS[i]);
+                if (ais.GetNumberShipsAIS() != 0) {
 
+                    for (int i = 0; i < ais.GetNumberShipsAIS(); i++) {
+                        map.getOverlays().add(startMarkerAIS[i]);
+                        System.out.println(startMarkerAIS[i].getPosition() + " -----------");
+
+                    }
+                }
             }
 
             countAisTime++;
@@ -1198,10 +1236,10 @@ if(isRipplesSelected) {
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
-                    Voltage v = new Voltage();
-                    v.setSrcEnt(state.getSrcEnt());
+                    Voltage volt = new Voltage();
+                    volt.setSrcEnt(state.getSrcEnt());
                     if (velocity != null)
-                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n " + "V:" + v.getValue()));
+                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n " + "V:" + volt.getValue()));
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
@@ -1348,47 +1386,7 @@ if(isRipplesSelected) {
         }
     }
 
-//TODO - parser ver qual mensagem mais recente e mostrar essa entre wifi e iridium - ver exemplo ACM SOIActivity
 
-
-    //Run task periodically - AIS
-    private Runnable updateTimerThreadAIS = new Runnable() {
-        @SuppressLint("SetTextI18n")
-        public void run() {
-            if(isAISSelected) {
-
-
-
-                customHandlerAIS.postDelayed(this, timeoutAISPull * 1000);
-                //if(timeoutAISPull != 1) {
-                //    showError.showErrorLogcat("MEU", "size ais: "+ais.GetNumberShipsAIS());
-                //}
-                timeoutAISPull = Integer.parseInt("12");
-
-            }
-        }
-    };
-
-
-    //Run task periodically - Ripples
-    private Runnable updateTimerThreadRipples = new Runnable() {
-        @SuppressLint("SetTextI18n")
-        public void run() {
-            if (isRipplesSelected) {
-
-                customHandlerRipples.postDelayed(this, timeoutRipplesPull * 1000);
-                if(timeoutRipplesPull != 1) {
-                    if (ripples.PullData(UrlRipples)) {
-                        systemInfo = ripples.GetSystemInfoRipples();
-                        newRipplesData = true;
-                    }
-
-                }
-                timeoutRipplesPull = Integer.parseInt("12");
-
-            }
-        }
-    };
 
 
 
@@ -1606,7 +1604,6 @@ public void followme(){
             imc.sendMessage(ref);
 
 
-            draw();
 
 
         }
@@ -1615,27 +1612,7 @@ public void followme(){
         }
 
 
-    public void draw() {
 
-
-        GeoPoint point1 = new GeoPoint(geo.getLatitude(), geo.getLongitude());
-        circle2 = new Polygon();
-        circle2.isVisible();
-        circle2.setFillColor(Color.LTGRAY);
-        circle2.setStrokeWidth(2);
-        Polygon.pointsAsCircle(point1, 25);
-        runOnUiThread(() -> {
-
-//TODO mudar isto para  updatemap
-            map.getOverlays().add(circle2);
-            map.getOverlayManager().add(circle2);
-            //  map.invalidate();
-
-
-        });
-
-
-    }
 
 
     public void stopPlan() {
