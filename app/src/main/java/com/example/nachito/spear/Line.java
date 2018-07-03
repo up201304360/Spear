@@ -226,6 +226,7 @@ public class Line extends AppCompatActivity {
                             startRepeatingTask();
                             isDoneClicked = true;
                             isPolylineDrawn = true;
+
                         }
                     }
                 });

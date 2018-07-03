@@ -72,7 +72,6 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = R * c * 1000; // convert to meters
-        distance = distance - 10;
 
         DecimalFormat twoDForm = new DecimalFormat("#.##");
         String distFinal = (twoDForm.format(distance));

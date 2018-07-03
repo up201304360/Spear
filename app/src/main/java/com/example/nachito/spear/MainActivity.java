@@ -73,6 +73,7 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,6 +84,7 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
+import pt.lsts.imc.FuelLevel;
 import pt.lsts.imc.Heartbeat;
 import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
@@ -423,7 +425,7 @@ public class MainActivity extends AppCompatActivity
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setDisplayShowHomeEnabled(false);
         }
-
+        ais = new AISPlot(ctx);
         customHandlerAIS = new Handler();
         customHandlerAIS.postDelayed(updateTimerThreadAIS, 2000);
 
@@ -997,7 +999,6 @@ if(isRipplesSelected) {
 
                     for (int i = 0; i < ais.GetNumberShipsAIS(); i++) {
                         map.getOverlays().add(startMarkerAIS[i]);
-                        System.out.println(startMarkerAIS[i].getPosition() + " -----------");
 
                     }
                 }
@@ -1052,8 +1053,10 @@ if(isRipplesSelected) {
 
         }
 
-        Bitmap target = RotateMyBitmap(newMarker, (float) orientationCompass);
 
+        int selfOrientation = (int) (orientationCompass);
+        selfOrientation = selfOrientation - 180;
+        Bitmap target = RotateMyBitmap(newMarker, selfOrientation);
 
         Drawable marker3 = new BitmapDrawable(getResources(), target);
         ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, marker3, null, context);
@@ -1187,7 +1190,7 @@ if(isRipplesSelected) {
 
                 vehicleOrientation = (float) state.getPsi();
 
-                int ori2 = (int) Math.round(Math.toDegrees(vehicleOrientation));
+                int ori2 = (int) Math.toDegrees(vehicleOrientation);
                 ori2 = ori2 - 180;
                 if (!orientationOtherVehicles.contains(ori2))
                     orientationOtherVehicles.add(ori2);
@@ -1206,9 +1209,14 @@ if(isRipplesSelected) {
                     }
                 }
                 if (vname.equals(imc.getSelectedvehicle())) {
+
+                    Heartbeat h = new Heartbeat();
+                    h.setSrcEnt(state.getSrcEnt());
+                    imc.sendMessage(h);
+
                     selectedVehiclePosition = new GeoPoint(lld[0], lld[1]);
                     selectedVehicleOrientation = (float) state.getPsi();
-                    int ori = (int) Math.round(Math.toDegrees(selectedVehicleOrientation));
+                    int ori = (int) (Math.toDegrees(selectedVehicleOrientation));
                     ori = ori - 180;
                     orientationSelected = ori;
                     if (selectedVehiclePosition != null) {
@@ -1221,7 +1229,9 @@ if(isRipplesSelected) {
                             // Stuff that updates the UI
                             serviceBar.setText(imc.getSelectedvehicle());
 
+
                         });
+
 
 
                         if (android.os.Build.VERSION.SDK_INT <= M) {
@@ -1236,10 +1246,16 @@ if(isRipplesSelected) {
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
-                    Voltage volt = new Voltage();
-                    volt.setSrcEnt(state.getSrcEnt());
+
+                    FuelLevel fuelLevel = new FuelLevel();
+                    fuelLevel.setSrcEnt(state.getSrcEnt());
+                    fuelLevel.setDstEnt(state.getDstEnt());
+
+                    System.out.println(fuelLevel.getConfidence() + " -----------" + fuelLevel.getSrcEnt() + " --- " + fuelLevel.getValue() + "  " + fuelLevel.getOpmodes());
+
+
                     if (velocity != null)
-                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n " + "V:" + volt.getValue()));
+                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n "));
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
@@ -1325,23 +1341,34 @@ if(isRipplesSelected) {
         if (location != null)
             onLocationChanged(location);
 
-        if (!isStopPressed && pointsLine.size() != 0 && !hasEnteredServiceMode) {
+        if (pointsLine.size() > 1) {
 
             for (int i = 0; i < pointsLine.size(); i++) {
                 markerFromLine = new Marker(map);
+                if (pointsLine.size() > 1) {
 
-//java.lang.IndexOutOfBoundsException: Invalid index 0, size is 0
+                    markerFromLine.setPosition(pointsLine.get(i));
+                    markerFromLine.setIcon(lineIcon);
 
-                markerFromLine.setPosition(pointsLine.get(i));
-                        markerFromLine.setIcon(lineIcon);
-                        map.getOverlays().add(markerFromLine);
-
+                    map.getOverlays().add(markerFromLine);
+                }
             }
 
 
         }
-        if (!isStopPressed && Line.getPoly() && !hasEnteredServiceMode) {
-            if (pointsLine.size() != 0) {
+        if (pointsLine.size() == 1) {
+
+
+            markerFromLine = new Marker(map);
+            if (pointsLine.size() == 1) {
+                markerFromLine.setPosition(pointsLine.get(0));
+                markerFromLine.setIcon(lineIcon);
+                map.getOverlays().add(markerFromLine);
+            }
+        }
+
+        if (Line.getPoly()) {
+            if (pointsLine.size() > 1) {
 
                 planWaypointPolyline.setPoints(pointsLine);
                 map.getOverlays().add(planWaypointPolyline);
@@ -1555,13 +1582,13 @@ public void followme(){
                             .setMessage("North or east?")
                             .setCancelable(true)
                             .setPositiveButton("North", (dialog, id) -> {
-                                n = 1.5;
+                                n = 1;
                                 e = 0;
                                 afterChoice();
 
                             })
                             .setNegativeButton("East", (dialog, id) -> {
-                                e = 1.5;
+                                e = 1;
                                 n = 0;
                                 afterChoice();
 
