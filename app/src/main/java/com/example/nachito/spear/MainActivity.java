@@ -47,7 +47,6 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
@@ -65,7 +64,6 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 import org.osmdroid.views.util.constants.MapViewConstants;
 
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,7 +71,6 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,7 +83,6 @@ import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
 import pt.lsts.imc.FuelLevel;
 import pt.lsts.imc.Heartbeat;
-import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
@@ -96,7 +92,6 @@ import pt.lsts.imc.Reference;
 import pt.lsts.imc.StationKeeping;
 import pt.lsts.imc.Teleoperation;
 import pt.lsts.imc.VehicleState;
-import pt.lsts.imc.Voltage;
 import pt.lsts.imc.def.SpeedUnits;
 import pt.lsts.imc.def.ZUnits;
 import pt.lsts.imc.net.Consume;
@@ -1250,7 +1245,6 @@ if(isRipplesSelected) {
                     FuelLevel fuelLevel = new FuelLevel();
                     fuelLevel.setSrcEnt(state.getSrcEnt());
                     fuelLevel.setDstEnt(state.getDstEnt());
-
                     System.out.println(fuelLevel.getConfidence() + " -----------" + fuelLevel.getSrcEnt() + " --- " + fuelLevel.getValue() + "  " + fuelLevel.getOpmodes());
 
 
@@ -1582,7 +1576,7 @@ public void followme(){
                             .setMessage("North or east?")
                             .setCancelable(true)
                             .setPositiveButton("North", (dialog, id) -> {
-                                n = 1;
+                                n = 0.7;
                                 e = 0;
                                 afterChoice();
 
