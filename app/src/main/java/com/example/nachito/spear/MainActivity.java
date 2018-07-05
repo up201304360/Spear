@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -81,8 +82,6 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
-import pt.lsts.imc.FuelLevel;
-import pt.lsts.imc.Heartbeat;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
@@ -100,6 +99,7 @@ import pt.lsts.util.PlanUtilities;
 import pt.lsts.util.WGS84Utilities;
 
 import static android.os.Build.VERSION_CODES.M;
+import static com.example.nachito.spear.PlanList.planBeingExecuted;
 import static com.example.nachito.spear.R.id.wifiImage;
 import static pt.lsts.util.WGS84Utilities.WGS84displace;
 
@@ -255,6 +255,8 @@ public class MainActivity extends AppCompatActivity
     GeoPoint geo;
     String vehicleAnterior;
     Polygon circle2;
+    protected PowerManager.WakeLock mWakeLock;
+    String planExecuting;
 
     public static GeoPoint getVariables() {
         return selectedVehiclePosition;
@@ -336,7 +338,7 @@ public class MainActivity extends AppCompatActivity
     //if a plan is changed without stopping the plan that was executing
     @Periodic()
     public void changePlans() {
-        if ((!isStopPressed && PlanList.planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(PlanList.planBeingExecuted)) || (!isStopPressed && PlanList.planBeingExecuted != null && wasPlanChanged)) {
+        if ((!isStopPressed && planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(planBeingExecuted)) || (!isStopPressed && planBeingExecuted != null && wasPlanChanged)) {
 //wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
             cleanMap();
             updateMap();
@@ -437,6 +439,12 @@ public class MainActivity extends AppCompatActivity
         startMarkerAIS = new Marker[10024];
         for (int i = 0; i < 10024; i++)
             startMarkerAIS[i] = new Marker(map);
+
+
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        assert pm != null;
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        this.mWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
 
         resources = getResources();
         context = this;
@@ -1030,6 +1038,7 @@ if(isRipplesSelected) {
 
     @Override
     protected void onDestroy() {
+        this.mWakeLock.release();
         super.onDestroy();
         // Unregister MainActv as an OnPreferenceChangedListener to avoid any memory leaks.
         android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(this)
@@ -1263,20 +1272,17 @@ if(isRipplesSelected) {
                     depthString = df2.format(state.getDepth());
 
 
-                    FuelLevel fuelLevel = new FuelLevel();
-                    fuelLevel.setSrcEnt(state.getSrcEnt());
-                    fuelLevel.setSrc(state.getSrc());
-                    fuelLevel.setDstEnt(state.getDstEnt());
-                    Object fuel = fuelLevel.getValue("FuelLevel");
-                    System.out.println(fuelLevel.getConfidence() + " -----------" + fuelLevel.getSrcEnt() + " --- " + fuelLevel.getValue() + "  " + fuelLevel.getOpmodes() + "fuel: " + fuel + " " + fuelLevel.getValue());
-
-                    Heartbeat h = new Heartbeat();
-                    h.setSrcEnt(state.getSrcEnt());
-                    imc.sendMessage(h);
+                    if (planBeingExecuted == null) {
+                        planExecuting = "null";
+                    } else {
+                        planExecuting = planBeingExecuted;
+                        String[] getPlanName = planExecuting.split("-");
+                        planExecuting = getPlanName[0];
+                    }
 
 
                     if (velocity != null)
-                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n "));
+                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n " + planExecuting));
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
@@ -1331,6 +1337,7 @@ if(isRipplesSelected) {
             }
         }
     }
+
 
     //Run task periodically - garbage collection
 
@@ -1603,7 +1610,7 @@ public void followme(){
                             .setMessage("North or east?")
                             .setCancelable(true)
                             .setPositiveButton("North", (dialog, id) -> {
-                                n = 0.7;
+                                n = 0.6;
                                 e = 0;
                                 afterChoice();
 
