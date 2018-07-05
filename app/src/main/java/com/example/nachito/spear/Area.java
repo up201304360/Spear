@@ -1,7 +1,6 @@
 package com.example.nachito.spear;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -14,7 +13,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import org.androidannotations.annotations.EActivity;
-
 import org.osmdroid.api.IMapController;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
@@ -385,7 +383,7 @@ public class Area extends AppCompatActivity {
 
 
                     isPreviewPressed = true;
-                    if (markers.size() <= 1) {
+                    if (markers.size() == 1 || markers.size() == 0) {
                         Toast.makeText(Area.this, "Add more points", Toast.LENGTH_SHORT).show();
                     } else {
                         if (selected == null) {

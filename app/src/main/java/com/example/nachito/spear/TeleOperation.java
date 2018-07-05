@@ -18,7 +18,7 @@ import pt.lsts.neptus.messages.listener.Periodic;
 public class TeleOperation extends Fragment implements JoystickMovedListener, AccelListener, DecListener, StopListener {
     protected LinkedHashMap<String, Object> remoteActions = new LinkedHashMap<>();
     IMCGlobal imc;
-    boolean teleop = false;
+    static boolean teleop = false;
 
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
@@ -127,6 +127,4 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
         rm.setActions(remoteActions);
         imc.sendMessage(rm);
     }
-
-
 }

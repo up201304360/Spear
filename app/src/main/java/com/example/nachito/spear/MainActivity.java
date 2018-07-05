@@ -934,20 +934,43 @@ if(isRipplesSelected) {
     @Override
     public void onBackPressed() {
         if (teleOperation != null) {
-            teleOperation.finish();
-            getFragmentManager().popBackStack();
-            dive.setVisibility(View.VISIBLE);
-            teleOperationButton.setVisibility(View.VISIBLE);
-            startPlan.setVisibility(View.VISIBLE);
-            comeNear.setVisibility(View.VISIBLE);
-            keepStation.setVisibility(View.VISIBLE);
-            stopPlan.setVisibility(View.VISIBLE);
-            accelerate.setVisibility(View.INVISIBLE);
-            decelerate.setVisibility(View.INVISIBLE);
-            stopTeleop.setVisibility(View.INVISIBLE);
-            Joystick joystick = findViewById(R.id.joystick);
-            joystick.setVisibility(View.INVISIBLE);
-            teleOperation = null;
+            if (TeleOperation.teleop) {
+
+
+                teleOperation.finish();
+                getFragmentManager().popBackStack();
+                dive.setVisibility(View.VISIBLE);
+                teleOperationButton.setVisibility(View.VISIBLE);
+                startPlan.setVisibility(View.VISIBLE);
+                comeNear.setVisibility(View.VISIBLE);
+                keepStation.setVisibility(View.VISIBLE);
+                stopPlan.setVisibility(View.VISIBLE);
+                accelerate.setVisibility(View.INVISIBLE);
+                decelerate.setVisibility(View.INVISIBLE);
+                stopTeleop.setVisibility(View.INVISIBLE);
+                Joystick joystick = findViewById(R.id.joystick);
+                joystick.setVisibility(View.INVISIBLE);
+                teleOperation = null;
+                TeleOperation.teleop = false;
+            } else {
+
+                getFragmentManager().popBackStack();
+                dive.setVisibility(View.VISIBLE);
+                teleOperationButton.setVisibility(View.VISIBLE);
+                startPlan.setVisibility(View.VISIBLE);
+                comeNear.setVisibility(View.VISIBLE);
+                keepStation.setVisibility(View.VISIBLE);
+                stopPlan.setVisibility(View.VISIBLE);
+                accelerate.setVisibility(View.INVISIBLE);
+                decelerate.setVisibility(View.INVISIBLE);
+                stopTeleop.setVisibility(View.INVISIBLE);
+                Joystick joystick = findViewById(R.id.joystick);
+                joystick.setVisibility(View.INVISIBLE);
+                teleOperation = null;
+
+            }
+
+
         } else if (sendSms != null) {
             map.setMultiTouchControls(true);
         } else {
@@ -1204,10 +1227,7 @@ if(isRipplesSelected) {
                     }
                 }
                 if (vname.equals(imc.getSelectedvehicle())) {
-
-                    Heartbeat h = new Heartbeat();
-                    h.setSrcEnt(state.getSrcEnt());
-                    imc.sendMessage(h);
+//TODO announce / estimated state
 
                     selectedVehiclePosition = new GeoPoint(lld[0], lld[1]);
                     selectedVehicleOrientation = (float) state.getPsi();
@@ -1242,10 +1262,17 @@ if(isRipplesSelected) {
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
 
+
                     FuelLevel fuelLevel = new FuelLevel();
                     fuelLevel.setSrcEnt(state.getSrcEnt());
+                    fuelLevel.setSrc(state.getSrc());
                     fuelLevel.setDstEnt(state.getDstEnt());
-                    System.out.println(fuelLevel.getConfidence() + " -----------" + fuelLevel.getSrcEnt() + " --- " + fuelLevel.getValue() + "  " + fuelLevel.getOpmodes());
+                    Object fuel = fuelLevel.getValue("FuelLevel");
+                    System.out.println(fuelLevel.getConfidence() + " -----------" + fuelLevel.getSrcEnt() + " --- " + fuelLevel.getValue() + "  " + fuelLevel.getOpmodes() + "fuel: " + fuel + " " + fuelLevel.getValue());
+
+                    Heartbeat h = new Heartbeat();
+                    h.setSrcEnt(state.getSrcEnt());
+                    imc.sendMessage(h);
 
 
                     if (velocity != null)
@@ -1858,6 +1885,7 @@ public void followme(){
                 warning();
             for (VehicleState state : vehicleStateList) {
                 vehicleList.add(state.getSourceName() + ":" + state.getOpMode());
+
 
             }
             for (int i = 0; i < vehicleList.size(); i++) {
