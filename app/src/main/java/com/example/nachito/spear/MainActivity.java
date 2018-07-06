@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -1189,13 +1190,13 @@ if(isRipplesSelected) {
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
-
+        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (imc.stillConnected() != null) {
 
             if (imc.selectedvehicle != null) {
                 if (!(imc.stillConnected().contains(imc.selectedvehicle)))
                     runOnUiThread(() -> {
-
+                        vibrator.cancel();
                         serviceBar.setText(" ");
                         velocity.setText(" ");
                         //retirar icon
@@ -1281,6 +1282,10 @@ if(isRipplesSelected) {
                     }
 
 
+                    long[] pattern = {0, 50, 500};
+                    assert vibrator != null;
+                    vibrator.vibrate(pattern, 0);
+
                     if (velocity != null)
                         runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n " + planExecuting));
                 }
@@ -1313,7 +1318,7 @@ if(isRipplesSelected) {
         }
         if (stateList.size() != 0) {
             for (int i = 0; i < stateList.size(); i++) {
-
+                if (stateconnected != null)
                 stateconnected = stateList.toString();
 
                 if (!isStopPressed) {
