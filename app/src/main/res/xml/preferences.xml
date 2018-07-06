@@ -3,19 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Valores keep station, near velocidade, dive -->
     <CheckBoxPreference
         android:defaultValue="@bool/pref_show_rpmms_default"
         android:key="@string/pref_show_rpmms_key"
         android:summaryOff="@string/pref_show_false"
         android:summaryOn="@string/pref_show_true"
         android:title="@string/pref_show_rpmms_label" />
-    <CheckBoxPreference
-        android:defaultValue="@bool/pref_show_offline_default"
-        android:key="@string/pref_show_offline_key"
-        android:summaryOff="@string/pref_show_offfalse"
-        android:summaryOn="@string/pref_show_offtrue"
-        android:title="@string/pref_show_offline_label" />
+
 
     <EditTextPreference
         android:defaultValue="@string/pref_speed_default"
@@ -57,5 +51,10 @@
         android:title="@string/width" />
 
 
-
+    <CheckBoxPreference
+        android:defaultValue="@bool/pref_show_offline_default"
+        android:key="@string/pref_show_offline_key"
+        android:summaryOff="@string/pref_show_offfalse"
+        android:summaryOn="@string/pref_show_offtrue"
+        android:title="@string/pref_show_offline_label" />
 </PreferenceScreen>
