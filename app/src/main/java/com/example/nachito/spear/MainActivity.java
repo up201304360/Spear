@@ -1879,31 +1879,32 @@ public void followme(){
             listSize = planList.size();
         } else if (v.getId() == R.id.servicebar) {
 
+            if (teleOperation == null) {
+                vehicleList = new ArrayList<>();
+                maneuverList = new ArrayList<>();
 
-            vehicleList = new ArrayList<>();
-            maneuverList = new ArrayList<>();
+
+                vehicleStateList = imc.connectedVehicles();
+                if (imc.connectedVehicles() == null)
+                    warning();
+                for (VehicleState state : vehicleStateList) {
+                    vehicleList.add(state.getSourceName() + ":" + state.getOpMode());
 
 
-            vehicleStateList = imc.connectedVehicles();
-            if (imc.connectedVehicles() == null)
-                warning();
-            for (VehicleState state : vehicleStateList) {
-                vehicleList.add(state.getSourceName() + ":" + state.getOpMode());
+                }
+                for (int i = 0; i < vehicleList.size(); i++) {
 
+                    String connectedvehicles = vehicleList.toString();
+                    String[] getName = connectedvehicles.split(",");
+                    getName[0] = getName[0].substring(1);
+                    getName[getName.length - 1] = getName[getName.length - 1].substring(0, getName[getName.length - 1].length() - 1);
+                    String selectedName = getName[i];
+                    menu.add(i, i, i, selectedName);
+
+
+                }
 
             }
-            for (int i = 0; i < vehicleList.size(); i++) {
-
-                String connectedvehicles = vehicleList.toString();
-                String[] getName = connectedvehicles.split(",");
-                getName[0] = getName[0].substring(1);
-                getName[getName.length - 1] = getName[getName.length - 1].substring(0, getName[getName.length - 1].length() - 1);
-                String selectedName = getName[i];
-                menu.add(i, i, i, selectedName);
-
-
-            }
-
         }
     }
 
