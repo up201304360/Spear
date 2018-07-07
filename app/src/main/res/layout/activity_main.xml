@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_maps"
     android:layout_width="match_parent"
@@ -9,16 +10,18 @@
 
 
     <RelativeLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_anchor="@+id/relativeLayout"
+        app:layout_anchorGravity="left|top">
 
         <org.osmdroid.views.MapView
-                android:id="@+id/map"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:longClickable="true"
-                android:scrollbars="vertical"
-           />
+            android:id="@+id/map"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:longClickable="true"
+            android:scrollbars="vertical" />
 
 
 
@@ -27,7 +30,7 @@
             android:id="@+id/location"
             android:layout_width="30dp"
             android:layout_height="30dp"
-           android:layout_alignParentEnd="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_marginEnd="25dp"
             android:layout_marginRight="25dp"
@@ -58,7 +61,10 @@
             android:text="@string/plus"
             android:textSize="12sp" />
 
-        <include layout="@layout/persistent_bottomsheet" />
+        <include
+            layout="@layout/persistent_bottomsheet"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true" />
 
 
     </RelativeLayout>

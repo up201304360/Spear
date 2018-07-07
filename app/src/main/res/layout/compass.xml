@@ -3,28 +3,6 @@
     android:layout_height="match_parent"
     android:background="#80000000">
 
-    <TextView
-        android:id="@+id/DegreeTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="51dp"
-        android:text="@string/heading_0_0"
-        android:textColor="#000000"
-        android:textSize="25sp"
-        android:textStyle="normal|bold" />
-
-    <TextView
-        android:id="@+id/NameTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/name"
-        android:textColor="#000000"
-        android:textSize="25sp"
-        android:textStyle="normal|bold" />
 
     <TextView
         android:id="@+id/DirectionTV"
@@ -32,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="95dp"
+        android:layout_marginTop="40dp"
         android:text="@string/distance_0_0"
         android:textColor="#000000"
         android:textSize="25sp"
@@ -44,16 +22,16 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="139dp"
-        android:text="@string/vehicle_s_direction"
+        android:layout_marginTop="82dp"
+        android:text="@string/bearing"
         android:textColor="#000000"
         android:textSize="25sp"
         android:textStyle="normal|bold" />
 
     <ImageView
         android:id="@+id/compass_image"
-        android:layout_width="255dp"
-        android:layout_height="271dp"
+        android:layout_width="263dp"
+        android:layout_height="296dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="66dp"

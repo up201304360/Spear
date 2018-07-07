@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -155,7 +154,7 @@ public class MainActivity extends AppCompatActivity
     static ArrayList<GeoPoint> planWaypoints = new ArrayList<>();
     static boolean hasEnteredServiceMode = false;
     static boolean wasPlanChanged = false;
-    static String stateconnected;
+    String stateconnected;
     static int zoomLevel;
     static List<Integer> orientationOtherVehicles;
     static int orientationSelected;
@@ -189,12 +188,14 @@ public class MainActivity extends AppCompatActivity
     Decelerate decelerate;
     @ViewById(R.id.stopTeleop)
     StopTeleop stopTeleop;
-    @ViewById(R.id.textView2)
+    @ViewById(R.id.decelerateTV)
     TextView txt2;
-    @ViewById(R.id.textView4)
+    @ViewById(R.id.accelerateTV)
     TextView txt4;
     @ViewById(R.id.textView5)
     TextView txt5;
+    @ViewById(R.id.textViewMap)
+    TextView txtmap;
     TeleOperation teleOperation;
     List<VehicleState> vehicleStateList;
     MyLocationNewOverlay myLocationOverlay;
@@ -209,8 +210,7 @@ public class MainActivity extends AppCompatActivity
     OsmMapsItemizedOverlay mItemizedOverlay;
     static  double latitudeAndroid;
     static double longitudeAndroid;
-    @ViewById(R.id.velocity)
-    TextView velocity;
+
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
     Marker pointsFromPlan;
@@ -461,8 +461,8 @@ public class MainActivity extends AppCompatActivity
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
         map.getOverlays().add(mCompassOverlay);
-        velocity.setVisibility(View.VISIBLE);
-        velocity.bringToFront();
+        txtmap.setVisibility(View.VISIBLE);
+        txtmap.bringToFront();
 
         setupSharedPreferences();
 
@@ -1190,15 +1190,13 @@ if(isRipplesSelected) {
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
-        Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         if (imc.stillConnected() != null) {
 
             if (imc.selectedvehicle != null) {
                 if (!(imc.stillConnected().contains(imc.selectedvehicle)))
                     runOnUiThread(() -> {
-                        vibrator.cancel();
                         serviceBar.setText(" ");
-                        velocity.setText(" ");
+                        txtmap.setText(" ");
                         //retirar icon
                         selectedVehiclePosition = null;
                         if (map.getOverlays().contains(markersOverlay2))
@@ -1274,7 +1272,7 @@ if(isRipplesSelected) {
 
 
                     if (planBeingExecuted == null) {
-                        planExecuting = "null";
+                        planExecuting = "No Plan Executing";
                     } else {
                         planExecuting = planBeingExecuted;
                         String[] getPlanName = planExecuting.split("-");
@@ -1282,12 +1280,8 @@ if(isRipplesSelected) {
                     }
 
 
-                    long[] pattern = {0, 50, 500};
-                    assert vibrator != null;
-                    vibrator.vibrate(pattern, 0);
-
-                    if (velocity != null)
-                        runOnUiThread(() -> velocity.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n" + stateconnected + "\n " + planExecuting));
+                    if (txtmap != null)
+                        runOnUiThread(() -> txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + getString(R.string.depthstring) + " " + depthString + " " + stateconnected + " " + planExecuting));
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
@@ -1318,14 +1312,13 @@ if(isRipplesSelected) {
         }
         if (stateList.size() != 0) {
             for (int i = 0; i < stateList.size(); i++) {
-                if (stateconnected != null)
                 stateconnected = stateList.toString();
 
                 if (!isStopPressed) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
                     if ((previous != null) && !hasEnteredServiceMode && stateconnected.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
-                            followMeOn =false;
+                        followMeOn = false;
 
                         previous = null;
                         areNewWaypointsFromAreaUpdated = false;
@@ -1333,7 +1326,6 @@ if(isRipplesSelected) {
                         otherVehiclesPositionList.clear();
                         wasPlanChanged = false;
                         cleanMap();
-
 
 
                     }
