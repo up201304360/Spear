@@ -27,7 +27,8 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_marginTop="29dp"
-            android:textColor="#FFFFFF" />
+            android:textColor="#FFFFFF"
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/servicebar"
@@ -77,66 +78,61 @@
         <Button
             android:id="@+id/teleOperationButton"
             android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_alignLeft="@+id/stop"
+            android:layout_height="55dp"
             android:layout_alignParentTop="true"
+            android:layout_alignLeft="@+id/accelerate"
             android:background="@drawable/teleopbutton"
             android:text="@string/teleop"
             android:textColor="#ffffff"
-            android:layout_alignStart="@+id/stop"
+            android:layout_alignStart="@+id/accelerate"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/near"
             android:layout_width="100dp"
-            android:layout_height="50dp"
+            android:layout_height="55dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/accelerate"
-            android:layout_marginEnd="3dp"
-            android:layout_marginRight="7dp"
+            android:layout_alignParentTop="true"
             android:background="@drawable/commandbutton"
             android:text="@string/near"
             android:textColor="#ffffff"
+            android:layout_marginEnd="19dp"
+            android:layout_marginRight="19dp"
             android:textSize="12sp" />
 
 
         <Button
             android:id="@+id/stop"
             android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_alignBaseline="@+id/textView5"
-            android:layout_alignBottom="@+id/textView5"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginLeft="7dp"
-            android:layout_marginStart="3dp"
+            android:layout_height="55dp"
+            android:layout_alignEnd="@+id/stopTeleop"
+            android:layout_alignParentBottom="true"
             android:background="@drawable/stopbutton"
             android:text="@string/stop"
             android:textColor="#ffffff"
+            android:layout_alignRight="@+id/stopTeleop"
             android:textSize="12sp" />
-
-
 
 
         <Button
             android:id="@+id/dive"
             android:layout_width="100dp"
-            android:layout_height="50dp"
+            android:layout_height="55dp"
             android:layout_alignLeft="@+id/near"
             android:layout_alignParentBottom="true"
+            android:layout_alignStart="@+id/near"
             android:background="@drawable/commandbutton"
             android:text="@string/dive"
             android:textColor="#ffffff"
-            android:layout_alignStart="@+id/near"
             android:textSize="12sp" />
 
         <Button
             android:id="@+id/keepStation"
             android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_alignLeft="@+id/near"
+            android:layout_height="55dp"
             android:layout_alignStart="@+id/near"
+            android:layout_alignLeft="@+id/near"
             android:background="@drawable/commandbutton"
             android:text="@string/station"
             android:textColor="#ffffff"
@@ -147,9 +143,9 @@
         <Button
             android:id="@+id/startplan"
             android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_alignLeft="@+id/teleOperationButton"
+            android:layout_height="55dp"
             android:layout_alignStart="@+id/teleOperationButton"
+            android:layout_alignLeft="@+id/teleOperationButton"
             android:background="@drawable/commandbutton"
             android:text="@string/startplan"
             android:textColor="#ffffff"
@@ -159,7 +155,7 @@
         <com.example.nachito.spear.StopTeleop xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/stopTeleop"
             android:layout_width="101dp"
-            android:layout_height="52dp"
+            android:layout_height="55dp"
             android:layout_alignLeft="@+id/teleOperationButton"
             android:layout_alignParentBottom="true"
             android:layout_alignStart="@+id/teleOperationButton"
@@ -185,30 +181,31 @@
         <com.example.nachito.spear.Accelerate
             android:id="@+id/accelerate"
             android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_alignLeft="@+id/stop"
-            android:layout_alignStart="@+id/stop"
+            android:layout_height="55dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
             android:background="@drawable/commandbutton"
-            android:layout_centerVertical="true"
+            android:layout_marginLeft="13dp"
+            android:layout_marginStart="13dp"
             android:textSize="14sp" />
 
         <TextView
             android:id="@+id/accelerateTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/decelerate"
-            android:layout_alignLeft="@+id/decelerateTV"
+            android:layout_alignBaseline="@+id/teleOperationButton"
             android:layout_alignStart="@+id/decelerateTV"
-            android:layout_marginBottom="16dp"
             android:text="@string/acc"
+            android:layout_alignLeft="@+id/decelerateTV"
             android:textColor="#ffffff" />
 
         <com.example.nachito.spear.Decelerate
             android:id="@+id/decelerate"
             android:layout_width="100dp"
-            android:layout_height="50dp"
-            android:layout_alignLeft="@+id/teleOperationButton"
+            android:layout_height="55dp"
             android:layout_alignStart="@+id/teleOperationButton"
+            android:layout_alignLeft="@+id/teleOperationButton"
             android:background="@drawable/commandbutton"
             android:text="@string/decelerate"
             android:textColor="#ffffff"
@@ -219,12 +216,12 @@
             android:id="@+id/decelerateTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="20dp"
-            android:layout_marginStart="20dp"
+            android:layout_alignParentLeft="true"
             android:text="@string/decelerate"
+            android:layout_marginLeft="29dp"
+            android:layout_marginStart="29dp"
             android:textColor="#ffffff" />
 
         <com.example.nachito.spear.Joystick
@@ -232,6 +229,7 @@
             android:layout_width="400dp"
             android:layout_height="450dp"
             android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:layout_alignParentTop="true" />
 
 
