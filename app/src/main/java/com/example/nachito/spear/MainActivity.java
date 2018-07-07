@@ -196,6 +196,8 @@ public class MainActivity extends AppCompatActivity
     TextView txt5;
     @ViewById(R.id.textViewMap)
     TextView txtmap;
+    @ViewById(R.id.mainTV)
+    TextView mainTV;
     TeleOperation teleOperation;
     List<VehicleState> vehicleStateList;
     MyLocationNewOverlay myLocationOverlay;
@@ -258,6 +260,9 @@ public class MainActivity extends AppCompatActivity
     Polygon circle2;
     protected PowerManager.WakeLock mWakeLock;
     String planExecuting;
+    ArrayList<String> errorsList;
+
+
 
     public static GeoPoint getVariables() {
         return selectedVehiclePosition;
@@ -461,7 +466,7 @@ public class MainActivity extends AppCompatActivity
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
         map.getOverlays().add(mCompassOverlay);
-        txtmap.setVisibility(View.VISIBLE);
+        mainTV.setVisibility(View.VISIBLE);
         txtmap.bringToFront();
 
         setupSharedPreferences();
@@ -840,6 +845,7 @@ if(isRipplesSelected) {
                             pc.setRequestId(0);
                             pc.setPlanId("SpearTeleoperation-" + imc.selectedvehicle);
                             imc.sendMessage(pc);
+
                         })
                         .setNegativeButton("No", (dialog, id) -> dialog.cancel());
                 AlertDialog alertDialog = alertDialogBuilder.create();
@@ -1125,20 +1131,7 @@ if(isRipplesSelected) {
                 e.printStackTrace();
             }
             return true;
-        } else if (id == R.id.sms) {
-            Intent i = new Intent(this, StaticListVehicles.class);
-            startActivity(i);
 
-            return true;
-        } else if (id == R.id.area) {
-            Intent i = new Intent(this, Area_.class);
-            i.putExtra("selected", imc.selectedvehicle);
-            startActivity(i);
-
-        } else if (id == R.id.line) {
-            Intent i = new Intent(this, Line.class);
-            i.putExtra("selected", imc.selectedvehicle);
-            startActivity(i);
 
         } else if (id == R.id.ais) {
 
@@ -1153,6 +1146,14 @@ if(isRipplesSelected) {
 
             }
 
+
+        } else if (id == R.id.sysinter) {
+            try {
+                startActivity(new Intent(this, SysInteractions.class));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         } else if (id == R.id.ripples) {
 
             if (!isRipplesSelected) {
@@ -1163,10 +1164,6 @@ if(isRipplesSelected) {
                 isRipplesSelected = false;
 
 
-        } else if (id == R.id.compass) {
-
-            Intent i = new Intent(this, Compass.class);
-            startActivity(i);
         } else if (id == R.id.followme) {
 
             followme();
@@ -1187,6 +1184,7 @@ if(isRipplesSelected) {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
@@ -1196,7 +1194,7 @@ if(isRipplesSelected) {
                 if (!(imc.stillConnected().contains(imc.selectedvehicle)))
                     runOnUiThread(() -> {
                         serviceBar.setText(" ");
-                        txtmap.setText(" ");
+                        mainTV.setText(" ");
                         //retirar icon
                         selectedVehiclePosition = null;
                         if (map.getOverlays().contains(markersOverlay2))
@@ -1256,7 +1254,6 @@ if(isRipplesSelected) {
                         });
 
 
-
                         if (android.os.Build.VERSION.SDK_INT <= M) {
                             bitmapArrow = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowgreen2));
 
@@ -1272,7 +1269,7 @@ if(isRipplesSelected) {
 
 
                     if (planBeingExecuted == null) {
-                        planExecuting = "No Plan Executing";
+                        planExecuting = " ";
                     } else {
                         planExecuting = planBeingExecuted;
                         String[] getPlanName = planExecuting.split("-");
@@ -1280,8 +1277,24 @@ if(isRipplesSelected) {
                     }
 
 
-                    if (txtmap != null)
-                        runOnUiThread(() -> txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + getString(R.string.depthstring) + " " + depthString + " " + stateconnected + " " + planExecuting));
+                    if (teleOperation == null) {
+                        runOnUiThread(() -> {
+                            txtmap.setVisibility(View.INVISIBLE);
+                            mainTV.setVisibility(View.VISIBLE);
+                            mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + " \n" + planExecuting);
+                            if (errorsList.size() > 2) {
+                                mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + "\n" + errorsList.toString());
+                            }
+                        });
+
+                    } else {
+                        runOnUiThread(() -> {
+                            mainTV.setVisibility(View.INVISIBLE);
+                            txtmap.setVisibility(View.VISIBLE);
+                            txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + getString(R.string.depthstring) + " " + depthString + " " + stateconnected);
+                        });
+
+                    }
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
@@ -1299,6 +1312,7 @@ if(isRipplesSelected) {
     @Periodic
     public void updateState() {
         stateList = new ArrayList<>();
+        errorsList = new ArrayList<>();
         vehicleStateList = imc.connectedVehicles();
 
 
@@ -1307,7 +1321,7 @@ if(isRipplesSelected) {
             if (imc.selectedvehicle != null)
                 if (imc.selectedvehicle.equals(state.getSourceName()))
                     stateList.add(state.getOpModeStr());
-
+            errorsList.add(state.getErrorEnts());
 
         }
         if (stateList.size() != 0) {
@@ -1330,7 +1344,10 @@ if(isRipplesSelected) {
 
                     }
 
+
                 }
+
+
             }
         }
     }
@@ -1545,7 +1562,7 @@ if(isRipplesSelected) {
 
     }
 
-public void followme(){
+    public void followme() {
     if (imc.selectedvehicle == null) {
         Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
 

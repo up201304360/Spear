@@ -44,7 +44,6 @@ import static com.example.nachito.spear.MainActivity.isDepthSelected;
 import static com.example.nachito.spear.MainActivity.isRPMSelected;
 import static com.example.nachito.spear.MainActivity.isStopPressed;
 import static com.example.nachito.spear.MainActivity.localizacao;
-
 import static com.example.nachito.spear.MainActivity.speed;
 import static com.example.nachito.spear.MainActivity.startBehaviour;
 import static com.example.nachito.spear.MainActivity.zoomLevel;
@@ -430,7 +429,7 @@ public class Line extends AppCompatActivity {
         }
         markerList.clear();
         numberOfPoints = 0;
-
+        getPointsLine().clear();
 
         super.onBackPressed();
     }

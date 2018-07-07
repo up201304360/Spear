@@ -101,4 +101,6 @@
     <string name="follow_me">Follow Me</string>
     <string name="name">Name</string>
     <string name="bearing">Bearing:</string>
+    <string name="test">TEST</string>
+    <string name="system_interactions">System Interactions</string>
 </resources>

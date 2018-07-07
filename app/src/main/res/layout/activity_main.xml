@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,63 +8,63 @@
     tools:context=".MainActivity">
 
 
-    <RelativeLayout
-        android:id="@+id/relativeLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_anchor="@+id/relativeLayout"
-        app:layout_anchorGravity="left|top">
+        <RelativeLayout
+            android:id="@+id/relativeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_anchor="@+id/relativeLayout"
+            app:layout_anchorGravity="left|top">
 
-        <org.osmdroid.views.MapView
-            android:id="@+id/map"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:longClickable="true"
-            android:scrollbars="vertical" />
-
-
+                <org.osmdroid.views.MapView
+                    android:id="@+id/map"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:longClickable="true"
+                    android:scrollbars="vertical" />
 
 
-        <Button
-            android:id="@+id/location"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginEnd="25dp"
-            android:layout_marginRight="25dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/loc2" />
+                <Button
+                    android:id="@+id/location"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginEnd="25dp"
+                    android:layout_marginRight="25dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/loc2" />
 
-        <Button
-            android:id="@+id/minus"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginEnd="25dp"
-            android:layout_marginRight="25dp"
-            android:layout_marginTop="55dp"
-            android:background="#4D000000"
-            android:text="@string/minus"
-            android:textSize="12sp" />
+                <Button
+                    android:id="@+id/minus"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginEnd="25dp"
+                    android:layout_marginRight="25dp"
+                    android:layout_marginTop="55dp"
+                    android:background="#4D000000"
+                    android:text="@string/minus"
+                    android:textSize="12sp" />
 
-        <Button
-            android:id="@+id/plus"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignLeft="@+id/location"
-            android:layout_alignStart="@+id/location"
-            android:layout_below="@+id/minus"
-            android:background="#4D000000"
-            android:text="@string/plus"
-            android:textSize="12sp" />
+                <Button
+                    android:id="@+id/plus"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignLeft="@+id/location"
+                    android:layout_alignStart="@+id/location"
+                    android:layout_below="@+id/minus"
+                    android:background="#4D000000"
+                    android:text="@string/plus"
+                    android:textSize="12sp" />
 
-        <include
-            layout="@layout/persistent_bottomsheet"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true" />
+                <include
+                    layout="@layout/persistent_bottomsheet"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    tools:ignore="IncludeLayoutParam" />
 
 
-    </RelativeLayout>
+        </RelativeLayout>
 </android.support.design.widget.CoordinatorLayout>

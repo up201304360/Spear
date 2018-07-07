@@ -131,6 +131,7 @@
         <activity android:name=".Area" />
 
         <activity android:name=".MainActivity" />
+        <activity android:name=".SysInteractions" />
 
 
         <receiver
