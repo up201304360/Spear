@@ -3,11 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <CheckBoxPreference
-        android:defaultValue="@bool/pref_show_rpmms_default"
+    <ListPreference
         android:key="@string/pref_show_rpmms_key"
-        android:summaryOff="@string/pref_show_false"
-        android:summaryOn="@string/pref_show_true"
+        android:defaultValue="RPM"
+        android:entries="@array/pref_rpmms_names"
+        android:entryValues="@array/pref_show_rpmms_values"
+        android:summary="Choose Speed Control"
         android:title="@string/pref_show_rpmms_label" />
 
 
@@ -28,12 +29,20 @@
         android:key="@string/pref_radius_key"
         android:singleLine="true"
         android:title="@string/radius" />
-    <CheckBoxPreference
-        android:defaultValue="@bool/pref_show_depth_default"
+
+
+    <ListPreference
+        android:defaultValue="Depth"
         android:key="@string/pref_show_depth_key"
-        android:summaryOff="@string/pref_show_depthfalse"
-        android:summaryOn="@string/pref_show_depthtrue"
+
+        android:entries="@array/pref_depth_names"
+
+        android:entryValues="@array/pref_depth_values"
+        android:summary="Choose Z Control"
+
         android:title="@string/pref_show_depth_label" />
+
+
     <EditTextPreference
         android:defaultValue="@string/pref_depth_default"
         android:key="@string/pref_depth_key"

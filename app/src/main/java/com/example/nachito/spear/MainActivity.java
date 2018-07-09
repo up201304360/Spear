@@ -632,7 +632,6 @@ public class MainActivity extends AppCompatActivity
     };
 
 
-    //TODO  - atualizar o mais recente
     public void showRipplesPos(){
 
 if(isRipplesSelected) {
@@ -727,9 +726,27 @@ if(isRipplesSelected) {
     private void setupSharedPreferences() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        setShowRPM(sharedPreferences.getBoolean(getString(R.string.pref_show_rpmms_key), getResources().getBoolean((R.bool.pref_show_rpmms_default))));
+        String foregroundColor = sharedPreferences.getString(getString(R.string.pref_show_rpmms_key), "speedControl");
+
+        if (foregroundColor.equals("RPM")) {
+            setShowRPM(true);
+        } else
+            setShowRPM(false);
+
+
         setOfflineMap(sharedPreferences.getBoolean(getString(R.string.pref_show_offline_key), getResources().getBoolean(R.bool.pref_show_offline_default)));
-        setShowDepth(sharedPreferences.getBoolean(getString(R.string.pref_show_depth_key), getResources().getBoolean(R.bool.pref_show_depth_default)));
+
+
+        String zControl = sharedPreferences.getString(getString(R.string.pref_show_depth_key), "zControl");
+
+        if (zControl.equals("Depth")) {
+            setShowDepth(true);
+        } else
+            setShowRPM(false);
+
+
+
+
         loadFromPrefs(sharedPreferences);
 
 
@@ -749,10 +766,13 @@ if(isRipplesSelected) {
     public void setShowRPM(boolean showrpm) {
         MainActivity.isRPMSelected = showrpm;
 
+
     }
 
     public void setShowDepth(boolean showDepth) {
         MainActivity.isDepthSelected = showDepth;
+
+
     }
 
     public void setOfflineMap(boolean isOfflineMap) {
@@ -768,17 +788,20 @@ if(isRipplesSelected) {
 
     }
 
+    @SuppressLint("ResourceType")
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
 //update the screen if the shared preferences change
 
-        if (key.equals(getString(R.string.pref_show_rpmms_key))) {
+        String foregroundColor = sharedPreferences.getString(getString(R.string.pref_show_rpmms_key), "speedControl");
 
+        if (foregroundColor.equals("RPM")) {
+            setShowRPM(true);
+        } else
+            setShowRPM(false);
 
-            setShowRPM(sharedPreferences.getBoolean(key, getResources().getBoolean((R.bool.pref_show_rpmms_default))));
-
-        } else if (key.equals(getString(R.string.pref_show_offline_key))) {
+        if (key.equals(getString(R.string.pref_show_offline_key))) {
             setOfflineMap(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.pref_show_offline_default)));
         } else if (key.equals(getString(R.string.pref_speed_key))) {
             loadFromPrefs(sharedPreferences);
@@ -792,10 +815,14 @@ if(isRipplesSelected) {
             loadFromPrefs(sharedPreferences);
         } else if (key.equals(getString(R.string.pref_altitude_key))) {
             loadFromPrefs(sharedPreferences);
-        } else if (key.equals(getString(R.string.pref_show_depth_key))) {
-            setShowDepth(sharedPreferences.getBoolean(key, getResources().getBoolean((R.bool.pref_show_depth_default))));
-
         }
+
+        String zControlValue = sharedPreferences.getString(getString(R.string.pref_show_depth_key), "zControl");
+        if (zControlValue.equals("Depth")) {
+            setShowDepth(true);
+        } else
+            setShowDepth(false);
+
     }
 
     @UiThread

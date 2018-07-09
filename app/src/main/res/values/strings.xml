@@ -50,12 +50,9 @@
     <string name="pref_show_offline_key" translatable="false">Offline</string>
     <string name="pref_show_offtrue" translatable="false">Offline</string>
     <string name="pref_show_offfalse" translatable="false">Online</string>
-    <string name="pref_show_rpmms_key" translatable="false">RPM</string>
-    <string name="pref_show_depth_key" translatable="false">Depth</string>
-    <string name="pref_show_depthtrue" translatable="false">Depth</string>
-    <string name="pref_show_depthfalse" translatable="false"> Altitude</string>
-    <string name="pref_show_true" translatable="false">RPM</string>
-    <string name="pref_show_false" translatable="false"> m/s</string>
+    <string name="pref_show_rpmms_key" translatable="false">speedControl</string>
+    <string name="pref_show_depth_key" translatable="false">zControl</string>
+
     <string name="sms"> SMS</string>
     <string name="edit">Line or Area to follow</string>
     <string name="iridium">Iridium</string>
