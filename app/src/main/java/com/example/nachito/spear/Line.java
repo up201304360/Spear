@@ -65,6 +65,9 @@ public class Line extends AppCompatActivity {
     static ArrayList<Maneuver> lineListManeuvers;
     IMapController mapController;
     Button done;
+    static ArrayList<GeoPoint> nullArray = new ArrayList<>();
+    Button preview;
+
     MapView map;
     Button erase;
     int numberOfPoints;
@@ -78,6 +81,8 @@ public class Line extends AppCompatActivity {
     Button eraseAll;
     boolean isDoneClicked = false;
     String selected;
+    Boolean isPreviewPressed = false;
+
     List<Marker> markerList = new ArrayList<>();
     private Handler mHandler;
     Runnable mStatusChecker = new Runnable() {
@@ -135,6 +140,8 @@ public class Line extends AppCompatActivity {
         nodeIcon = getResources().getDrawable(R.drawable.orangeled);
         erase = findViewById(R.id.eraseLine);
         eraseAll = findViewById(R.id.eraseAllLine);
+        preview = findViewById(R.id.previewLine);
+
         map.setMultiTouchControls(true);
         Toast.makeText(this, " Long click on the map to choose a line", Toast.LENGTH_SHORT).show();
         getIntentSelected();
@@ -173,7 +180,9 @@ public class Line extends AppCompatActivity {
                 markerList.add(startMarker);
                 map.invalidate();
                 numberOfPoints++;
+                points = new ArrayList<>();
 
+                polyline = new Polyline();
                 erase.setOnClickListener(v -> {
                     if (!isDoneClicked) {
                         for (int i = 0; i < numberOfPoints; i++) {
@@ -201,6 +210,10 @@ public class Line extends AppCompatActivity {
                         markerList.clear();
                         markers.clear();
                         numberOfPoints = 0;
+                        if (polyline != null) {
+                            polyline.setPoints(markers);
+                            isPolylineDrawn = false;
+                        }
                         drawGreen();
                         drawBlue();
                         drawRed();
@@ -221,10 +234,27 @@ public class Line extends AppCompatActivity {
                         if (selected == null) {
                             Toast.makeText(Line.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
                         } else {
-                            drawLine();
-                            startRepeatingTask();
                             isDoneClicked = true;
                             isPolylineDrawn = true;
+                            drawLine();
+                            startRepeatingTask();
+
+
+                        }
+                    }
+                });
+
+
+                preview.setOnClickListener(v -> {
+
+                    isPreviewPressed = true;
+                    if (markers.size() == 1 || markers.isEmpty()) {
+                        Toast.makeText(Line.this, "Add more points", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (selected == null) {
+                            Toast.makeText(Line.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+                        } else {
+                            drawLine();
 
                         }
                     }
@@ -253,21 +283,34 @@ public class Line extends AppCompatActivity {
     }
 
     public void drawLine() {
-        points = new ArrayList<>();
-        points.add(markers);
-        polyline = new Polyline();
-        polyline.setWidth(7);
-        polyline.setGeodesic(true);
-        for (int i = 0; i < points.size(); i++)
-            polyline.setPoints(points.get(i));
-        map.getOverlayManager().add(polyline);
-        map.invalidate();
-        if (selected == null) {
-            System.out.println("No vehicle selected");
-        } else {
-            followPoints();
-        }
 
+
+        if (!isDoneClicked && isPreviewPressed) {
+            points.add(markers);
+
+            polyline.setWidth(7);
+            polyline.setGeodesic(true);
+            for (int i = 0; i < points.size(); i++)
+                polyline.setPoints(points.get(i));
+            map.getOverlayManager().add(polyline);
+            map.invalidate();
+        } else if (isDoneClicked) {
+
+            points.add(markers);
+
+            polyline.setWidth(7);
+            polyline.setGeodesic(true);
+            for (int i = 0; i < points.size(); i++)
+                polyline.setPoints(points.get(i));
+            map.getOverlayManager().add(polyline);
+            map.invalidate();
+            if (selected == null) {
+                System.out.println("No vehicle selected");
+            } else {
+                followPoints();
+            }
+
+        }
     }
 
     public void followPoints() {
@@ -352,15 +395,14 @@ public class Line extends AppCompatActivity {
         Bitmap newMarker2;
         if (android.os.Build.VERSION.SDK_INT <= M) {
 
-            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred2));
+            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.ico_ccu));
 
         } else {
 
-            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 50, 50, true);
+            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_ccu), 50, 50, true);
 
         }
-        Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
-        Drawable markerLoc = new BitmapDrawable(getResources(), target);
+        Drawable markerLoc = new BitmapDrawable(getResources(), newMarker2);
         final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
         map.getOverlays().add(markersOverlay2);
 

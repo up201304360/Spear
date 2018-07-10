@@ -22,10 +22,8 @@
         android:layout_marginEnd="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginTop="10dp"
-
-
         android:background="#50505010"
-        android:text="@string/done"
+        android:text="@string/start"
         tools:ignore="RelativeOverlap" />
 
 
@@ -53,5 +51,16 @@
         android:layout_marginTop="11dp"
         android:background="#50505010"
         android:text="@string/eraseAll" />
+
+    <Button
+        android:id="@+id/previewLine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/eraseAllLine"
+        android:layout_alignStart="@+id/eraseAllLine"
+        android:layout_below="@+id/eraseAllLine"
+        android:layout_marginTop="11dp"
+        android:background="#50505010"
+        android:text="@string/preview" />
 
 </RelativeLayout>

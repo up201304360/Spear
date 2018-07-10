@@ -29,7 +29,7 @@
 
 
         android:background="#50505010"
-        android:text="@string/done"
+        android:text="@string/start"
         tools:ignore="RelativeOverlap" />
 
 

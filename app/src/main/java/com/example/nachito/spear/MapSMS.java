@@ -189,15 +189,14 @@ public class MapSMS extends AppCompatActivity {
         Bitmap newMarker2;
         if (android.os.Build.VERSION.SDK_INT <= M) {
 
-            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred2));
+            newMarker2 = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.ico_ccu));
 
         } else {
 
-            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 50, 50, true);
+            newMarker2 = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_ccu), 50, 50, true);
 
         }
-        Bitmap target = MainActivity.RotateMyBitmap(newMarker2, MainActivity.bearingMyLoc);
-        Drawable markerLoc = new BitmapDrawable(getResources(), target);
+        Drawable markerLoc = new BitmapDrawable(getResources(), newMarker2);
         final ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items2, markerLoc, null, this);
         map.getOverlays().add(markersOverlay2);
 
