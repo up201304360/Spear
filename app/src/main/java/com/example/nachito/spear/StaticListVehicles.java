@@ -43,101 +43,167 @@ public class StaticListVehicles extends AppCompatActivity {
         xtreme2 = findViewById(R.id.lauv_xtreme_2);
         nemo = findViewById(R.id.lauv_nemo);
 
+
         xp1.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-xplore-1";
+            if (xp1.isChecked()) {
 
-
+                selectedSMS = "lauv-xplore-1";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
             startActivity(yourIntent);
-
+            }
         });
 
 
         xp2.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-xplore-2";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+            if (xp2.isChecked()) {
 
-            startActivity(yourIntent);
+
+                selectedSMS = "lauv-xplore-2";
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+                startActivity(yourIntent);
+            }
         });
 
         xp3.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-xplore-3";
+            if (xp3.isChecked()) {
+
+                selectedSMS = "lauv-xplore-3";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
 
         xp4.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-xplore-4";
+            if (xp4.isChecked()) {
+
+                selectedSMS = "lauv-xplore-4";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
 
         xp5.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-xplore-5";
+            if (xp5.isChecked()) {
+
+                selectedSMS = "lauv-xplore-5";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
 
         seacon2.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-seacon-2";
+            if (seacon2.isChecked()) {
+
+                selectedSMS = "lauv-seacon-2";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
 
         seacon3.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-seacon-3";
+            if (seacon3.isChecked()) {
+
+                selectedSMS = "lauv-seacon-3";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
 
         nop1.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-noptilus-1";
+            if (nop1.isChecked()) {
+
+                selectedSMS = "lauv-noptilus-1";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
         nop2.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-noptilus-2";
+            if (nop2.isChecked()) {
+
+                selectedSMS = "lauv-noptilus-2";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
         nop3.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-noptilus-3";
+            if (nop3.isChecked()) {
+
+                selectedSMS = "lauv-noptilus-3";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
         xtreme2.setOnCheckedChangeListener((compoundButton, b) -> {
-            selectedSMS = "lauv-xtreme-2";
+            if (xtreme2.isChecked()) {
+
+                selectedSMS = "lauv-xtreme-2";
             Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
             yourIntent.putExtra("selectedVehicle", selectedSMS);
-
-            startActivity(yourIntent);
+                startActivity(yourIntent);
+            }
         });
-        nemo.setOnCheckedChangeListener(((compoundButton, b) -> {
-            selectedSMS = "lauv-nemo-1";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
 
-            startActivity(yourIntent);
+        nemo.setOnCheckedChangeListener(((compoundButton, b) -> {
+            if (nemo.isChecked()) {
+                selectedSMS = "lauv-nemo-1";
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
+
+                startActivity(yourIntent);
+            }
+
         }));
 
+
+
+    }
+
+    @Override
+    public void onResume() {
+
+        xp1.setChecked(false);
+
+        xp2.setChecked(false);
+
+        xp3.setChecked(false);
+
+        xp4.setChecked(false);
+
+        xp5.setChecked(false);
+
+        seacon2.setChecked(false);
+
+        seacon3.setChecked(false);
+
+        nop1.setChecked(false);
+
+        nop2.setChecked(false);
+
+        nop3.setChecked(false);
+
+        xtreme2.setChecked(false);
+
+        nemo.setChecked(false);
+        super.onResume();
 
 
     }

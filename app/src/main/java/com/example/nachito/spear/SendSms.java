@@ -23,20 +23,9 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
-import org.apache.commons.codec.binary.Hex;
 import org.osmdroid.util.GeoPoint;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import pt.lsts.imc.IMCDefinition;
 import pt.lsts.imc.IMCMessage;
-import pt.lsts.imc.IMCOutputStream;
-import pt.lsts.imc.TextMessage;
-import pt.lsts.ripples.model.iridium.ImcIridiumMessage;
 
 import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
@@ -393,36 +382,45 @@ public class SendSms extends AppCompatActivity {
 
 
         sms.setOnClickListener(view -> {
-            switch (checked) {
-                case "pos":
-                    sendSMS(finalNumber, 0, "pos");
-                    break;
-                case "dive":
-                    sendSMS(finalNumber, 0, "dive");
-                    break;
-                case "surface":
-                    sendSMS(finalNumber, 0, "surface");
-                    break;
-                case "stationKeeping":
 
-                    sendSMS(finalNumber, MainActivity.speed, "sk");
-                    break;
-                case "abort":
 
-                    sendSMS(finalNumber, 0, "abort");
-                    break;
-                case "goTo":
+            if (checked == null) {
+                Toast.makeText(this, "No Plan selected", Toast.LENGTH_SHORT).show();
+            } else {
+                switch (checked) {
+                    case "pos":
+                        sendSMS(finalNumber, 0, "pos");
+                        break;
+                    case "dive":
+                        sendSMS(finalNumber, 0, "dive");
+                        break;
+                    case "surface":
+                        sendSMS(finalNumber, 0, "surface");
+                        break;
+                    case "stationKeeping":
 
-                    sendSMS(finalNumber, MainActivity.speed, "go");
-                    break;
-                case "send":
-                    sendSMS(finalNumber, MainActivity.speed, "plan" + planName);
-                    break;
-                case "start":
-                    sendSMS(finalNumber, MainActivity.speed, "start" + planName);
-                    break;
+                        sendSMS(finalNumber, MainActivity.speed, "sk");
+                        break;
+                    case "abort":
+
+                        sendSMS(finalNumber, 0, "abort");
+                        break;
+                    case "goTo":
+
+                        sendSMS(finalNumber, MainActivity.speed, "go");
+                        break;
+                    case "send":
+                        sendSMS(finalNumber, MainActivity.speed, "plan" + planName);
+                        break;
+                    case "start":
+                        sendSMS(finalNumber, MainActivity.speed, "start" + planName);
+                        break;
+
+                }
             }
+
         });
+
 
        /* iridium.setOnClickListener(view -> {
             switch (checked) {
@@ -482,6 +480,8 @@ public class SendSms extends AppCompatActivity {
     }
 
     private void sendSMS(String phoneNumber, double vel, String smsText) {
+
+
         try {
             SmsManager smsManager = SmsManager.getDefault();
 
@@ -630,6 +630,7 @@ public class SendSms extends AppCompatActivity {
 
         }
 
+
     }
 
 /*
@@ -748,9 +749,10 @@ public class SendSms extends AppCompatActivity {
     public void onBackPressed() {
         checked = null;
         selectedSMS = ".";
-        unregisterBroadcast();
 
         super.onBackPressed();
+        unregisterBroadcast();
+
     }
 
     @Override

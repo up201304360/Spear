@@ -53,7 +53,7 @@
     <string name="pref_show_rpmms_key" translatable="false">speedControl</string>
     <string name="pref_show_depth_key" translatable="false">zControl</string>
 
-    <string name="sms"> SMS</string>
+    <string name="sms"> Send via SMS</string>
     <string name="edit">Line or Area to follow</string>
     <string name="iridium">Iridium</string>
     <string name="pos">Pos</string>
