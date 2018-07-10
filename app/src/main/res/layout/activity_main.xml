@@ -23,16 +23,7 @@
                     android:scrollbars="vertical" />
 
 
-                <Button
-                    android:id="@+id/location"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginEnd="25dp"
-                    android:layout_marginRight="25dp"
-                    android:layout_marginTop="20dp"
-                    android:background="@drawable/loc2" />
+
 
                 <Button
                     android:id="@+id/minus"
@@ -40,9 +31,9 @@
                     android:layout_height="30dp"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
-                    android:layout_marginEnd="25dp"
+                    android:layout_marginEnd="20dp"
                     android:layout_marginRight="25dp"
-                    android:layout_marginTop="55dp"
+                    android:layout_marginTop="50dp"
                     android:background="#4D000000"
                     android:text="@string/minus"
                     android:textSize="12sp" />
@@ -51,8 +42,10 @@
                     android:id="@+id/plus"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_alignLeft="@+id/location"
-                    android:layout_alignStart="@+id/location"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginRight="25dp"
                     android:layout_below="@+id/minus"
                     android:background="#4D000000"
                     android:text="@string/plus"

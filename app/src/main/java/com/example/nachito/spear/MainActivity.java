@@ -48,11 +48,13 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.tilesource.XYTileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.MapEventsOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
@@ -226,8 +228,7 @@ public class MainActivity extends AppCompatActivity
     List<Marker> markerListSMS = new ArrayList<>();
     Marker markerSMS;
     ScaleBarOverlay scaleBarOverlay;
-    @ViewById(R.id.location)
-    Button centerLocation;
+
     ItemizedIconOverlay markersOverlay2;
     android.content.res.Resources resources;
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
@@ -397,202 +398,53 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Context ctx = getApplicationContext();
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-        setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT <= 19) {
-            checkConnections();
-        } else {
-            requestForSpecificPermission();
+    MapEventsReceiver mReceive = new MapEventsReceiver() {
+        @Override
+        public boolean singleTapConfirmedHelper(GeoPoint p) {
+
+            return false;
         }
 
-        if (isNetworkAvailable()) {
-            map.setTileSource(TileSourceFactory.MAPNIK);
-            isOfflineSelected = false;
+        @Override
+        public boolean longPressHelper(GeoPoint p) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+            alertDialogBuilder
+                    .setMessage("Lock Map in ")
+                    .setCancelable(true)
+                    .setPositiveButton(("System: " + imc.selectedvehicle), (dialog, id) -> {
+                        if (imc.getSelectedvehicle() != null) {
 
-        } else
+                            mapController.setZoom(16);
+                            zoomLevel = 16;
+                            mapController.setCenter(selectedVehiclePosition);
+                            dialog.dismiss();
+                        } else {
+                            dialog.dismiss();
 
-        {
-            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
+                            warning();
 
-            isOfflineSelected = true;
-        }
-        // map.setTilesScaledToDpi(true);
+                        }
+                    })
+                    .setNegativeButton("My Pos", (dialog, id) -> {
 
+                        if (myPosition != null) {
+                            mapController.setZoom(16);
+                            zoomLevel = 16;
+                            mapController.setCenter(myPosition);
+                            dialog.cancel();
+                        } else
+                            Toast.makeText(context, "Turn Location on", Toast.LENGTH_SHORT).show();
+                        dialog.cancel();
 
-        android.app.ActionBar actionBar = getActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayShowTitleEnabled(false);
-            actionBar.setDisplayShowHomeEnabled(false);
-        }
-        ais = new AISPlot(ctx);
-        customHandlerAIS = new Handler();
-        customHandlerAIS.postDelayed(updateTimerThreadAIS, 2000);
-
-        customHandlerRipples = new Handler();
-        customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
-
-        planWaypointPolyline = new Polyline();
-
-        startMarkerRipples = new Marker[2048];
-        for (int i = 0; i < 2048; i++)
-            startMarkerRipples[i] = new Marker(map);
-
-
-        startMarkerAIS = new Marker[10024];
-        for (int i = 0; i < 10024; i++)
-            startMarkerAIS[i] = new Marker(map);
+                    });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
 
 
-        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        assert pm != null;
-        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
-        this.mWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
-
-        resources = getResources();
-        context = this;
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        orientationOtherVehicles = new ArrayList<>();
-
-        map.setMultiTouchControls(true);
-        map.setClickable(true);
-        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
-        myLocationOverlay.enableMyLocation();
-
-        map.getOverlays().add(this.myLocationOverlay);
-        mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
-        mCompassOverlay.enableCompass();
-        map.getOverlays().add(mCompassOverlay);
-        mainTV.setVisibility(View.VISIBLE);
-        txtmap.bringToFront();
-
-        setupSharedPreferences();
-
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
-        init();
-
-
-        accelerate.setVisibility(View.INVISIBLE);
-
-        decelerate.setVisibility(View.INVISIBLE);
-        Joystick joystick = findViewById(R.id.joystick);
-        joystick.setVisibility(View.INVISIBLE);
-
-        noWifiImage.setVisibility(View.INVISIBLE);
-
-        txt2.setVisibility(View.INVISIBLE);
-        txt4.setVisibility(View.INVISIBLE);
-        txt5.setVisibility(View.INVISIBLE);
-
-        stopTeleop.setVisibility(View.INVISIBLE);
-
-        imc.register(this);
-        minus.setOnClickListener(v -> mapController.zoomOut());
-        plus.setOnClickListener(v -> mapController.zoomIn());
-
-
-        if (android.os.Build.VERSION.SDK_INT >= M) {
-            checkLocationPermission();
-        }
-        try {
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
-        } catch (Exception ignored) {
+            return false;
         }
 
-        /* location manager */
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        updateHandler = new OSMHandler(this);
-
-        for (String provider : locationManager.getProviders(true)) {
-            location = locationManager.getLastKnownLocation(provider);
-            if (location != null) {
-                locationManager.requestLocationUpdates(provider, 0, 0, updateHandler);
-                break;
-            }
-        }
-        if (location == null) {
-            location = new Location(LocationManager.GPS_PROVIDER);
-        }
-        map.getOverlays().add(this.myLocationOverlay);
-        myLocationOverlay.enableMyLocation();
-        map.invalidate();
-        mapController = map.getController();
-        mapController.setZoom(12);
-        zoomLevel = 12;
-        mapController.setCenter(new GeoPoint(location));
-
-
-        scaleBarOverlay = new ScaleBarOverlay(map);
-        List<Overlay> overlays = map.getOverlays();
-
-        overlays.add(scaleBarOverlay);
-
-
-        ReceiveSms.bindListener(new SmsListener() {
-            @Override
-            public void messageReceived(String messageText) {
-                Pattern p = Pattern.compile(getString(R.string.patternMessageReceived));
-
-
-                Matcher matcher = p.matcher(messageText);
-                if (!matcher.matches()) {
-                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "SMS message not understood: " + messageText);
-
-                    return;
-                }
-
-                String type = matcher.group(1);
-                String vehicle = matcher.group(2);
-                String timeOfDay = matcher.group(3);
-                String latMins = matcher.group(4);
-                String lonMins = matcher.group(5);
-                GregorianCalendar date = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-                String[] timeParts = timeOfDay.split(":");
-                date.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeParts[0]));
-                date.set(Calendar.MINUTE, Integer.parseInt(timeParts[1]));
-                date.set(Calendar.SECOND, Integer.parseInt(timeParts[2]));
-                String latParts[] = latMins.split(" ");
-                String lonParts[] = lonMins.split(" ");
-
-                double lat = Double.parseDouble(latParts[0]);
-                lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 60.0 : -Double.parseDouble(latParts[1]) / 60.0;
-                double lon = Double.parseDouble(lonParts[0]);
-                lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
-
-
-                GeoPoint coordSMS = new GeoPoint(lat, lon);
-
-                System.out.println(coordSMS + " coordinates from sms");
-
-                mapController.setCenter(coordSMS);
-                mapController.setZoom(12);
-                zoomLevel = 12;
-                markerSMS = new Marker(map);
-                markerSMS.setPosition(coordSMS);
-                if (vehicleAnterior != null) {
-                    if (vehicle.equals(vehicleAnterior))
-                        markerSMS.setIcon(nodeIcon);
-                    else
-                        markerSMS.setIcon(areaIcon);
-                } else
-                    markerSMS.setIcon(nodeIcon);
-
-                markerSMS.setTitle(vehicle + "\n" + "Lat: " + lat + '\n' + "Lon: " + lon + "\n" + "Hour: " + timeParts[0] + ":" + timeParts[1] + ":" + timeParts[2]);
-                map.getOverlays().add(markerSMS);
-                markerListSMS.add(markerSMS);
-
-                vehicleAnterior = vehicle;
-
-
-            }
-
-        });
-    }
+    };
     //Run task periodically - AIS
 
     private Runnable updateTimerThreadAIS = new Runnable() {
@@ -926,17 +778,8 @@ if(isRipplesSelected) {
         });
 
 
-        centerLocation.setOnClickListener(v -> {
-            if (myPosition != null)
-                mapController.setCenter(myPosition);
-            else
-                Toast.makeText(context, "Turn Location on", Toast.LENGTH_SHORT).show();
-
-        });
-
 
     }
-
     private void requestForSpecificPermission() {
         int PERMISSION_ALL = 101;
         String[] PERMISSIONS = {
@@ -1071,6 +914,205 @@ if(isRipplesSelected) {
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Context ctx = getApplicationContext();
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+        setContentView(R.layout.activity_main);
+        if (Build.VERSION.SDK_INT <= 19) {
+            checkConnections();
+        } else {
+            requestForSpecificPermission();
+        }
+
+        if (isNetworkAvailable()) {
+            map.setTileSource(TileSourceFactory.MAPNIK);
+            isOfflineSelected = false;
+
+        } else
+
+        {
+            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
+
+            isOfflineSelected = true;
+        }
+        // map.setTilesScaledToDpi(true);
+
+
+        android.app.ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayShowHomeEnabled(false);
+        }
+        ais = new AISPlot(ctx);
+        customHandlerAIS = new Handler();
+        customHandlerAIS.postDelayed(updateTimerThreadAIS, 2000);
+
+        customHandlerRipples = new Handler();
+        customHandlerRipples.postDelayed(updateTimerThreadRipples, 100);
+
+        planWaypointPolyline = new Polyline();
+
+        startMarkerRipples = new Marker[2048];
+        for (int i = 0; i < 2048; i++)
+            startMarkerRipples[i] = new Marker(map);
+
+
+        startMarkerAIS = new Marker[10024];
+        for (int i = 0; i < 10024; i++)
+            startMarkerAIS[i] = new Marker(map);
+
+
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        assert pm != null;
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        this.mWakeLock.acquire(10 * 60 * 1000L /*10 minutes*/);
+
+        resources = getResources();
+        context = this;
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        orientationOtherVehicles = new ArrayList<>();
+
+        map.setMultiTouchControls(true);
+        map.setClickable(true);
+        myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
+        myLocationOverlay.enableMyLocation();
+
+        map.getOverlays().add(this.myLocationOverlay);
+        mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
+        mCompassOverlay.enableCompass();
+        map.getOverlays().add(mCompassOverlay);
+        mainTV.setVisibility(View.VISIBLE);
+        txtmap.bringToFront();
+
+        setupSharedPreferences();
+
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
+        init();
+
+
+        accelerate.setVisibility(View.INVISIBLE);
+
+        decelerate.setVisibility(View.INVISIBLE);
+        Joystick joystick = findViewById(R.id.joystick);
+        joystick.setVisibility(View.INVISIBLE);
+
+        noWifiImage.setVisibility(View.INVISIBLE);
+
+        txt2.setVisibility(View.INVISIBLE);
+        txt4.setVisibility(View.INVISIBLE);
+        txt5.setVisibility(View.INVISIBLE);
+
+        stopTeleop.setVisibility(View.INVISIBLE);
+
+        imc.register(this);
+        minus.setOnClickListener(v -> mapController.zoomOut());
+        plus.setOnClickListener(v -> mapController.zoomIn());
+
+
+        if (android.os.Build.VERSION.SDK_INT >= M) {
+            checkLocationPermission();
+        }
+        try {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+        } catch (Exception ignored) {
+        }
+
+        /* location manager */
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        updateHandler = new OSMHandler(this);
+
+        for (String provider : locationManager.getProviders(true)) {
+            location = locationManager.getLastKnownLocation(provider);
+            if (location != null) {
+                locationManager.requestLocationUpdates(provider, 0, 0, updateHandler);
+                break;
+            }
+        }
+        if (location == null) {
+            location = new Location(LocationManager.GPS_PROVIDER);
+        }
+        map.getOverlays().add(this.myLocationOverlay);
+        myLocationOverlay.enableMyLocation();
+        map.invalidate();
+        mapController = map.getController();
+        mapController.setZoom(12);
+        zoomLevel = 12;
+        mapController.setCenter(new GeoPoint(location));
+
+
+        scaleBarOverlay = new ScaleBarOverlay(map);
+        List<Overlay> overlays = map.getOverlays();
+
+        overlays.add(scaleBarOverlay);
+
+
+        ReceiveSms.bindListener(new SmsListener() {
+            @Override
+            public void messageReceived(String messageText) {
+                Pattern p = Pattern.compile(getString(R.string.patternMessageReceived));
+
+
+                Matcher matcher = p.matcher(messageText);
+                if (!matcher.matches()) {
+                    Logger.getLogger(getClass().getName()).log(Level.WARNING, "SMS message not understood: " + messageText);
+
+                    return;
+                }
+
+                String type = matcher.group(1);
+                String vehicle = matcher.group(2);
+                String timeOfDay = matcher.group(3);
+                String latMins = matcher.group(4);
+                String lonMins = matcher.group(5);
+                GregorianCalendar date = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+                String[] timeParts = timeOfDay.split(":");
+                date.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeParts[0]));
+                date.set(Calendar.MINUTE, Integer.parseInt(timeParts[1]));
+                date.set(Calendar.SECOND, Integer.parseInt(timeParts[2]));
+                String latParts[] = latMins.split(" ");
+                String lonParts[] = lonMins.split(" ");
+
+                double lat = Double.parseDouble(latParts[0]);
+                lat += (lat > 0) ? Double.parseDouble(latParts[1]) / 60.0 : -Double.parseDouble(latParts[1]) / 60.0;
+                double lon = Double.parseDouble(lonParts[0]);
+                lon += (lon > 0) ? Double.parseDouble(lonParts[1]) / 60.0 : -Double.parseDouble(lonParts[1]) / 60.0;
+
+
+                GeoPoint coordSMS = new GeoPoint(lat, lon);
+
+                System.out.println(coordSMS + " coordinates from sms");
+
+                mapController.setCenter(coordSMS);
+                mapController.setZoom(12);
+                zoomLevel = 12;
+                markerSMS = new Marker(map);
+                markerSMS.setPosition(coordSMS);
+                if (vehicleAnterior != null) {
+                    if (vehicle.equals(vehicleAnterior))
+                        markerSMS.setIcon(nodeIcon);
+                    else
+                        markerSMS.setIcon(areaIcon);
+                } else
+                    markerSMS.setIcon(nodeIcon);
+
+                markerSMS.setTitle(vehicle + "\n" + "Lat: " + lat + '\n' + "Lon: " + lon + "\n" + "Hour: " + timeParts[0] + ":" + timeParts[1] + ":" + timeParts[2]);
+                map.getOverlays().add(markerSMS);
+                markerListSMS.add(markerSMS);
+
+                vehicleAnterior = vehicle;
+
+
+            }
+
+        });
+
+
+    }
+
+    @Override
     protected void onDestroy() {
         this.mWakeLock.release();
         super.onDestroy();
@@ -1106,22 +1148,25 @@ if(isRipplesSelected) {
         Bitmap newMarker;
         if (android.os.Build.VERSION.SDK_INT <= M) {
 
-            newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.arrowred2));
+            newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.ico_ccu));
 
         } else {
 
-            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.arrowred2), 50, 50, true);
+            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_ccu), 50, 50, true);
 
         }
 
 
-        int selfOrientation = (int) (orientationCompass);
-        selfOrientation = selfOrientation - 180;
-        Bitmap target = RotateMyBitmap(newMarker, selfOrientation);
-
-        Drawable marker3 = new BitmapDrawable(getResources(), target);
+        Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
         ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, marker3, null, context);
         map.getOverlays().add(markersOverlay2);
+
+
+        MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);
+
+
+        map.getOverlays().add(OverlayEventos);
+        //Refreshing the map to draw the new overlay
 
 
 
@@ -1200,16 +1245,7 @@ if(isRipplesSelected) {
         return super.onOptionsItemSelected(item);
     }
 
-    public void zoomVehicle(final EstimatedState state) {
-        if (imc.getSelectedvehicle().equals(state.getSourceName())) {
-            double[] lld = WGS84Utilities.toLatLonDepth(state);
 
-            GeoPoint posicaoVeiculo2 = new GeoPoint(lld[0], lld[1]);
-            mapController.setZoom(14);
-            zoomLevel = 14;
-            mapController.setCenter(posicaoVeiculo2);
-        }
-    }
 
     @SuppressLint("SetTextI18n")
     @Background
@@ -1309,6 +1345,7 @@ if(isRipplesSelected) {
                             txtmap.setVisibility(View.INVISIBLE);
                             mainTV.setVisibility(View.VISIBLE);
                             mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + " \n" + planExecuting);
+
                             if (errorsList.size() > 2) {
                                 mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + "\n" + errorsList.toString());
                             }
@@ -1989,13 +2026,7 @@ if(isRipplesSelected) {
             previous = null;
 
             vehicleName = selectedName2;
-            synchronized (estates) {
-                for (EstimatedState state : estates.values()) {
-                    zoomVehicle(state);
-                }
 
-
-            }
         }
         if (teleOperation != null) {
             teleOperation.finish();
