@@ -422,8 +422,6 @@ public class MainActivity extends AppCompatActivity
                         if (imc.getSelectedvehicle() != null) {
 
                             myPosSelected = false;
-                            mapController.setZoom(16);
-                            zoomLevel = 16;
                             mapController.setCenter(selectedVehiclePosition);
                             detach = true;
                             unlock.setVisibility(View.VISIBLE);
@@ -439,8 +437,6 @@ public class MainActivity extends AppCompatActivity
                     .setNegativeButton("My Pos", (dialog, id) -> {
 
                         if (myPosition != null) {
-                            mapController.setZoom(16);
-                            zoomLevel = 16;
                             mapController.setCenter(myPosition);
                             detach = true;
                             unlock.setVisibility(View.VISIBLE);
