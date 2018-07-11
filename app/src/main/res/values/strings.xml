@@ -46,7 +46,7 @@
     <string name="pref_width_default" translatable="false">25</string>
     <string name="pref_show_rpmms_label" translatable="false">Speed Control</string>
     <string name="pref_show_depth_label" translatable="false">Z Control </string>
-    <string name="pref_show_offline_label" translatable="false">Map Tiles </string>
+    <string name="pref_show_offline_label" translatable="false">Map Tiles - Offline </string>
     <string name="pref_show_offline_key" translatable="false">Offline</string>
     <string name="pref_show_offtrue" translatable="false">Offline</string>
     <string name="pref_show_offfalse" translatable="false">Online</string>
@@ -100,4 +100,5 @@
     <string name="bearing">Bearing:</string>
     <string name="test">TEST</string>
     <string name="system_interactions">System Interactions</string>
+    <string name="unlock_map">Unlock Map</string>
 </resources>

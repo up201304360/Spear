@@ -3,6 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <CheckBoxPreference
+        android:defaultValue="@bool/pref_show_offline_default"
+        android:key="@string/pref_show_offline_key"
+        android:summaryOff="@string/pref_show_offfalse"
+        android:summaryOn="@string/pref_show_offtrue"
+        android:title="@string/pref_show_offline_label" />
+
     <ListPreference
         android:key="@string/pref_show_rpmms_key"
         android:defaultValue="RPM"
@@ -60,10 +67,4 @@
         android:title="@string/width" />
 
 
-    <CheckBoxPreference
-        android:defaultValue="@bool/pref_show_offline_default"
-        android:key="@string/pref_show_offline_key"
-        android:summaryOff="@string/pref_show_offfalse"
-        android:summaryOn="@string/pref_show_offtrue"
-        android:title="@string/pref_show_offline_label" />
 </PreferenceScreen>

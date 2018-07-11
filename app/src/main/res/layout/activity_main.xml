@@ -15,14 +15,15 @@
             app:layout_anchor="@+id/relativeLayout"
             app:layout_anchorGravity="left|top">
 
-                <org.osmdroid.views.MapView
-                    android:id="@+id/map"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:longClickable="true"
-                    android:scrollbars="vertical" />
-
-
+            <org.osmdroid.views.MapView
+                android:id="@+id/map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="0dp"
+                android:longClickable="true"
+                android:scrollbars="vertical" />
 
 
                 <Button
@@ -31,31 +32,31 @@
                     android:layout_height="30dp"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
-                    android:layout_marginEnd="20dp"
-                    android:layout_marginRight="25dp"
-                    android:layout_marginTop="50dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginEnd="19dp"
                     android:background="#4D000000"
                     android:text="@string/minus"
+                    android:layout_marginRight="19dp"
+                    android:layout_marginTop="25dp"
                     android:textSize="12sp" />
 
                 <Button
                     android:id="@+id/plus"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginEnd="20dp"
-                    android:layout_marginRight="25dp"
+                    android:layout_alignLeft="@+id/minus"
                     android:layout_below="@+id/minus"
                     android:background="#4D000000"
                     android:text="@string/plus"
+                    android:layout_alignStart="@+id/minus"
                     android:textSize="12sp" />
 
-                <include
+
+            <include
                     layout="@layout/persistent_bottomsheet"
                     android:layout_alignParentBottom="true"
-                    android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
                     tools:ignore="IncludeLayoutParam" />
 
 

@@ -33,6 +33,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -172,6 +173,8 @@ public class MainActivity extends AppCompatActivity
     Button minus;
     @ViewById(R.id.plus)
     Button plus;
+    @ViewById(R.id.unlock)
+    Button unlock;
     @ViewById(R.id.near)
     Button comeNear;
     @ViewById(R.id.startplan)
@@ -182,6 +185,10 @@ public class MainActivity extends AppCompatActivity
     TextView serviceBar;
     @ViewById(wifiImage)
     ImageView wifiDrawable;
+    // @ViewById(R.id.ledOn)
+    //ImageView ledOn;
+    // @ViewById(R.id.ledOff)
+    //ImageView ledOff;
     @ViewById(R.id.noWifiImage)
     ImageView noWifiImage;
     @ViewById(R.id.accelerate)
@@ -262,8 +269,8 @@ public class MainActivity extends AppCompatActivity
     protected PowerManager.WakeLock mWakeLock;
     String planExecuting;
     ArrayList<String> errorsList;
-
-
+    boolean detach;
+    boolean myPosSelected;
 
     public static GeoPoint getVariables() {
         return selectedVehiclePosition;
@@ -411,12 +418,16 @@ public class MainActivity extends AppCompatActivity
             alertDialogBuilder
                     .setMessage("Lock Map in ")
                     .setCancelable(true)
-                    .setPositiveButton(("System: " + imc.selectedvehicle), (dialog, id) -> {
+                    .setPositiveButton((imc.selectedvehicle), (dialog, id) -> {
                         if (imc.getSelectedvehicle() != null) {
 
+                            myPosSelected = false;
                             mapController.setZoom(16);
                             zoomLevel = 16;
                             mapController.setCenter(selectedVehiclePosition);
+                            detach = true;
+                            unlock.setVisibility(View.VISIBLE);
+
                             dialog.dismiss();
                         } else {
                             dialog.dismiss();
@@ -431,6 +442,10 @@ public class MainActivity extends AppCompatActivity
                             mapController.setZoom(16);
                             zoomLevel = 16;
                             mapController.setCenter(myPosition);
+                            detach = true;
+                            unlock.setVisibility(View.VISIBLE);
+                            myPosSelected = true;
+
                             dialog.cancel();
                         } else
                             Toast.makeText(context, "Turn Location on", Toast.LENGTH_SHORT).show();
@@ -1009,7 +1024,7 @@ if(isRipplesSelected) {
         imc.register(this);
         minus.setOnClickListener(v -> mapController.zoomOut());
         plus.setOnClickListener(v -> mapController.zoomIn());
-
+        unlock.setVisibility(View.INVISIBLE);
 
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
@@ -1262,6 +1277,8 @@ if(isRipplesSelected) {
                         selectedVehiclePosition = null;
                         if (map.getOverlays().contains(markersOverlay2))
                             map.getOverlays().remove(markersOverlay2);
+                        //ledOn.setVisibility(View.INVISIBLE);
+                        //ledOff.setVisibility(View.VISIBLE);
 
                     });
             }
@@ -1296,7 +1313,7 @@ if(isRipplesSelected) {
                     }
                 }
                 if (vname.equals(imc.getSelectedvehicle())) {
-//TODO announce / estimated state
+
 
                     selectedVehiclePosition = new GeoPoint(lld[0], lld[1]);
                     selectedVehicleOrientation = (float) state.getPsi();
@@ -1326,13 +1343,14 @@ if(isRipplesSelected) {
 
                         }
                     }
+
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
 
 
                     if (planBeingExecuted == null) {
-                        planExecuting = " ";
+                        planExecuting = "";
                     } else {
                         planExecuting = planBeingExecuted;
                         String[] getPlanName = planExecuting.split("-");
@@ -1342,14 +1360,18 @@ if(isRipplesSelected) {
 
                     if (teleOperation == null) {
                         runOnUiThread(() -> {
+                            //TODO heartbeat
+                            //  ledOn.setVisibility(View.VISIBLE);
+                            // ledOff.setVisibility(View.INVISIBLE);
                             txtmap.setVisibility(View.INVISIBLE);
                             mainTV.setVisibility(View.VISIBLE);
                             mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + " \n" + planExecuting);
-
                             if (errorsList.size() > 2) {
                                 mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + "\n" + errorsList.toString());
+
                             }
                         });
+
 
                     } else {
                         runOnUiThread(() -> {
@@ -1439,6 +1461,44 @@ if(isRipplesSelected) {
             for (EstimatedState state : estates.values()) {
                 paintState(state);
             }
+
+        }
+        if (detach) {
+
+            if (!myPosSelected) {
+                if (imc.selectedvehicle != null)
+                    mapController.setCenter(selectedVehiclePosition);
+            } else {
+                if (localizacao() != null) {
+                    mapController.setCenter(localizacao());
+
+                }
+            }
+
+            map.setOnTouchListener((y, event) -> {
+
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    // if you want to fire another event
+                }
+
+                // Is detached mode is active all other touch handler
+                // should not be invoked, so just return true
+                return true;
+
+
+            });
+
+            unlock.setOnClickListener(v -> {
+                detach = false;
+                map.setOnTouchListener((y, event) -> {
+                    y.clearFocus();
+                    y.setFocusable(true);
+                    y.setClickable(true);
+
+                    return false;
+                });
+                unlock.setVisibility(View.INVISIBLE);
+            });
 
         }
 
@@ -1956,8 +2016,8 @@ if(isRipplesSelected) {
 
             }
 
-
             listSize = planList.size();
+
         } else if (v.getId() == R.id.servicebar) {
 
             if (teleOperation == null) {
@@ -1993,7 +2053,6 @@ if(isRipplesSelected) {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (!(item.toString().contains(":"))) {
-
 
             PlanControl pc = new PlanControl();
             pc.setType(PlanControl.TYPE.REQUEST);
