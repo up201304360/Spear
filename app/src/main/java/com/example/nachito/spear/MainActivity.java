@@ -85,6 +85,7 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
+import pt.lsts.imc.Heartbeat;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
@@ -161,7 +162,6 @@ public class MainActivity extends AppCompatActivity
     static int zoomLevel;
     static List<Integer> orientationOtherVehicles;
     static int orientationSelected;
-    static float bearingMyLoc;
     static double altitude;
     static boolean isDepthSelected;
     static List<Maneuver> maneuverList;
@@ -185,10 +185,10 @@ public class MainActivity extends AppCompatActivity
     TextView serviceBar;
     @ViewById(wifiImage)
     ImageView wifiDrawable;
-    // @ViewById(R.id.ledOn)
-    //ImageView ledOn;
-    // @ViewById(R.id.ledOff)
-    //ImageView ledOff;
+    /*@ViewById(R.id.ledOn)
+   ImageView ledOn;
+    @ViewById(R.id.ledOff)
+   ImageView ledOff;*/
     @ViewById(R.id.noWifiImage)
     ImageView noWifiImage;
     @ViewById(R.id.accelerate)
@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity
     OsmMapsItemizedOverlay mItemizedOverlay;
     static  double latitudeAndroid;
     static double longitudeAndroid;
-
+    Double currSpeed;
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
     Marker pointsFromPlan;
@@ -617,17 +617,55 @@ if(isRipplesSelected) {
     }
 
     private void loadFromPrefs(SharedPreferences sharedPreferences) {
-        speed = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_speed_key), getString(R.string.pref_speed_default)));
-        duration = (int) Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_duration_key), getString(R.string.pref_duration_default)));
-        radius = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_radius_key), getString(R.string.pref_radius_default)));
-        depth = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_depth_key), getString(R.string.pref_depth_default)));
-        swath_width = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_width_key), "25"));
-        altitude = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_altitude_key), getString(R.string.pref_altitude_default)));
+        try {
+            speed = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_speed_key), getString(R.string.pref_speed_default)));
+            currSpeed = speed;
+            System.out.println(currSpeed + " -----------------" + currSpeed.intValue() + " index" + currSpeed.toString().indexOf("."));
+            if ((isRPMSelected && currSpeed.intValue() < 100) || (isRPMSelected && currSpeed.toString().indexOf(".") < 3) || (!isRPMSelected && currSpeed.toString().indexOf(".") > 2))
+                Toast.makeText(this, "Check speed value", Toast.LENGTH_LONG).show();
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Speed number not accepted INVALID FORMAT", Toast.LENGTH_LONG).show();
+            speed = Float.parseFloat(getString(R.string.pref_speed_default));
 
+        }
+        try {
+            duration = (int) Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_duration_key), getString(R.string.pref_duration_default)));
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Duration number not accepted INVALID FORMAT", Toast.LENGTH_LONG).show();
+            duration = (int) Float.parseFloat(getString(R.string.pref_duration_default));
+        }
+        try {
+            radius = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_radius_key), getString(R.string.pref_radius_default)));
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Radius number not accepted INVALID FORMAT", Toast.LENGTH_LONG).show();
+            radius = Float.parseFloat(getString(R.string.pref_radius_default));
+        }
+        try {
+            depth = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_depth_key), getString(R.string.pref_depth_default)));
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Depth number not accepted INVALID FORMAT", Toast.LENGTH_LONG).show();
+            depth = Float.parseFloat(getString(R.string.pref_depth_default));
+        }
+        try {
+            swath_width = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_width_key), "25"));
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Swath Width number not accepted INVALID FORMAT", Toast.LENGTH_LONG).show();
+            swath_width = Float.parseFloat("25");
+
+        }
+        try {
+            altitude = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_altitude_key), getString(R.string.pref_altitude_default)));
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Altitude number not accepted INVALID FORMAT", Toast.LENGTH_LONG).show();
+            altitude = Float.parseFloat(getString(R.string.pref_altitude_default));
+
+        }
     }
 
     public void setShowRPM(boolean showrpm) {
         MainActivity.isRPMSelected = showrpm;
+
 
 
     }
@@ -663,6 +701,7 @@ if(isRipplesSelected) {
             setShowRPM(true);
         } else
             setShowRPM(false);
+
 
         if (key.equals(getString(R.string.pref_show_offline_key))) {
             setOfflineMap(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.pref_show_offline_default)));
@@ -973,7 +1012,6 @@ if(isRipplesSelected) {
         for (int i = 0; i < 10024; i++)
             startMarkerAIS[i] = new Marker(map);
 
-
         final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         assert pm != null;
         this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
@@ -1273,8 +1311,8 @@ if(isRipplesSelected) {
                         selectedVehiclePosition = null;
                         if (map.getOverlays().contains(markersOverlay2))
                             map.getOverlays().remove(markersOverlay2);
-                        //ledOn.setVisibility(View.INVISIBLE);
-                        //ledOff.setVisibility(View.VISIBLE);
+                        //    ledOn.setVisibility(View.INVISIBLE);
+                        //   ledOff.setVisibility(View.VISIBLE);
 
                     });
             }
@@ -1343,8 +1381,10 @@ if(isRipplesSelected) {
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
-
-
+                    Heartbeat h = new Heartbeat();
+                    h.setSrcEnt(state.getSrcEnt());
+                    imc.sendMessage(imc.selectedvehicle, h);
+                    //TODO timer
                     if (planBeingExecuted == null) {
                         planExecuting = "";
                     } else {
@@ -1357,8 +1397,9 @@ if(isRipplesSelected) {
                     if (teleOperation == null) {
                         runOnUiThread(() -> {
                             //TODO heartbeat
-                            //  ledOn.setVisibility(View.VISIBLE);
-                            // ledOff.setVisibility(View.INVISIBLE);
+                        /*    if(!h.isNull()){
+                             ledOn.setVisibility(View.VISIBLE);
+                             ledOff.setVisibility(View.INVISIBLE);}*/
                             txtmap.setVisibility(View.INVISIBLE);
                             mainTV.setVisibility(View.VISIBLE);
                             mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + " \n" + planExecuting);

@@ -20,7 +20,9 @@
 
 
     <EditTextPreference
+        android:id="@+id/number"
         android:defaultValue="@string/pref_speed_default"
+        android:inputType="number"
         android:key="@string/pref_speed_key"
         android:singleLine="true"
         android:title="@string/speed" />
