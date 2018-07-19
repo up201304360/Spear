@@ -32,4 +32,9 @@
         android:orderInCategory="100"
         android:title="@string/follow_me"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/error"
+        android:orderInCategory="100"
+        android:title="@string/errors_list"
+        app:showAsAction="never" />
 </menu>

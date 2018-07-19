@@ -70,9 +70,11 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -185,10 +187,12 @@ public class MainActivity extends AppCompatActivity
     TextView serviceBar;
     @ViewById(wifiImage)
     ImageView wifiDrawable;
-    /*@ViewById(R.id.ledOn)
+    static HashMap<String, List<String>> allErrorsList;
+    public boolean[] haveHeartBeat = new boolean[100];
+    @ViewById(R.id.ledOn)
    ImageView ledOn;
     @ViewById(R.id.ledOff)
-   ImageView ledOff;*/
+    ImageView ledOff;
     @ViewById(R.id.noWifiImage)
     ImageView noWifiImage;
     @ViewById(R.id.accelerate)
@@ -235,7 +239,8 @@ public class MainActivity extends AppCompatActivity
     List<Marker> markerListSMS = new ArrayList<>();
     Marker markerSMS;
     ScaleBarOverlay scaleBarOverlay;
-
+    @ViewById(R.id.joyLeft)
+    Button joyLeft;
     ItemizedIconOverlay markersOverlay2;
     android.content.res.Resources resources;
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
@@ -269,6 +274,8 @@ public class MainActivity extends AppCompatActivity
     protected PowerManager.WakeLock mWakeLock;
     String planExecuting;
     ArrayList<String> errorsList;
+    @ViewById(R.id.joyRight)
+    Button joyRight;
     boolean detach;
     boolean myPosSelected;
 
@@ -335,6 +342,39 @@ public class MainActivity extends AppCompatActivity
         }
 
 
+    }
+
+    @Periodic(1000)
+    @Consume
+    public void on(Heartbeat state) {
+        for (int i = 0; i < imc.stillConnected().size(); i++) {
+            if (imc.stillConnected().toString().contains(state.getSourceName())) {
+                haveHeartBeat[i] = true;
+                break;
+            }
+        }
+    }
+
+    public boolean getHeartBeat(String sys_name) {
+        for (int i = 0; i < imc.connectedVehicles().size(); i++) {
+
+            if (imc.stillConnected().toString().contains(sys_name)) {
+//TODO é se recebe a mensagem heartbeat
+                return haveHeartBeat[i];
+            }
+        }
+        System.out.println(Arrays.toString(haveHeartBeat));
+
+
+        return false;
+    }
+
+    public void clearHeartBeat(String sys_name) {
+        for (int i = 0; i < imc.stillConnected().size(); i++) {
+            if (imc.stillConnected().toString().contains(sys_name)) {
+                haveHeartBeat[i] = false;
+            }
+        }
     }
 
     private Runnable updateTimerThreadGarbagde = new Runnable() {
@@ -620,7 +660,6 @@ if(isRipplesSelected) {
         try {
             speed = Float.parseFloat(sharedPreferences.getString(getString(R.string.pref_speed_key), getString(R.string.pref_speed_default)));
             currSpeed = speed;
-            System.out.println(currSpeed + " -----------------" + currSpeed.intValue() + " index" + currSpeed.toString().indexOf("."));
             if ((isRPMSelected && currSpeed.intValue() < 100) || (isRPMSelected && currSpeed.toString().indexOf(".") < 3) || (!isRPMSelected && currSpeed.toString().indexOf(".") > 2))
                 Toast.makeText(this, "Check speed value", Toast.LENGTH_LONG).show();
         } catch (NumberFormatException e) {
@@ -751,7 +790,6 @@ if(isRipplesSelected) {
                             startPlan.setVisibility(View.INVISIBLE);
                             comeNear.setVisibility(View.INVISIBLE);
                             keepStation.setVisibility(View.INVISIBLE);
-
                             accelerate.setVisibility(View.VISIBLE);
                             txt2.setVisibility(View.VISIBLE);
                             txt4.setVisibility(View.VISIBLE);
@@ -764,6 +802,12 @@ if(isRipplesSelected) {
                             stopTeleop.setVisibility(View.VISIBLE);
                             stopTeleop.setOnStop(teleOperation);
                             joystick.setVisibility(View.VISIBLE);
+                            joyLeft.setVisibility(View.VISIBLE);
+                            joyLeft.setOnClickListener(b -> {
+
+
+                            });
+                            joyRight.setVisibility(View.VISIBLE);
                             PlanControl pc = new PlanControl();
                             Teleoperation teleoperationMsg = new Teleoperation();
                             teleoperationMsg.setCustom("src=" + imc.getLocalId());
@@ -885,6 +929,8 @@ if(isRipplesSelected) {
                 stopTeleop.setVisibility(View.INVISIBLE);
                 Joystick joystick = findViewById(R.id.joystick);
                 joystick.setVisibility(View.INVISIBLE);
+                joyRight.setVisibility(View.INVISIBLE);
+                joyLeft.setVisibility(View.INVISIBLE);
                 teleOperation = null;
                 TeleOperation.teleop = false;
             } else {
@@ -901,6 +947,8 @@ if(isRipplesSelected) {
                 stopTeleop.setVisibility(View.INVISIBLE);
                 Joystick joystick = findViewById(R.id.joystick);
                 joystick.setVisibility(View.INVISIBLE);
+                joyRight.setVisibility(View.INVISIBLE);
+                joyLeft.setVisibility(View.INVISIBLE);
                 teleOperation = null;
 
             }
@@ -1033,7 +1081,8 @@ if(isRipplesSelected) {
         map.getOverlays().add(mCompassOverlay);
         mainTV.setVisibility(View.VISIBLE);
         txtmap.bringToFront();
-
+        ledOff.setVisibility(View.INVISIBLE);
+        ledOn.setVisibility(View.INVISIBLE);
         setupSharedPreferences();
 
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -1046,7 +1095,8 @@ if(isRipplesSelected) {
         decelerate.setVisibility(View.INVISIBLE);
         Joystick joystick = findViewById(R.id.joystick);
         joystick.setVisibility(View.INVISIBLE);
-
+        joyRight.setVisibility(View.INVISIBLE);
+        joyLeft.setVisibility(View.INVISIBLE);
         noWifiImage.setVisibility(View.INVISIBLE);
 
         txt2.setVisibility(View.INVISIBLE);
@@ -1288,8 +1338,13 @@ if(isRipplesSelected) {
         } else if (id == R.id.followme) {
 
             followme();
+        } else if (id == R.id.error) {
+            try {
+                startActivity(new Intent(this, Errors.class));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
 
         return super.onOptionsItemSelected(item);
     }
@@ -1305,14 +1360,14 @@ if(isRipplesSelected) {
             if (imc.selectedvehicle != null) {
                 if (!(imc.stillConnected().contains(imc.selectedvehicle)))
                     runOnUiThread(() -> {
-                        serviceBar.setText(" ");
-                        mainTV.setText(" ");
+                        serviceBar.setText(" Lost Connection");
+
+                        txtmap.setVisibility(View.INVISIBLE);
                         //retirar icon
                         selectedVehiclePosition = null;
-                        if (map.getOverlays().contains(markersOverlay2))
-                            map.getOverlays().remove(markersOverlay2);
-                        //    ledOn.setVisibility(View.INVISIBLE);
-                        //   ledOff.setVisibility(View.VISIBLE);
+
+                        ledOn.setVisibility(View.INVISIBLE);
+                        clearHeartBeat(imc.selectedvehicle);
 
                     });
             }
@@ -1324,8 +1379,10 @@ if(isRipplesSelected) {
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint((lld[0]), (lld[1])));
                 marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
                 items2.add(marker2);
-
-
+                runOnUiThread(() -> {
+                    ledOn.setVisibility(View.INVISIBLE);
+                    ledOff.setVisibility(View.VISIBLE);
+                });
                 vehicleOrientation = (float) state.getPsi();
 
                 int ori2 = (int) Math.toDegrees(vehicleOrientation);
@@ -1381,10 +1438,7 @@ if(isRipplesSelected) {
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
                     depthString = df2.format(state.getDepth());
-                    Heartbeat h = new Heartbeat();
-                    h.setSrcEnt(state.getSrcEnt());
-                    imc.sendMessage(imc.selectedvehicle, h);
-                    //TODO timer
+
                     if (planBeingExecuted == null) {
                         planExecuting = "";
                     } else {
@@ -1396,15 +1450,18 @@ if(isRipplesSelected) {
 
                     if (teleOperation == null) {
                         runOnUiThread(() -> {
-                            //TODO heartbeat
-                        /*    if(!h.isNull()){
-                             ledOn.setVisibility(View.VISIBLE);
-                             ledOff.setVisibility(View.INVISIBLE);}*/
+                            if (getHeartBeat(state.getSourceName())) {
+                                ledOn.setVisibility(View.VISIBLE);
+                                ledOff.setVisibility(View.INVISIBLE);
+                            } else {
+                                ledOn.setVisibility(View.INVISIBLE);
+                            }
+
                             txtmap.setVisibility(View.INVISIBLE);
                             mainTV.setVisibility(View.VISIBLE);
                             mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + " \n" + planExecuting);
-                            if (errorsList.size() > 2) {
-                                mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + "\n" + errorsList.toString());
+                            if (errorsList != null) {
+                                mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + "\n" + errorsList.toString().replace(",", "\n").replace("[", "").replace("]", "") + "\n" + planExecuting + "\n");
 
                             }
                         });
@@ -1413,11 +1470,13 @@ if(isRipplesSelected) {
                     } else {
                         runOnUiThread(() -> {
                             mainTV.setVisibility(View.INVISIBLE);
+                            ledOff.setVisibility(View.INVISIBLE);
                             txtmap.setVisibility(View.VISIBLE);
                             txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + getString(R.string.depthstring) + " " + depthString + " " + stateconnected);
                         });
 
                     }
+
                 }
 
                 Bitmap target = RotateMyBitmap(bitmapArrow, ori2);
@@ -1426,6 +1485,7 @@ if(isRipplesSelected) {
                 markersOverlay2 = new ItemizedIconOverlay<>(items2, marker_, null, context);
 
                 map.getOverlays().add(markersOverlay2);
+
             }
         }
 
@@ -1436,16 +1496,21 @@ if(isRipplesSelected) {
     public void updateState() {
         stateList = new ArrayList<>();
         errorsList = new ArrayList<>();
-        vehicleStateList = imc.connectedVehicles();
+        allErrorsList = new HashMap<>();
 
+        vehicleStateList = imc.connectedVehicles();
+        List<String> errorsEnts = new ArrayList<>();
 
 
         for (VehicleState state : vehicleStateList) {
             if (imc.selectedvehicle != null)
-                if (imc.selectedvehicle.equals(state.getSourceName()))
+                if (imc.selectedvehicle.equals(state.getSourceName())) {
                     stateList.add(state.getOpModeStr());
-            errorsList.add(state.getErrorEnts());
+                    errorsList.add(state.getErrorEnts());
+                }
 
+            errorsEnts.add(state.getErrorEnts());
+            allErrorsList.put(state.getSourceName(), errorsEnts);
         }
         if (stateList.size() != 0) {
             for (int i = 0; i < stateList.size(); i++) {

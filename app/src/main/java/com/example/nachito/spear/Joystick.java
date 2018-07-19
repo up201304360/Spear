@@ -4,12 +4,10 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-
-import android.os.Handler;
-import android.util.Log;
 
 public class Joystick extends View {
 
@@ -26,6 +24,7 @@ public class Joystick extends View {
     private JoystickMovedListener listener;
     private int sensitivity;
 
+    float initialX, initialY;
     // =========================================
     // Constructors
     // =========================================
@@ -54,7 +53,7 @@ public class Joystick extends View {
         setFocusable(true);
 
         circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        circlePaint.setColor(Color.GRAY);
+        circlePaint.setColor(Color.WHITE);
         circlePaint.setStrokeWidth(1);
         circlePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
@@ -87,7 +86,7 @@ public class Joystick extends View {
         int measuredHeight = measure(heightMeasureSpec);
         int d = Math.min(measuredWidth, measuredHeight);
 
-        handleRadius = (int) (d * 0.25);
+        handleRadius = (int) (d * 0.15);
         handleInnerBoundaries = handleRadius;
 
         setMeasuredDimension(d, d);
@@ -129,7 +128,6 @@ public class Joystick extends View {
     public boolean onTouchEvent(MotionEvent event) {
         int actionType = event.getAction();
 
-        String TAG = "JoystickView";
         if (actionType == MotionEvent.ACTION_MOVE) {
             int px = getMeasuredWidth() / 2;
             int py = getMeasuredHeight() / 2;
@@ -140,8 +138,6 @@ public class Joystick extends View {
 
             touchY = (event.getY() - py);
             touchY = Math.max(Math.min(touchY, radius), -radius);
-            // Coordinates
-            Log.d(TAG, "X:" + touchX + "|Y:" + touchY);
 
             // Pressure
             if (listener != null) {
@@ -155,7 +151,6 @@ public class Joystick extends View {
         } else if (actionType == MotionEvent.ACTION_UP) {
             returnHandleToCenter();
             performClick();
-            Log.d(TAG, "X:" + touchX + "|Y:" + touchY);
         }
         return true;
     }

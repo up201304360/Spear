@@ -101,4 +101,7 @@
     <string name="test">TEST</string>
     <string name="system_interactions">System Interactions</string>
     <string name="unlock_map">Unlock Map</string>
+    <string name="errors_list">Errors List</string>
+    <string name="no_error">No Entities in Error</string>
+    <string name="refresh">Refresh</string>
 </resources>

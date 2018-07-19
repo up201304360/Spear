@@ -237,23 +237,25 @@
             android:textColor="#ffffff"
             android:textSize="17sp" />
 
-        <!--    <ImageView
-                android:id="@+id/ledOn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignStart="@+id/ledOff"
-                android:layout_centerVertical="true"
-                android:background="@drawable/led_on"
-                android:fitsSystemWindows="true" />
+        <ImageView
+            android:id="@+id/ledOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/ledOff"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/ledOff"
+            android:background="@drawable/led_on"
+            android:fitsSystemWindows="true" />
 
-            <ImageView
-                android:id="@+id/ledOff"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/joystick"
-                android:background="@drawable/led_off"
-                android:fitsSystemWindows="true" /> -->
+        <ImageView
+            android:id="@+id/ledOff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toEndOf="@+id/unlock"
+            android:layout_toRightOf="@+id/unlock"
+            android:background="@drawable/led_off"
+            android:fitsSystemWindows="true" />
 
         <Button
             android:id="@+id/unlock"
@@ -264,6 +266,24 @@
             android:background="#4D000000"
             android:text="@string/unlock_map" />
 
+        <Button
+            android:id="@+id/joyLeft"
+            android:layout_width="60dp"
+            android:layout_height="58dp"
+            android:layout_alignEnd="@+id/mainTV"
+            android:layout_alignRight="@+id/mainTV"
+            android:layout_centerVertical="true"
+            android:background="@drawable/baseline_keyboard_arrow_left_black_24dp" />
+
+        <Button
+            android:id="@+id/joyRight"
+            android:layout_width="60dp"
+            android:layout_height="58dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/baseline_keyboard_arrow_right_black_24dp" />
+
         <com.example.nachito.spear.Joystick
             android:id="@+id/joystick"
             android:layout_width="400dp"
@@ -271,7 +291,6 @@
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true" />
-
 
     </RelativeLayout>
 
