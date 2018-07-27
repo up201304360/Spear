@@ -5,7 +5,10 @@ import org.androidannotations.annotations.EBean.Scope;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import pt.lsts.imc.Heartbeat;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Maneuver;
 import pt.lsts.imc.VehicleState;
@@ -26,6 +29,7 @@ public class IMCGlobal extends IMCProtocol {
     private VehicleList veiculos;
     private PlanList planos;
     private PlanList maneuvers;
+    private Timer timer = new Timer(true);
 
     IMCGlobal() {
         super();
@@ -38,6 +42,21 @@ public class IMCGlobal extends IMCProtocol {
         maneuvers = new PlanList(this);
         register(maneuvers);
 
+        //TODO
+        if (stillConnected() != null) {
+            TimerTask sendHeartbeats = new TimerTask() {
+
+                @Override
+                public void run() {
+                    synchronized (stillConnected()) {
+                        for (int i = 0; i < stillConnected().size(); i++)
+                            sendMessage(stillConnected().toString(), new Heartbeat());
+                    }
+                }
+            };
+
+            timer.scheduleAtFixedRate(sendHeartbeats, 2000, 2000);
+        }
     }
 
     @Override
@@ -55,6 +74,7 @@ public class IMCGlobal extends IMCProtocol {
     }
 
     List<VehicleState> connectedVehicles() {
+
         return veiculos.connectedVehicles();
     }
 

@@ -34,15 +34,14 @@ class AISPlot {
     }
 
     private SystemInfoAIS systemInfoAIS;
-    private Context mContext;
     private FirebaseAuth mAuth;
     private Firebase myFirebaseRef;
-    private String URlPath = "https://neptus.firebaseio.com/";
     String message = "ships";
 
-    public AISPlot(Context context) {
-        mContext = context;
+    AISPlot(Context context) {
+        Context mContext = context;
         Firebase.setAndroidContext(context);
+        String URlPath = "https://neptus.firebaseio.com/";
         myFirebaseRef = new Firebase(URlPath);
         systemInfoAIS = new SystemInfoAIS();
         systemInfoAIS.systemSizeAIS = 0;

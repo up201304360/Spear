@@ -278,6 +278,9 @@ public class MainActivity extends AppCompatActivity
     Button joyRight;
     boolean detach;
     boolean myPosSelected;
+    double lastLat;
+    double lastLon;
+
 
     public static GeoPoint getVariables() {
         return selectedVehiclePosition;
@@ -359,7 +362,7 @@ public class MainActivity extends AppCompatActivity
         for (int i = 0; i < imc.connectedVehicles().size(); i++) {
 
             if (imc.stillConnected().toString().contains(sys_name)) {
-//TODO é se recebe a mensagem heartbeat
+//TODO
                 return haveHeartBeat[i];
             }
         }
@@ -1236,41 +1239,42 @@ if(isRipplesSelected) {
     public void onLocationChanged(Location location) {
         latitudeAndroid = Math.toRadians(location.getLatitude());
         longitudeAndroid = Math.toRadians(location.getLongitude());
+        if (!(location.getLatitude() == 0.0 || location.getLongitude() == 0.0)) {
+            lastLat = latitudeAndroid;
+            lastLon = longitudeAndroid;
+            GeoPoint lastPos = new GeoPoint(lastLat, lastLon);
+            myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
 
-        myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
+
+            final ArrayList<OverlayItem> items = new ArrayList<>();
+            OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
+            marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
+            items.add(marker);
+            Bitmap newMarker;
+            if (android.os.Build.VERSION.SDK_INT <= M) {
+
+                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.ico_ccu));
+
+            } else {
+
+                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_ccu), 50, 50, true);
+
+            }
 
 
-        final ArrayList<OverlayItem> items = new ArrayList<>();
-        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
-        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
-        items.add(marker);
-        Bitmap newMarker;
-        if (android.os.Build.VERSION.SDK_INT <= M) {
+            Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
+            ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, marker3, null, context);
+            map.getOverlays().add(markersOverlay2);
 
-            newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.ico_ccu));
 
-        } else {
+            MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);
 
-            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_ccu), 50, 50, true);
+
+            map.getOverlays().add(OverlayEventos);
+            //Refreshing the map to draw the new overlay
+
 
         }
-
-
-        Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
-        ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, marker3, null, context);
-        map.getOverlays().add(markersOverlay2);
-
-
-        MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);
-
-
-        map.getOverlays().add(OverlayEventos);
-        //Refreshing the map to draw the new overlay
-
-
-
-
-
     }
 
     @Override
@@ -1355,6 +1359,7 @@ if(isRipplesSelected) {
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
+
         if (imc.stillConnected() != null) {
 
             if (imc.selectedvehicle != null) {
@@ -1543,6 +1548,7 @@ if(isRipplesSelected) {
 
     //Run task periodically - garbage collection
 
+    @SuppressLint("ClickableViewAccessibility")
     @Background
     @Periodic(500)
     public void updateMap() {
@@ -1552,11 +1558,10 @@ if(isRipplesSelected) {
         map.getOverlays().clear();
 
 
-
-            if (context == MainActivity.this) {
-                drawWifiSignal();
-                drawCompass();
-            }
+        if (context == MainActivity.this) {
+            drawWifiSignal();
+            drawCompass();
+        }
 
 
         synchronized (estates) {
@@ -1644,7 +1649,7 @@ if(isRipplesSelected) {
 
             }
         }
-    afterChoice();
+        afterChoice();
         if (circle2 != null) {
             map.getOverlays().add(circle2);
             map.getOverlayManager().add(circle2);
@@ -1660,7 +1665,7 @@ if(isRipplesSelected) {
                         map.getOverlays().add(pointsFromPlan);
                     }
                     if (planWaypointPolyline != null)
-                    map.getOverlays().add(planWaypointPolyline);
+                        map.getOverlays().add(planWaypointPolyline);
                 }
 
 
@@ -1673,10 +1678,10 @@ if(isRipplesSelected) {
         }
         if (!areNewWaypointsFromAreaUpdated) {
             if (stateconnected != null && stateconnected.charAt(1) != 'S')
-            if (Area.sendmList() != null) {
+                if (Area.sendmList() != null) {
 
-                updateWaypoints();
-            }
+                    updateWaypoints();
+                }
 
         }
     }
