@@ -12,7 +12,6 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -70,7 +69,6 @@ import org.osmdroid.views.util.constants.MapViewConstants;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -87,7 +85,6 @@ import pt.lsts.imc.DesiredSpeed;
 import pt.lsts.imc.DesiredZ;
 import pt.lsts.imc.EstimatedState;
 import pt.lsts.imc.FollowReference;
-import pt.lsts.imc.Heartbeat;
 import pt.lsts.imc.IMCMessage;
 import pt.lsts.imc.Loiter;
 import pt.lsts.imc.Maneuver;
@@ -113,7 +110,7 @@ import static pt.lsts.util.WGS84Utilities.WGS84displace;
 @EActivity
 
 public class MainActivity extends AppCompatActivity
-        implements MapViewConstants, OnLocationChangedListener, LocationListener, SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener {
+        implements MapViewConstants, OnLocationChangedListener, SharedPreferences.OnSharedPreferenceChangeListener, View.OnClickListener {
 
     public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
     public static boolean isOfflineSelected;
@@ -130,7 +127,6 @@ public class MainActivity extends AppCompatActivity
     //Drawables
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.orangeled)
     static Drawable nodeIcon;
-    Marker markerFromLine;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.reddot)
     static Drawable areaIcon;
     @org.androidannotations.annotations.res.DrawableRes(R.drawable.blueled)
@@ -160,7 +156,6 @@ public class MainActivity extends AppCompatActivity
     static ArrayList<GeoPoint> planWaypoints = new ArrayList<>();
     static boolean hasEnteredServiceMode = false;
     static boolean wasPlanChanged = false;
-    String stateconnected;
     static int zoomLevel;
     static List<Integer> orientationOtherVehicles;
     static int orientationSelected;
@@ -168,7 +163,13 @@ public class MainActivity extends AppCompatActivity
     static boolean isDepthSelected;
     static List<Maneuver> maneuverList;
     static Polyline planWaypointPolyline;
+    static HashMap<String, List<String>> allErrorsList;
+    static double latitudeAndroid;
+    static double longitudeAndroid;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
+    protected PowerManager.WakeLock mWakeLock;
+    Marker markerFromLine;
+    String stateconnected;
     @ViewById(R.id.dive)
     Button dive;
     @ViewById(R.id.minus)
@@ -187,12 +188,6 @@ public class MainActivity extends AppCompatActivity
     TextView serviceBar;
     @ViewById(wifiImage)
     ImageView wifiDrawable;
-    static HashMap<String, List<String>> allErrorsList;
-    public boolean[] haveHeartBeat = new boolean[100];
-    @ViewById(R.id.ledOn)
-   ImageView ledOn;
-    @ViewById(R.id.ledOff)
-    ImageView ledOff;
     @ViewById(R.id.noWifiImage)
     ImageView noWifiImage;
     @ViewById(R.id.accelerate)
@@ -207,7 +202,7 @@ public class MainActivity extends AppCompatActivity
     TextView txt4;
     @ViewById(R.id.textView5)
     TextView txt5;
-    @ViewById(R.id.textViewMap)
+    @ViewById(R.id.teleopText)
     TextView txtmap;
     @ViewById(R.id.mainTV)
     TextView mainTV;
@@ -223,8 +218,6 @@ public class MainActivity extends AppCompatActivity
     IMapController mapController;
     OverlayItem lastPosition = null;
     OsmMapsItemizedOverlay mItemizedOverlay;
-    static  double latitudeAndroid;
-    static double longitudeAndroid;
     Double currSpeed;
     @ViewById(R.id.bottomsheet)
     LinearLayout bottom;
@@ -233,7 +226,6 @@ public class MainActivity extends AppCompatActivity
     List<String> vehicleList;
     List<String> planList;
     int listSize;
-    OSMHandler updateHandler;
     List<String> stateList;
     SendSms sendSms;
     List<Marker> markerListSMS = new ArrayList<>();
@@ -245,25 +237,10 @@ public class MainActivity extends AppCompatActivity
     android.content.res.Resources resources;
     ArrayList<GeoPoint> nullArray = new ArrayList<>();
     float selectedVehicleOrientation;
-    private Context context;
     AISPlot ais;
     boolean isAISSelected;
-    private Handler customHandlerAIS;
-    private Marker startMarkerAIS[];
-    private GeoPoint systemPosAIS;
-    private int timeoutAISPull = 10;
-    private int countAisTime = 0;
     GPSConvert gpsConvert = new GPSConvert();
     RipplesPosition ripples;
-    private Handler customHandlerRipples;
-    private Marker startMarkerRipples[];
-    private String UrlRipples = "http://ripples.lsts.pt/api/v1/systems/active";
-    private boolean newRipplesData = false;
-    private RipplesPosition.SystemInfo systemInfo;
-    private RipplesPosition.SystemInfo backSystemInfo;
-    private GeoPoint systemPosRipples;
-    private boolean firstRunRipplesPull = true;
-    private int timeoutRipplesPull = 10;
     boolean isRipplesSelected = false;
     boolean followMeOn;
     double n;
@@ -271,183 +248,16 @@ public class MainActivity extends AppCompatActivity
     GeoPoint geo;
     String vehicleAnterior;
     Polygon circle2;
-    protected PowerManager.WakeLock mWakeLock;
     String planExecuting;
     ArrayList<String> errorsList;
     @ViewById(R.id.joyRight)
     Button joyRight;
     boolean detach;
     boolean myPosSelected;
-    double lastLat;
-    double lastLon;
-
-
-    public static GeoPoint getVariables() {
-        return selectedVehiclePosition;
-    }
-
-
-    public static GeoPoint localizacao() {
-        return myPosition;
-
-
-    }
-
-    public static ArrayList<GeoPoint> drawOtherVehicles() {
-        return otherVehiclesPositionList;
-    }
-
-
-
-    @Nullable
-    public static Bitmap RotateMyBitmap(Bitmap source, float angle) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(angle);
-        if (bitmapArrow != null)
-            return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
-        else
-            return null;
-    }
-
-
-
-
-    public static void startBehaviour(String planid, IMCMessage what) {
-        PlanControl pc = new PlanControl();
-        pc.setArg(what);
-        pc.setType(PlanControl.TYPE.REQUEST);
-        pc.setOp(PlanControl.OP.START);
-        pc.setFlags(0);
-        pc.setRequestId(0);
-        pc.setPlanId(planid);
-
-        isStopPressed = false;
-        wasPlanChanged = false;
-        previous = "S";
-        MainActivity.hasEnteredServiceMode = false;
-        imc.sendMessage(pc);
-
-    }
-
-    public static void updateWaypoints() {
-
-        areNewWaypointsFromAreaUpdated = true;
-
-        if (Area.sendmList() != null) {
-            List<Maneuver> areaWaypoints = new ArrayList<>();
-            for (int i = 0; i < Area.sendmList().size() - 1; i++) {
-                areaWaypoints.add(Area.sendmList().get(i));
-                DrawWaypoints.callWaypoint(areaWaypoints);
-
-            }
-
-
-        }
-
-
-    }
-
-    @Periodic(1000)
-    @Consume
-    public void on(Heartbeat state) {
-        for (int i = 0; i < imc.stillConnected().size(); i++) {
-            if (imc.stillConnected().toString().contains(state.getSourceName())) {
-                haveHeartBeat[i] = true;
-                break;
-            }
-        }
-    }
-
-    public boolean getHeartBeat(String sys_name) {
-        for (int i = 0; i < imc.connectedVehicles().size(); i++) {
-
-            if (imc.stillConnected().toString().contains(sys_name)) {
-//TODO
-                return haveHeartBeat[i];
-            }
-        }
-        System.out.println(Arrays.toString(haveHeartBeat));
-
-
-        return false;
-    }
-
-    public void clearHeartBeat(String sys_name) {
-        for (int i = 0; i < imc.stillConnected().size(); i++) {
-            if (imc.stillConnected().toString().contains(sys_name)) {
-                haveHeartBeat[i] = false;
-            }
-        }
-    }
-
-    private Runnable updateTimerThreadGarbagde = new Runnable() {
-        public void run() {
-            Handler customHandlerGarbagde = new Handler();
-            customHandlerGarbagde.postDelayed(updateTimerThreadGarbagde, 100);
-
-            customHandlerGarbagde.postDelayed(this, 20000);
-            System.gc();
-            Runtime.getRuntime().gc();
-        }
-    };
-
-
-    //if a plan is changed without stopping the plan that was executing
-    @Periodic()
-    public void changePlans() {
-        if ((!isStopPressed && planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(planBeingExecuted)) || (!isStopPressed && planBeingExecuted != null && wasPlanChanged)) {
-//wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
-            cleanMap();
-            updateMap();
-            wasPlanChanged = false;
-        }
-    }
-
-    public void updatePosition(GeoPoint aPoint) {
-        if (mItemizedOverlay == null) {
-            return;
-        }
-        OverlayItem overlayItem;
-        overlayItem = new OverlayItem("Center", "Center", aPoint);
-        lastPosition = overlayItem;
-        mItemizedOverlay.addOverlay(overlayItem);
-        map.getOverlays().add(mItemizedOverlay);
-        map.getController().animateTo(aPoint);
-    }
-
-    @Override
-    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-    }
-
-    public boolean checkLocationPermission() {
-
-
-        if (ContextCompat.checkSelfPermission(this,
-                permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            // Asking user if explanation is needed
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    permission.ACCESS_FINE_LOCATION)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user  timer.startPlan()
-                // sees the explanation, try again to request the permission.
-                //Prompt the user once explanation has been shown
-                ActivityCompat.requestPermissions(this,
-                        new String[]{permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            } else {
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,
-                        new String[]{permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-            }
-            return false;
-        } else {
-            return true;
-        }
-    }
-
+    AppLocationService appLocationService;
+    Location gpsLocation;
+    Location nwLocation;
+    private Context context;
     MapEventsReceiver mReceive = new MapEventsReceiver() {
         @Override
         public boolean singleTapConfirmedHelper(GeoPoint p) {
@@ -499,8 +309,30 @@ public class MainActivity extends AppCompatActivity
         }
 
     };
-    //Run task periodically - AIS
+    private Handler customHandlerAIS;
+    private Marker startMarkerAIS[];
+    private GeoPoint systemPosAIS;
+    private int timeoutAISPull = 10;
+    private int countAisTime = 0;
+    private Handler customHandlerRipples;
+    private Marker startMarkerRipples[];
+    private String UrlRipples = "http://ripples.lsts.pt/api/v1/systems/active";
+    private boolean newRipplesData = false;
+    private RipplesPosition.SystemInfo systemInfo;
+    private RipplesPosition.SystemInfo backSystemInfo;
+    private GeoPoint systemPosRipples;
+    private boolean firstRunRipplesPull = true;
+    private int timeoutRipplesPull = 10;
+    private Runnable updateTimerThreadGarbagde = new Runnable() {
+        public void run() {
+            Handler customHandlerGarbagde = new Handler();
+            customHandlerGarbagde.postDelayed(updateTimerThreadGarbagde, 100);
 
+            customHandlerGarbagde.postDelayed(this, 20000);
+            System.gc();
+            Runtime.getRuntime().gc();
+        }
+    };
     private Runnable updateTimerThreadAIS = new Runnable() {
         @Periodic
         @SuppressLint("SetTextI18n")
@@ -516,8 +348,6 @@ public class MainActivity extends AppCompatActivity
         }
 
     };
-
-
     //Run task periodically - Ripples
     private Runnable updateTimerThreadRipples = new Runnable() {
         @SuppressLint("SetTextI18n")
@@ -537,65 +367,176 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
+    public static GeoPoint getVariables() {
+        return selectedVehiclePosition;
+    }
 
-    public void showRipplesPos(){
+    public static GeoPoint localizacao() {
+        return myPosition;
 
-if(isRipplesSelected) {
 
-    if(newRipplesData){
-        newRipplesData = false;
-        firstRunRipplesPull = false;
-        backSystemInfo = systemInfo;
-        for(int i = 0; i < systemInfo.systemSize; i++){
-            systemPosRipples.setCoords(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude());
-            startMarkerRipples[i].setPosition(systemPosRipples);
-            startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+    }
 
-            if(systemInfo.sysName[i].contains("lauv"))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
-            else if(systemInfo.sysName[i].contains("ccu"))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_ccu));
-            else if(systemInfo.sysName[i].contains("manta"))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_manta));
-            else if(systemInfo.sysName[i].contains("spot"))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.spot_icon));
-            else
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
+    public static ArrayList<GeoPoint> drawOtherVehicles() {
+        return otherVehiclesPositionList;
+    }
 
-            if (!(systemInfo.sysName[i].equals(vehicleList.get(i)))) {//TODO
-                startMarkerRipples[i].setTitle(systemInfo.sysName[i] + "\n" +
-                        gpsConvert.latLonToDM(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude()));
-                map.getOverlays().add(startMarkerRipples[i]);
+    @Nullable
+    public static Bitmap RotateMyBitmap(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        if (bitmapArrow != null)
+            return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+        else
+            return null;
+    }
+
+    public static void startBehaviour(String planid, IMCMessage what) {
+        PlanControl pc = new PlanControl();
+        pc.setArg(what);
+        pc.setType(PlanControl.TYPE.REQUEST);
+        pc.setOp(PlanControl.OP.START);
+        pc.setFlags(0);
+        pc.setRequestId(0);
+        pc.setPlanId(planid);
+
+        isStopPressed = false;
+        wasPlanChanged = false;
+        previous = "S";
+        MainActivity.hasEnteredServiceMode = false;
+        imc.sendMessage(pc);
+
+    }
+
+    public static void updateWaypoints() {
+
+        areNewWaypointsFromAreaUpdated = true;
+
+        if (Area.sendmList() != null) {
+            List<Maneuver> areaWaypoints = new ArrayList<>();
+            for (int i = 0; i < Area.sendmList().size() - 1; i++) {
+                areaWaypoints.add(Area.sendmList().get(i));
+                DrawWaypoints.callWaypoint(areaWaypoints);
+
+            }
+
+
+        }
+
+
+    }
+
+    //if a plan is changed without stopping the plan that was executing
+    @Periodic()
+    public void changePlans() {
+        if ((!isStopPressed && planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(planBeingExecuted)) || (!isStopPressed && planBeingExecuted != null && wasPlanChanged)) {
+//wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
+            cleanMap();
+            updateMap();
+            wasPlanChanged = false;
+        }
+    }
+
+    public void updatePosition(GeoPoint aPoint) {
+        if (mItemizedOverlay == null) {
+            return;
+        }
+        OverlayItem overlayItem;
+        overlayItem = new OverlayItem("Center", "Center", aPoint);
+        lastPosition = overlayItem;
+        mItemizedOverlay.addOverlay(overlayItem);
+        map.getOverlays().add(mItemizedOverlay);
+        map.getController().animateTo(aPoint);
+    }
+
+    //Run task periodically - AIS
+
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+    }
+
+    public void checkLocationPermission() {
+
+
+        if (ContextCompat.checkSelfPermission(this,
+                permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Asking user if explanation is needed
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    permission.ACCESS_FINE_LOCATION)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user  timer.startPlan()
+                // sees the explanation, try again to request the permission.
+                //Prompt the user once explanation has been shown
+                ActivityCompat.requestPermissions(this,
+                        new String[]{permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_LOCATION);
             }
         }
     }
-    else if(!newRipplesData && !firstRunRipplesPull){
-        for(int i = 0; i < backSystemInfo.systemSize; i++){
-            systemPosRipples.setCoords(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude());
-            startMarkerRipples[i].setPosition(systemPosRipples);
-            startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            if(backSystemInfo.sysName[i].contains("lauv")){
+
+    public void showRipplesPos() {
+
+        if (isRipplesSelected) {
+
+            if (newRipplesData) {
+                newRipplesData = false;
+                firstRunRipplesPull = false;
+                backSystemInfo = systemInfo;
+                for (int i = 0; i < systemInfo.systemSize; i++) {
+                    systemPosRipples.setCoords(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude());
+                    startMarkerRipples[i].setPosition(systemPosRipples);
+                    startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+
+                    if (systemInfo.sysName[i].contains("lauv"))
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
+                    else if (systemInfo.sysName[i].contains("ccu"))
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_ccu));
+                    else if (systemInfo.sysName[i].contains("manta"))
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_manta));
+                    else if (systemInfo.sysName[i].contains("spot"))
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.spot_icon));
+                    else
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
+
+                    if (!(systemInfo.sysName[i].equals(vehicleList.get(i)))) {//TODO
+                        startMarkerRipples[i].setTitle(systemInfo.sysName[i] + "\n" +
+                                gpsConvert.latLonToDM(systemInfo.coordinates[i].getLatitude(), systemInfo.coordinates[i].getLongitude()));
+                        map.getOverlays().add(startMarkerRipples[i]);
+                    }
+                }
+            } else if (!newRipplesData && !firstRunRipplesPull) {
+                for (int i = 0; i < backSystemInfo.systemSize; i++) {
+                    systemPosRipples.setCoords(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude());
+                    startMarkerRipples[i].setPosition(systemPosRipples);
+                    startMarkerRipples[i].setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+                    if (backSystemInfo.sysName[i].contains("lauv")) {
 
 
-                if(!(imc.connectedVehicles().toString().contains(backSystemInfo.sysName[i])))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
+                        if (!(imc.connectedVehicles().toString().contains(backSystemInfo.sysName[i])))
+                            startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_auv));
+                    } else if (backSystemInfo.sysName[i].contains("ccu"))
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_ccu));
+                    else if (backSystemInfo.sysName[i].contains("manta"))
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_manta));
+                    else if (backSystemInfo.sysName[i].contains("spot"))
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.spot_icon));
+                    else
+                        startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
+
+                    startMarkerRipples[i].setTitle(backSystemInfo.sysName[i] + "\n" + gpsConvert.latLonToDM(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude()));
+                    map.getOverlays().add(startMarkerRipples[i]);
+                }
             }
-            else if(backSystemInfo.sysName[i].contains("ccu"))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_ccu));
-            else if(backSystemInfo.sysName[i].contains("manta"))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_manta));
-            else if(backSystemInfo.sysName[i].contains("spot"))
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.spot_icon));
-            else
-                startMarkerRipples[i].setIcon(getResources().getDrawable(R.drawable.ico_unknown));
 
-            startMarkerRipples[i].setTitle(backSystemInfo.sysName[i]+"\n"+ gpsConvert.latLonToDM(backSystemInfo.coordinates[i].getLatitude(), backSystemInfo.coordinates[i].getLongitude()));
-            map.getOverlays().add(startMarkerRipples[i]);
+
         }
-    }
-
-
-}
     }
 
     public void onResume() {
@@ -649,8 +590,6 @@ if(isRipplesSelected) {
             setShowDepth(true);
         } else
             setShowRPM(false);
-
-
 
 
         loadFromPrefs(sharedPreferences);
@@ -709,7 +648,6 @@ if(isRipplesSelected) {
         MainActivity.isRPMSelected = showrpm;
 
 
-
     }
 
     public void setShowDepth(boolean showDepth) {
@@ -721,7 +659,7 @@ if(isRipplesSelected) {
     public void setOfflineMap(boolean isOfflineMap) {
         isOfflineSelected = isOfflineMap;
         if (isOfflineSelected) {
-//            map.setTileSource(new XYTileSource("MapQuest", 0, 18, 256, ".jpg", new String[] { "http://otile1.mqcdn.com/tiles/1.0.0/map/", "http://otile2.mqcdn.com/tiles/1.0.0/map/"}));
+
 
             map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
 
@@ -875,8 +813,8 @@ if(isRipplesSelected) {
         });
 
 
-
     }
+
     private void requestForSpecificPermission() {
         int PERMISSION_ALL = 101;
         String[] PERMISSIONS = {
@@ -930,6 +868,9 @@ if(isRipplesSelected) {
                 accelerate.setVisibility(View.INVISIBLE);
                 decelerate.setVisibility(View.INVISIBLE);
                 stopTeleop.setVisibility(View.INVISIBLE);
+                txt2.setVisibility(View.INVISIBLE);
+                txt4.setVisibility(View.INVISIBLE);
+                txt5.setVisibility(View.INVISIBLE);
                 Joystick joystick = findViewById(R.id.joystick);
                 joystick.setVisibility(View.INVISIBLE);
                 joyRight.setVisibility(View.INVISIBLE);
@@ -948,6 +889,9 @@ if(isRipplesSelected) {
                 accelerate.setVisibility(View.INVISIBLE);
                 decelerate.setVisibility(View.INVISIBLE);
                 stopTeleop.setVisibility(View.INVISIBLE);
+                txt4.setVisibility(View.INVISIBLE);
+                txt2.setVisibility(View.INVISIBLE);
+                txt5.setVisibility(View.INVISIBLE);
                 Joystick joystick = findViewById(R.id.joystick);
                 joystick.setVisibility(View.INVISIBLE);
                 joyRight.setVisibility(View.INVISIBLE);
@@ -1037,7 +981,6 @@ if(isRipplesSelected) {
 
             isOfflineSelected = true;
         }
-        // map.setTilesScaledToDpi(true);
 
 
         android.app.ActionBar actionBar = getActionBar();
@@ -1075,17 +1018,20 @@ if(isRipplesSelected) {
 
         map.setMultiTouchControls(true);
         map.setClickable(true);
+
+
         myLocationOverlay = new MyLocationNewOverlay(new GpsMyLocationProvider(context), map);
         myLocationOverlay.enableMyLocation();
 
         map.getOverlays().add(this.myLocationOverlay);
+
+
         mCompassOverlay = new CompassOverlay(context, new InternalCompassOrientationProvider(context), map);
         mCompassOverlay.enableCompass();
         map.getOverlays().add(mCompassOverlay);
         mainTV.setVisibility(View.VISIBLE);
         txtmap.bringToFront();
-        ledOff.setVisibility(View.INVISIBLE);
-        ledOn.setVisibility(View.INVISIBLE);
+
         setupSharedPreferences();
 
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -1113,8 +1059,18 @@ if(isRipplesSelected) {
         plus.setOnClickListener(v -> mapController.zoomIn());
         unlock.setVisibility(View.INVISIBLE);
 
+
+        appLocationService = new AppLocationService(MainActivity.this);
+        gpsLocation = appLocationService.getLocation(LocationManager.GPS_PROVIDER);
+
+        nwLocation = appLocationService
+                .getLocation(LocationManager.NETWORK_PROVIDER);
+///--------------------------------------
+        getWindow().setBackgroundDrawable(null);
+
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
+
         }
         try {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -1122,22 +1078,25 @@ if(isRipplesSelected) {
         } catch (Exception ignored) {
         }
 
+
+
         /* location manager */
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        updateHandler = new OSMHandler(this);
 
-        for (String provider : locationManager.getProviders(true)) {
-            location = locationManager.getLastKnownLocation(provider);
-            if (location != null) {
-                locationManager.requestLocationUpdates(provider, 0, 0, updateHandler);
-                break;
-            }
-        }
+
         if (location == null) {
             location = new Location(LocationManager.GPS_PROVIDER);
         }
-        map.getOverlays().add(this.myLocationOverlay);
         myLocationOverlay.enableMyLocation();
+        map.getOverlays().add(this.myLocationOverlay);
+
+        GpsMyLocationProvider gpsMyLocationProvider = new GpsMyLocationProvider(getBaseContext());
+        gpsMyLocationProvider.setLocationUpdateMinDistance(100); // [m]  // Set the minimum distance for location updates
+        gpsMyLocationProvider.setLocationUpdateMinTime(10000);   // [ms] // Set the minimum time interval for location updates
+        myLocationOverlay = new MyLocationNewOverlay(map);
+        myLocationOverlay.setDrawAccuracyEnabled(true);
+
+
         map.invalidate();
         mapController = map.getController();
         mapController.setZoom(12);
@@ -1237,60 +1196,49 @@ if(isRipplesSelected) {
     @Background
     @Override
     public void onLocationChanged(Location location) {
-        latitudeAndroid = Math.toRadians(location.getLatitude());
-        longitudeAndroid = Math.toRadians(location.getLongitude());
-        if (!(location.getLatitude() == 0.0 || location.getLongitude() == 0.0)) {
-            lastLat = latitudeAndroid;
-            lastLon = longitudeAndroid;
-            GeoPoint lastPos = new GeoPoint(lastLat, lastLon);
-            myPosition = new GeoPoint(location.getLatitude(), location.getLongitude());
 
 
-            final ArrayList<OverlayItem> items = new ArrayList<>();
-            OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
-            marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
-            items.add(marker);
-            Bitmap newMarker;
-            if (android.os.Build.VERSION.SDK_INT <= M) {
+        if (gpsLocation != null) {
+            latitudeAndroid = Math.toRadians(gpsLocation.getLatitude());
+            longitudeAndroid = Math.toRadians(gpsLocation.getLongitude());
+            myPosition = new GeoPoint(gpsLocation.getLatitude(), gpsLocation.getLongitude());
 
-                newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.ico_ccu));
-
-            } else {
-
-                newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_ccu), 50, 50, true);
-
-            }
-
-
-            Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
-            ItemizedIconOverlay markersOverlay2 = new ItemizedIconOverlay<>(items, marker3, null, context);
-            map.getOverlays().add(markersOverlay2);
-
-
-            MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);
-
-
-            map.getOverlays().add(OverlayEventos);
-            //Refreshing the map to draw the new overlay
-
+        } else if (nwLocation != null) {
+            latitudeAndroid = Math.toRadians(nwLocation.getLatitude());
+            longitudeAndroid = Math.toRadians(nwLocation.getLongitude());
+            myPosition = new GeoPoint(nwLocation.getLatitude(), nwLocation.getLongitude());
 
         }
+
+
+        final ArrayList<OverlayItem> items = new ArrayList<>();
+        OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", myPosition);
+        marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
+        items.add(marker);
+        Bitmap newMarker;
+        if (android.os.Build.VERSION.SDK_INT <= M) {
+
+            newMarker = Bitmap.createBitmap(BitmapFactory.decodeResource(resources, R.drawable.ico_ccu));
+
+        } else {
+
+            newMarker = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(this.getResources(), R.drawable.ico_ccu), 50, 50, true);
+
+        }
+
+
+        Drawable marker3 = new BitmapDrawable(getResources(), newMarker);
+        ItemizedIconOverlay markersOverlay = new ItemizedIconOverlay<>(items, marker3, null, context);
+        map.getOverlays().add(markersOverlay);
+
+        MapEventsOverlay OverlayEventos = new MapEventsOverlay(this.getBaseContext(), mReceive);
+
+
+        map.getOverlays().add(OverlayEventos);
+        //Refreshing the map to draw the new overlay
+
     }
 
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -1324,7 +1272,10 @@ if(isRipplesSelected) {
 
         } else if (id == R.id.sysinter) {
             try {
-                startActivity(new Intent(this, SysInteractions.class));
+                Intent i = new Intent(this, SysInteractions.class);
+                i.putExtra("selected", imc.selectedvehicle);
+                startActivity(i);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1354,12 +1305,10 @@ if(isRipplesSelected) {
     }
 
 
-
     @SuppressLint("SetTextI18n")
     @Background
     public void paintState(final EstimatedState state) {
         final String vname = state.getSourceName();
-
         if (imc.stillConnected() != null) {
 
             if (imc.selectedvehicle != null) {
@@ -1371,8 +1320,6 @@ if(isRipplesSelected) {
                         //retirar icon
                         selectedVehiclePosition = null;
 
-                        ledOn.setVisibility(View.INVISIBLE);
-                        clearHeartBeat(imc.selectedvehicle);
 
                     });
             }
@@ -1384,10 +1331,7 @@ if(isRipplesSelected) {
                 OverlayItem marker2 = new OverlayItem("markerTitle", "markerDescription", new GeoPoint((lld[0]), (lld[1])));
                 marker2.setMarkerHotspot(HotspotPlace.TOP_CENTER);
                 items2.add(marker2);
-                runOnUiThread(() -> {
-                    ledOn.setVisibility(View.INVISIBLE);
-                    ledOff.setVisibility(View.VISIBLE);
-                });
+
                 vehicleOrientation = (float) state.getPsi();
 
                 int ori2 = (int) Math.toDegrees(vehicleOrientation);
@@ -1395,7 +1339,6 @@ if(isRipplesSelected) {
                 if (!orientationOtherVehicles.contains(ori2))
                     orientationOtherVehicles.add(ori2);
 
-                // todo  ripples
 
                 if (context == MainActivity.this) {
 
@@ -1455,12 +1398,6 @@ if(isRipplesSelected) {
 
                     if (teleOperation == null) {
                         runOnUiThread(() -> {
-                            if (getHeartBeat(state.getSourceName())) {
-                                ledOn.setVisibility(View.VISIBLE);
-                                ledOff.setVisibility(View.INVISIBLE);
-                            } else {
-                                ledOn.setVisibility(View.INVISIBLE);
-                            }
 
                             txtmap.setVisibility(View.INVISIBLE);
                             mainTV.setVisibility(View.VISIBLE);
@@ -1475,7 +1412,6 @@ if(isRipplesSelected) {
                     } else {
                         runOnUiThread(() -> {
                             mainTV.setVisibility(View.INVISIBLE);
-                            ledOff.setVisibility(View.INVISIBLE);
                             txtmap.setVisibility(View.VISIBLE);
                             txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + getString(R.string.depthstring) + " " + depthString + " " + stateconnected);
                         });
@@ -1556,7 +1492,7 @@ if(isRipplesSelected) {
         otherVehiclesPositionList.clear();
         map.getOverlays().remove(mCompassOverlay);
         map.getOverlays().clear();
-
+        onLocationChanged(location);
 
         if (context == MainActivity.this) {
             drawWifiSignal();
@@ -1595,6 +1531,7 @@ if(isRipplesSelected) {
 
             });
 
+
             unlock.setOnClickListener(v -> {
                 detach = false;
                 map.setOnTouchListener((y, event) -> {
@@ -1608,11 +1545,11 @@ if(isRipplesSelected) {
             });
 
         }
+        if (isAISSelected)
+            showAIS();
+        if (isRipplesSelected)
+            showRipplesPos();
 
-        showAIS();
-        showRipplesPos();
-        if (location != null)
-            onLocationChanged(location);
 
         if (pointsLine.size() > 1) {
 
@@ -1649,7 +1586,8 @@ if(isRipplesSelected) {
 
             }
         }
-        afterChoice();
+        if (followMeOn)
+            afterChoice();
         if (circle2 != null) {
             map.getOverlays().add(circle2);
             map.getOverlayManager().add(circle2);
@@ -1685,13 +1623,6 @@ if(isRipplesSelected) {
 
         }
     }
-
-
-
-
-
-
-
 
 
     public void drawCompass() {
@@ -1735,8 +1666,6 @@ if(isRipplesSelected) {
             map.getOverlays().add(markerSMS);
 
         }
-
-
 
 
     }
@@ -1794,24 +1723,25 @@ if(isRipplesSelected) {
     }
 
     public void followme() {
-    if (imc.selectedvehicle == null) {
-        Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
+        if (imc.selectedvehicle == null) {
+            Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
 
-    } else {
-        FollowReference go = new FollowReference();
-        go.setAltitudeInterval(1);
-        go.setControlSrc(imc.getLocalId());
-        go.setLoiterRadius(0);
-        go.setTimeout(30);
+        } else {
+            FollowReference go = new FollowReference();
+            go.setAltitudeInterval(1);
+            go.setControlSrc(imc.getLocalId());
+            go.setLoiterRadius(0);
+            go.setTimeout(30);
 
-        String planid = "SpearFollowMe-" + imc.selectedvehicle;
-        followMeOn = true;
-        startReference();
+            String planid = "SpearFollowMe-" + imc.selectedvehicle;
+            followMeOn = true;
+            startReference();
 
-        startBehaviour(planid, go);
+            startBehaviour(planid, go);
+        }
+
     }
 
-}
     public void near() {
 
 
@@ -1842,38 +1772,36 @@ if(isRipplesSelected) {
         startBehaviour(planid, comeNear);
 
 
-
-
-
     }
 
     public void startReference() {
         if (followMeOn) {
 
-                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-                    alertDialogBuilder
-                            .setMessage("North or east?")
-                            .setCancelable(true)
-                            .setPositiveButton("North", (dialog, id) -> {
-                                n = 0.6;
-                                e = 0;
-                                afterChoice();
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+            alertDialogBuilder
+                    .setMessage("North or east?")
+                    .setCancelable(true)
+                    .setPositiveButton("North", (dialog, id) -> {
+                        n = 0.6;
+                        e = 0;
+                        afterChoice();
 
-                            })
-                            .setNegativeButton("East", (dialog, id) -> {
-                                e = 1;
-                                n = 0;
-                                afterChoice();
+                    })
+                    .setNegativeButton("East", (dialog, id) -> {
+                        e = 1;
+                        n = 0;
+                        afterChoice();
 
 
-                                dialog.cancel();
-                            });
-                    AlertDialog alertDialog = alertDialogBuilder.create();
-                    alertDialog.show();
+                        dialog.cancel();
+                    });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
         }
 
 
     }
+
     public void afterChoice() {
         if (followMeOn) {
             Reference ref = new Reference();
@@ -1904,15 +1832,10 @@ if(isRipplesSelected) {
             imc.sendMessage(ref);
 
 
-
-
         }
 
 
-        }
-
-
-
+    }
 
 
     public void stopPlan() {
@@ -1959,8 +1882,6 @@ if(isRipplesSelected) {
         }
 
 
-
-
         if (Area.getPointsArea() != null) {
             Area.getPointsArea().clear();
         }
@@ -1985,12 +1906,10 @@ if(isRipplesSelected) {
         }
 
 
-
         if (Line.getPointsLine() != null) {
             Line.getPointsLine().clear();
             pointsLine.clear();
         }
-
 
 
         if (Area.sendmList() != null) {
@@ -2200,7 +2119,6 @@ if(isRipplesSelected) {
 
         return super.onContextItemSelected(item);
     }
-
 
 
     public void warning() {

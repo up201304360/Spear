@@ -90,6 +90,7 @@ dependencies {
     implementation 'org.greenrobot:essentials:3.0.0-RC1'
     implementation 'com.firebase:firebase-client-android:2.5.2'
     implementation 'org.jbundle.util.osgi.wrapped:org.jbundle.util.osgi.wrapped.org.apache.http.client:4.1.2'
+
 }
 repositories {
     mavenCentral()

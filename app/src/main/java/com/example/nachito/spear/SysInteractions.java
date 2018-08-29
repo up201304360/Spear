@@ -15,7 +15,7 @@ public class SysInteractions extends AppCompatActivity {
     TextView line;
     TextView sms;
     TextView compass;
-
+    String selected;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,8 +30,13 @@ public class SysInteractions extends AppCompatActivity {
         line = findViewById(R.id.line);
         sms = findViewById(R.id.sms);
         compass = findViewById(R.id.compass);
+        getIntentSelected();
 
+    }
 
+    public void getIntentSelected() {
+        Intent intent = getIntent();
+        selected = intent.getExtras().getString("selected");
     }
 
     @Override
@@ -55,6 +60,7 @@ public class SysInteractions extends AppCompatActivity {
 
     public void line(View view) {
         Intent i = new Intent(SysInteractions.this, Line.class);
+
         i.putExtra("selected", imc.selectedvehicle);
         startActivity(i);
     }

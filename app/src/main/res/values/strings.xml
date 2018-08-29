@@ -22,7 +22,7 @@
     <string name="start">Start</string>
     <string name="surface">Surface</string>
     <string name="station">Keep Station</string>
-    <string name="startplan">Start plan</string>
+    <string name="startplan">Choose plan</string>
     <string name="choice_prompt">Select a choice</string>
     <string name="acc">Accelerate</string>
     <string name="speed">Speed Value </string>

@@ -19,7 +19,6 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
     protected LinkedHashMap<String, Object> remoteActions = new LinkedHashMap<>();
     IMCGlobal imc;
     static boolean teleop = false;
-
     public void setImc(IMCGlobal imc) {
         this.imc = imc;
         imc.register(this);
@@ -34,7 +33,6 @@ public class TeleOperation extends Fragment implements JoystickMovedListener, Ac
         pc.setPlanId("stopTeleOp");
         imc.sendMessage(pc);
         imc.unregister(this);
-
 
     }
 
