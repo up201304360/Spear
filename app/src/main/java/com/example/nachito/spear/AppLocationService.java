@@ -8,12 +8,10 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.widget.Toast;
 
 public class AppLocationService extends Service implements LocationListener {
     private static final String[] INITIAL_PERMS = {
@@ -46,18 +44,8 @@ public class AppLocationService extends Service implements LocationListener {
         mContext = context;
     }
 
-    private boolean canAccessLocation() {
-        return (hasPermission(android.Manifest.permission.ACCESS_FINE_LOCATION));
-    }
-
-    private boolean hasPermission(String perm) {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (PackageManager.PERMISSION_GRANTED == checkSelfPermission(perm));
-    }
-
-
 
     public Location getLocation(String provider) {
-        if (canAccessLocation()) {
 
 
             if (locationManager.isProviderEnabled(provider)) {
@@ -79,9 +67,6 @@ public class AppLocationService extends Service implements LocationListener {
             }
             location = locationManager.getLastKnownLocation(provider);
             return location;
-        } else
-            Toast.makeText(this, "Accept Permissions", Toast.LENGTH_SHORT).show();
-        return null;
     }
     @Override
     public void onLocationChanged(Location location) {
