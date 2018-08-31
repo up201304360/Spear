@@ -14,7 +14,6 @@ import pt.lsts.imc.net.IMCProtocol;
 import pt.lsts.neptus.messages.listener.MessageInfo;
 
 /**
- *
  * Created by nachito on 26/03/17.
  */
 
@@ -22,7 +21,7 @@ import pt.lsts.neptus.messages.listener.MessageInfo;
 @EBean(scope = Scope.Singleton)
 public class IMCGlobal extends IMCProtocol {
 
-    String selectedvehicle = null;
+    String selectedVehicle = null;
     private VehicleList veiculos;
     private PlanList planos;
     private PlanList maneuvers;
@@ -46,11 +45,11 @@ public class IMCGlobal extends IMCProtocol {
     }
 
     String getSelectedvehicle() {
-        return selectedvehicle;
+        return selectedVehicle;
     }
 
     void setSelectedvehicle(String selectedvehicle) {
-        this.selectedvehicle = selectedvehicle;
+        this.selectedVehicle = selectedvehicle;
 
     }
 
@@ -64,15 +63,15 @@ public class IMCGlobal extends IMCProtocol {
     }
 
     List<String> allPlans() {
-        return planos.ListaPlanos(selectedvehicle);
+        return planos.PlanLists(selectedVehicle);
     }
 
     List<String> allSensores() {
-        return planos.ListaSensores(selectedvehicle);
+        return planos.SensorList(selectedVehicle);
     }
 
     List<Maneuver> allManeuvers() {
-        return maneuvers.ListaManeuvers(selectedvehicle);
+        return maneuvers.ManeuversLists(selectedVehicle);
     }
 
     void sendMessage(IMCMessage imcMessage) {

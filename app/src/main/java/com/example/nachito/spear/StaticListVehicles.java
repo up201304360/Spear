@@ -48,9 +48,9 @@ public class StaticListVehicles extends AppCompatActivity {
             if (xp1.isChecked()) {
 
                 selectedSMS = "lauv-xplore-1";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
-            startActivity(yourIntent);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
+                startActivity(yourIntent);
             }
         });
 
@@ -71,8 +71,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (xp3.isChecked()) {
 
                 selectedSMS = "lauv-xplore-3";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -82,8 +82,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (xp4.isChecked()) {
 
                 selectedSMS = "lauv-xplore-4";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -93,8 +93,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (xp5.isChecked()) {
 
                 selectedSMS = "lauv-xplore-5";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -104,8 +104,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (seacon2.isChecked()) {
 
                 selectedSMS = "lauv-seacon-2";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -115,8 +115,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (seacon3.isChecked()) {
 
                 selectedSMS = "lauv-seacon-3";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -126,8 +126,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (nop1.isChecked()) {
 
                 selectedSMS = "lauv-noptilus-1";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -136,8 +136,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (nop2.isChecked()) {
 
                 selectedSMS = "lauv-noptilus-2";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -146,8 +146,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (nop3.isChecked()) {
 
                 selectedSMS = "lauv-noptilus-3";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
 
                 startActivity(yourIntent);
             }
@@ -156,8 +156,8 @@ public class StaticListVehicles extends AppCompatActivity {
             if (xtreme2.isChecked()) {
 
                 selectedSMS = "lauv-xtreme-2";
-            Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
-            yourIntent.putExtra("selectedVehicle", selectedSMS);
+                Intent yourIntent = new Intent(StaticListVehicles.this, SendSms.class);
+                yourIntent.putExtra("selectedVehicle", selectedSMS);
                 startActivity(yourIntent);
             }
         });
@@ -172,7 +172,6 @@ public class StaticListVehicles extends AppCompatActivity {
             }
 
         }));
-
 
 
     }

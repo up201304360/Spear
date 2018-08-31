@@ -3,20 +3,32 @@
 
     <string-array name="pref_rpmms_names">
         <item>RPM</item>
-        <!--item>#00FFFF</item-->
 
         <item>m/s</item>
-        <!--item>#F0FFFF</item-->
 
 
     </string-array>
 
-    <!-- foreground color values array -->
+
+    <string-array name="pref_map_names">
+        <item>Online</item>
+
+        <item>Offline</item>
+
+
+    </string-array>
+
+    <string-array name="pref_map_values">
+        <item>Online</item>
+
+        <item>Offline</item>
+
+
+    </string-array>
+
     <string-array name="pref_show_rpmms_values">
-        <!--item>Aqua</item-->
         <item>RPM</item>
 
-        <!--item>Azure</item-->
         <item>METERS_PS</item>
 
 
@@ -25,20 +37,15 @@
 
     <string-array name="pref_depth_names">
         <item>DEPTH</item>
-        <!--item>#00FFFF</item-->
 
         <item>ALTITUDE</item>
-        <!--item>#F0FFFF</item-->
 
 
     </string-array>
 
-    <!-- foreground color values array -->
     <string-array name="pref_depth_values">
-        <!--item>Aqua</item-->
         <item>Depth</item>
 
-        <!--item>Azure</item-->
         <item>Altitude</item>
 
 

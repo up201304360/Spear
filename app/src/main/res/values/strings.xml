@@ -47,11 +47,9 @@
     <string name="pref_show_rpmms_label" translatable="false">Speed Control</string>
     <string name="pref_show_depth_label" translatable="false">Z Control </string>
     <string name="pref_show_offline_label" translatable="false">Map Tiles - Offline </string>
-    <string name="pref_show_offline_key" translatable="false">Offline</string>
-    <string name="pref_show_offtrue" translatable="false">Offline</string>
-    <string name="pref_show_offfalse" translatable="false">Online</string>
     <string name="pref_show_rpmms_key" translatable="false">speedControl</string>
     <string name="pref_show_depth_key" translatable="false">zControl</string>
+    <string name="pref_show_map_key" translatable="false">MapTileSource</string>
 
     <string name="sms"> Send via SMS</string>
     <string name="edit">Line or Area to follow</string>

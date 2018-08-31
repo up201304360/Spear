@@ -7,6 +7,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import java.util.Objects;
+
 import static com.example.nachito.spear.MainActivity.imc;
 
 public class SysInteractions extends AppCompatActivity {
@@ -36,7 +38,7 @@ public class SysInteractions extends AppCompatActivity {
 
     public void getIntentSelected() {
         Intent intent = getIntent();
-        selected = intent.getExtras().getString("selected");
+        selected = Objects.requireNonNull(intent.getExtras()).getString("selected");
     }
 
     @Override
@@ -52,7 +54,7 @@ public class SysInteractions extends AppCompatActivity {
 
     public void area(View view) {
         Intent i = new Intent(SysInteractions.this, Area_.class);
-        i.putExtra("selected", imc.selectedvehicle);
+        i.putExtra("selected", imc.selectedVehicle);
         startActivity(i);
 
 
@@ -60,8 +62,7 @@ public class SysInteractions extends AppCompatActivity {
 
     public void line(View view) {
         Intent i = new Intent(SysInteractions.this, Line.class);
-
-        i.putExtra("selected", imc.selectedvehicle);
+        i.putExtra("selected", imc.selectedVehicle);
         startActivity(i);
     }
 
@@ -74,6 +75,7 @@ public class SysInteractions extends AppCompatActivity {
 
     public void compass(View view) {
         Intent i = new Intent(SysInteractions.this, Compass.class);
+        i.putExtra("selected", imc.selectedVehicle);
         startActivity(i);
     }
 }

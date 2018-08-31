@@ -18,20 +18,19 @@ import pt.lsts.neptus.messages.listener.Periodic;
 
 
 /**
- *
  * Created by nachito on 14/04/17.
  */
 
 public class PlanList {
     private static final LinkedHashMap<String, List<String>> planHashMap = new LinkedHashMap<>();
     private static final LinkedHashMap<String, List<Maneuver>> planExecuting = new LinkedHashMap<>();
-    private static final LinkedHashMap<String, List<String>> sensoresHashMap = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, List<String>> sensorsHashMap = new LinkedHashMap<>();
 
     static boolean samePlan;
     static String previousPlan = ".";
     static boolean callMethodWaypoints;
     static String planBeingExecuted = null;
-    private IMCGlobal imc = null;
+    private IMCGlobal imc;
 
     PlanList(IMCGlobal ref) {
         imc = ref;
@@ -89,7 +88,7 @@ public class PlanList {
 
         String previous = planBeingExecuted;
 
-        if (!msg.getSourceName().equals(imc.selectedvehicle))
+        if (!msg.getSourceName().equals(imc.selectedVehicle))
             return;
 
         if (msg.getState() == PlanControlState.STATE.EXECUTING) {
@@ -137,11 +136,11 @@ public class PlanList {
                 String vehicle = entityList.getSourceName();
 
 
-                synchronized (sensoresHashMap) {
+                synchronized (sensorsHashMap) {
 
-                    sensoresHashMap.put(vehicle, sensorNameArray);
+                    sensorsHashMap.put(vehicle, sensorNameArray);
                 }
-                System.out.println(sensoresHashMap);
+                System.out.println(sensorsHashMap);
 
             }
 
@@ -150,11 +149,10 @@ public class PlanList {
     }
 
 
-
     @Periodic(60000)
     private void askForPlan() {
 
-        System.out.println("Requesting " + planBeingExecuted + " to vehicle " + imc.selectedvehicle);
+        System.out.println("Requesting " + planBeingExecuted + " to vehicle " + imc.selectedVehicle);
 
 
         if (planBeingExecuted != null) {
@@ -184,22 +182,22 @@ public class PlanList {
         entity.setOp(EntityList.OP.QUERY);
         imc.sendToAll(entity);
 
-    } //entidades
+    }
 
 
-    List<String> ListaSensores(String vehicle) {
-        synchronized (sensoresHashMap) {
-            return sensoresHashMap.get(vehicle);
+    List<String> SensorList(String vehicle) {
+        synchronized (sensorsHashMap) {
+            return sensorsHashMap.get(vehicle);
         }
     }
 
-    List<String> ListaPlanos(String vehicle) {
+    List<String> PlanLists(String vehicle) {
         synchronized (planHashMap) {
             return planHashMap.get(vehicle);
         }
     }
 
-    List<Maneuver> ListaManeuvers(String vehicle) {
+    List<Maneuver> ManeuversLists(String vehicle) {
         synchronized (planExecuting) {
             return planExecuting.get(vehicle);
         }

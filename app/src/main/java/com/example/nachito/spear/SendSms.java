@@ -31,7 +31,6 @@ import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SEND_SMS;
 
 /**
- *
  * Created by ines on 10/2/17.
  */
 
@@ -122,7 +121,6 @@ public class SendSms extends AppCompatActivity {
         }
 
     }
-
 
 
     public void addListenerOnButton() {
@@ -549,12 +547,9 @@ public class SendSms extends AppCompatActivity {
                             double latitude = ponto.getLatitude();
                             double longitude = ponto.getLongitude();
                             smsManager.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude + ";lon=" + longitude + ";speed=" + vel, sentPI, null);
-
+                            sendWithSMS();
                             finalPoint = ponto;
-                            checked = " ";
-                            selectedSMS = ".";
-                            MainActivity.previous = "M";
-                            onBackPressed();
+
                             break;
 
                         case "go":
@@ -564,57 +559,34 @@ public class SendSms extends AppCompatActivity {
                             double longitude2 = ponto2.getLongitude();
                             smsManager.sendTextMessage(phoneNumber, null, smsText + " " + "lat=" + latitude2 + ";lon=" + longitude2 + ";speed=" + vel, sentPI, null);
                             finalPoint = ponto2;
-                            MainActivity.previous = "M";
-                            checked = " ";
-                            selectedSMS = ".";
-                            onBackPressed();
+                            sendWithSMS();
                             break;
 
 
                         case "pos":
-                            System.out.println("SMS POS");
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
-                            System.out.println("SMS POS2");
-                            checked = " ";
-                            selectedSMS = ".";
-                            onBackPressed();
+                            sendWithSMS();
                             break;
 
                         case "dive":
-                            System.out.println("SMS DIVE");
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
-                            checked = " ";
-                            selectedSMS = ".";
-                            onBackPressed();
+                            sendWithSMS();
                             break;
                         case "surface":
-                            System.out.println("SMS SURF");
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
-                            System.out.println("SMS SURF2");
-                            checked = " ";
-                            selectedSMS = ".";
-                            onBackPressed();
+                            sendWithSMS();
                             break;
                         case "abort":
-                            System.out.println("SMS ABORT");
                             smsManager.sendTextMessage(phoneNumber, null, smsText, sentPI, null);
-                            checked = " ";
-                            selectedSMS = ".";
-                            onBackPressed();
+                            sendWithSMS();
                             break;
                         case "start":
-                            System.out.println("SMS STARTPLAN");
                             smsManager.sendTextMessage(phoneNumber, null, smsText + planName, sentPI, null);
-                            checked = " ";
-                            selectedSMS = ".";
-                            onBackPressed();
+                            sendWithSMS();
                             break;
                         case "send":
-                            System.out.println("SMS PLAN");
                             smsManager.sendTextMessage(phoneNumber, null, smsText + planName, sentPI, null);
-                            selectedSMS = ".";
-                            checked = " ";
-
+                            sendWithSMS();
                             break;
 
                     }
@@ -630,6 +602,14 @@ public class SendSms extends AppCompatActivity {
 
         }
 
+
+    }
+
+    public void sendWithSMS() {
+        checked = " ";
+        selectedSMS = ".";
+        MainActivity.previous = "M";
+        onBackPressed();
 
     }
 

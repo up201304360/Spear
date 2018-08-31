@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Vector;
 
 import pt.lsts.coverage.GeoCoord;
@@ -58,7 +59,6 @@ import static com.example.nachito.spear.MainActivity.zoomLevel;
 import static pt.lsts.coverage.AreaCoverage.computeCoveragePath;
 
 /**
- *
  * Created by ines on 11/13/17.
  */
 @EActivity
@@ -71,7 +71,7 @@ public class Area extends AppCompatActivity {
     static ArrayList<GeoPoint> markers = new ArrayList<>();
     static ArrayList<Maneuver> maneuverArrayList;
     static ArrayList<GeoPoint> nullArray = new ArrayList<>();
-    final ArrayList seletedItems = new ArrayList();
+    final ArrayList selectedItems = new ArrayList();
     IMapController mapController;
     Button done;
     Button preview;
@@ -161,7 +161,7 @@ public class Area extends AppCompatActivity {
         drawRed();
         drawBlue();
         drawGreen();
-        if(!imc.connectedVehicles().isEmpty()) {
+        if (!imc.connectedVehicles().isEmpty()) {
             if (imc.allSensores() != null)
                 if (imc.allSensores().size() == 0) {
                     Toast.makeText(this, "No sensors detected", Toast.LENGTH_SHORT).show();
@@ -194,8 +194,8 @@ public class Area extends AppCompatActivity {
                                     // write your code when user checked the checkbox
                                     Toast.makeText(this, "Choose only one ", Toast.LENGTH_SHORT).show();
 
-                                    if (seletedItems.size() == 0) {
-                                        seletedItems.add(indexSelected);
+                                    if (selectedItems.size() == 0) {
+                                        selectedItems.add(indexSelected);
                                         if (sensorList.get(indexSelected).equals("Camera")) {
                                             hasCamera = true;
                                         }
@@ -208,15 +208,15 @@ public class Area extends AppCompatActivity {
                                     } else {
                                         Toast.makeText(this, "Choose only one ", Toast.LENGTH_SHORT).show();
 
-                                        seletedItems.remove(Integer.valueOf(indexSelected));
+                                        selectedItems.remove(Integer.valueOf(indexSelected));
 
                                     }
 
 
-                                } else if (seletedItems.contains(indexSelected)) {
+                                } else if (selectedItems.contains(indexSelected)) {
                                     // Else, if the item is already in the array, remove it
                                     // write your code when user Uchecked the checkbox
-                                    seletedItems.remove(Integer.valueOf(indexSelected));
+                                    selectedItems.remove(Integer.valueOf(indexSelected));
                                 }
                             })
                             // Set the action buttons
@@ -347,13 +347,15 @@ public class Area extends AppCompatActivity {
                         } else {
                             isdoneClicked = true;
                             iscircleDrawn = true;
-                            if(hasCamera) {
+                            if (hasCamera) {
                                 followAreaCamera();
-                            }else if(hasMultibeam){
-                                followAreaMultibeam();}
-                                else if(hasSidescan){
-                                followAreaSidescan();}else {
-                            followArea();}
+                            } else if (hasMultibeam) {
+                                followAreaMultibeam();
+                            } else if (hasSidescan) {
+                                followAreaSidescan();
+                            } else {
+                                followArea();
+                            }
                         }
                     }
                 });
@@ -389,13 +391,15 @@ public class Area extends AppCompatActivity {
                         if (selected == null) {
                             Toast.makeText(Area.this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
                         } else {
-                            if(hasCamera) {
+                            if (hasCamera) {
                                 followAreaCamera();
-                            }else if(hasMultibeam){
-                                followAreaMultibeam();}
-                            else if(hasSidescan){
-                                followAreaSidescan();}else {
-                                followArea();}
+                            } else if (hasMultibeam) {
+                                followAreaMultibeam();
+                            } else if (hasSidescan) {
+                                followAreaSidescan();
+                            } else {
+                                followArea();
+                            }
 
 
                         }
@@ -413,7 +417,7 @@ public class Area extends AppCompatActivity {
 
     public void getIntentSelected() {
         Intent intent = getIntent();
-        selected = intent.getExtras().getString("selected");
+        selected = Objects.requireNonNull(intent.getExtras()).getString("selected");
     }
 
 
@@ -430,85 +434,84 @@ public class Area extends AppCompatActivity {
         }
 
 
-            ArrayList<GeoCoord> coords = new ArrayList<>();
-            maneuvers = new ArrayList<>();
-            for (int i = 0; i < markers.size(); i++) {
-                coords.add(new GeoCoord(markers.get(i).getLatitude(), markers.get(i).getLongitude()));
-            }
-            Vector<PathPoint> points = new Vector<>();
-            GeoCoord primPonto = new GeoCoord(markers.get(0).getLatitude(), markers.get(0).getLongitude());
-            for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
-                double[] offsets = coord.getOffsetFrom(primPonto);
-                PathPoint pt = new PathPoint();
-                pt.setX(offsets[0]);
-                pt.setY(offsets[1]);
-                pt.setZ(offsets[2]);
-                points.add(pt);
+        ArrayList<GeoCoord> coords = new ArrayList<>();
+        maneuvers = new ArrayList<>();
+        for (int i = 0; i < markers.size(); i++) {
+            coords.add(new GeoCoord(markers.get(i).getLatitude(), markers.get(i).getLongitude()));
+        }
+        Vector<PathPoint> points = new Vector<>();
+        GeoCoord primPonto = new GeoCoord(markers.get(0).getLatitude(), markers.get(0).getLongitude());
+        for (GeoCoord coord : computeCoveragePath(coords, swath_width)) {
+            double[] offsets = coord.getOffsetFrom(primPonto);
+            PathPoint pt = new PathPoint();
+            pt.setX(offsets[0]);
+            pt.setY(offsets[1]);
+            pt.setZ(offsets[2]);
+            points.add(pt);
 
-            }
+        }
 
 
-            FollowPath area = new FollowPath();
-            double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
-            double lon = Math.toRadians(markers.get(0).getLongitude());
-            area.setLat(lat);
-            area.setLon(lon);
-            area.setSpeed(speed);
-            if (!isRPMSelected) {
-                area.setSpeedUnits(SpeedUnits.METERS_PS);
-            } else {
-                area.setSpeedUnits(SpeedUnits.RPM);
-            }
-            if (isDepthSelected) {
-                area.setZ(depth);
-                area.setZUnits(ZUnits.DEPTH);
-            } else {
-                area.setZ(altitude);
-                area.setZUnits(ZUnits.ALTITUDE);
-            }
-            area.setPoints(points);
-            for (int i = 0; i < area.getPoints().size(); i++) {
-                maneuvers.add(area);
-                maneuverArrayList = new ArrayList<>();
-                maneuverArrayList.addAll(maneuvers);
+        FollowPath area = new FollowPath();
+        double lat = Math.toRadians(markers.get(0).getLatitude()); //primeiro
+        double lon = Math.toRadians(markers.get(0).getLongitude());
+        area.setLat(lat);
+        area.setLon(lon);
+        area.setSpeed(speed);
+        if (!isRPMSelected) {
+            area.setSpeedUnits(SpeedUnits.METERS_PS);
+        } else {
+            area.setSpeedUnits(SpeedUnits.RPM);
+        }
+        if (isDepthSelected) {
+            area.setZ(depth);
+            area.setZUnits(ZUnits.DEPTH);
+        } else {
+            area.setZ(altitude);
+            area.setZUnits(ZUnits.ALTITUDE);
+        }
+        area.setPoints(points);
+        for (int i = 0; i < area.getPoints().size(); i++) {
+            maneuvers.add(area);
+            maneuverArrayList = new ArrayList<>();
+            maneuverArrayList.addAll(maneuvers);
 
-            }
-            if (isdoneClicked) {
-                MainActivity.areNewWaypointsFromAreaUpdated = false;
-                MainActivity.hasEnteredServiceMode = false;
-                startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
-                MainActivity.updateWaypoints();
-                onBackPressed();
-            } else {
-                DrawWaypoints.callWaypoint(maneuverArrayList);
+        }
+        if (isdoneClicked) {
+            MainActivity.areNewWaypointsFromAreaUpdated = false;
+            MainActivity.hasEnteredServiceMode = false;
+            startBehaviour("SpearArea-" + selected, PlanUtilities.createPlan("SpearArea-" + selected, maneuvers.toArray(new Maneuver[0])));
+            MainActivity.updateWaypoints();
+            onBackPressed();
+        } else {
+            DrawWaypoints.callWaypoint(maneuverArrayList);
 
-                if (planWaypoints.size() != 0) {
-                    Marker pointsFromPlan;
-                    for (int i = 0; i < planWaypoints.size(); i++) {
-                        pointsFromPlan = new Marker(mapArea);
-                        if (planWaypoints.size() != 0) {
-                            pointsFromPlan.setPosition(planWaypoints.get(i));
-                            pointsFromPlan.setIcon(areaIcon);
-                            pointsFromPlan.setDraggable(true);
-                            mapArea.getOverlays().add(pointsFromPlan);
-                            markerArea.add(pointsFromPlan);
-                            mapArea.invalidate();
+            if (planWaypoints.size() != 0) {
+                Marker pointsFromPlan;
+                for (int i = 0; i < planWaypoints.size(); i++) {
+                    pointsFromPlan = new Marker(mapArea);
+                    if (planWaypoints.size() != 0) {
+                        pointsFromPlan.setPosition(planWaypoints.get(i));
+                        pointsFromPlan.setIcon(areaIcon);
+                        pointsFromPlan.setDraggable(true);
+                        mapArea.getOverlays().add(pointsFromPlan);
+                        markerArea.add(pointsFromPlan);
+                        mapArea.invalidate();
 
-                        }
-                        if (planWaypointPolyline != null) {
-                            mapArea.getOverlays().add(planWaypointPolyline);
-                            poliList.add(planWaypointPolyline);
-
-                            mapArea.invalidate();
-
-                        }
                     }
+                    if (planWaypointPolyline != null) {
+                        mapArea.getOverlays().add(planWaypointPolyline);
+                        poliList.add(planWaypointPolyline);
 
+                        mapArea.invalidate();
+
+                    }
                 }
 
             }
-        }
 
+        }
+    }
 
 
     public void followAreaCamera() {
@@ -550,8 +553,8 @@ public class Area extends AppCompatActivity {
         area.setSpeedUnits(SpeedUnits.METERS_PS);
 
 
-            area.setZ(2.5);
-            area.setZUnits(ZUnits.ALTITUDE);
+        area.setZ(2.5);
+        area.setZUnits(ZUnits.ALTITUDE);
 
         area.setPoints(points);
         for (int i = 0; i < area.getPoints().size(); i++) {
@@ -592,7 +595,7 @@ public class Area extends AppCompatActivity {
                 }
             }
         }
-            System.out.println("Camera");
+        System.out.println("Camera");
 
     }
 
@@ -634,7 +637,7 @@ public class Area extends AppCompatActivity {
         area.setLon(lon);
         area.setSpeed(1);
 
-            area.setSpeedUnits(SpeedUnits.METERS_PS);
+        area.setSpeedUnits(SpeedUnits.METERS_PS);
 
         if (isDepthSelected) {
             area.setZ(depth);
@@ -725,11 +728,11 @@ public class Area extends AppCompatActivity {
         area.setLon(lon);
         area.setSpeed(1);
 
-            area.setSpeedUnits(SpeedUnits.METERS_PS);
+        area.setSpeedUnits(SpeedUnits.METERS_PS);
 
 
-            area.setZ(5);
-            area.setZUnits(ZUnits.ALTITUDE);
+        area.setZ(5);
+        area.setZUnits(ZUnits.ALTITUDE);
 
         area.setPoints(points);
         for (int i = 0; i < area.getPoints().size(); i++) {

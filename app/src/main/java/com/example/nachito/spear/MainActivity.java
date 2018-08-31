@@ -136,7 +136,6 @@ public class MainActivity extends AppCompatActivity
     static boolean isRPMSelected;
     //Strings for the panel
     @SuppressLint("StaticFieldLeak")
-    static String depthString;
     static String velocityString;
     static String previous = null;
     static double orientationCompass;
@@ -170,7 +169,7 @@ public class MainActivity extends AppCompatActivity
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
     protected PowerManager.WakeLock mWakeLock;
     Marker markerFromLine;
-    String stateconnected;
+    String connectedState;
     @ViewById(R.id.dive)
     Button dive;
     @ViewById(R.id.minus)
@@ -247,7 +246,7 @@ public class MainActivity extends AppCompatActivity
     double n;
     double e;
     GeoPoint geo;
-    String vehicleAnterior;
+    String previousVehicle;
     Polygon circle2;
     String planExecuting;
     ArrayList<String> errorsList;
@@ -272,7 +271,7 @@ public class MainActivity extends AppCompatActivity
             alertDialogBuilder
                     .setMessage("Lock Map in ")
                     .setCancelable(true)
-                    .setPositiveButton((imc.selectedvehicle), (dialog, id) -> {
+                    .setPositiveButton((imc.selectedVehicle), (dialog, id) -> {
                         if (imc.getSelectedvehicle() != null) {
 
                             myPosSelected = false;
@@ -571,23 +570,28 @@ public class MainActivity extends AppCompatActivity
     private void setupSharedPreferences() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        String foregroundColor = sharedPreferences.getString(getString(R.string.pref_show_rpmms_key), "speedControl");
+        String rpmKey = sharedPreferences.getString(getString(R.string.pref_show_rpmms_key), "speedControl");
 
-        if (foregroundColor.equals("RPM")) {
+        if (rpmKey.equals("RPM")) {
             setShowRPM(true);
         } else
             setShowRPM(false);
-
-
-        setOfflineMap(sharedPreferences.getBoolean(getString(R.string.pref_show_offline_key), getResources().getBoolean(R.bool.pref_show_offline_default)));
-
 
         String zControl = sharedPreferences.getString(getString(R.string.pref_show_depth_key), "zControl");
 
         if (zControl.equals("Depth")) {
             setShowDepth(true);
         } else
-            setShowRPM(false);
+            setShowDepth(false);
+
+
+        String chosenTileSource = sharedPreferences.getString(getString(R.string.pref_show_map_key), "MapTileSource");
+
+
+        if (chosenTileSource.equals("Offline")) {
+            setOfflineMap(true);
+        } else
+            setOfflineMap(false);
 
 
         loadFromPrefs(sharedPreferences);
@@ -656,33 +660,15 @@ public class MainActivity extends AppCompatActivity
 
     public void setOfflineMap(boolean isOfflineMap) {
         isOfflineSelected = isOfflineMap;
+
         if (isOfflineSelected) {
 
-
             map.setUseDataConnection(false);
-
 
         } else
 
             map.setTileSource(TileSourceFactory.MAPNIK);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     @SuppressLint("ResourceType")
@@ -691,17 +677,24 @@ public class MainActivity extends AppCompatActivity
 
 //update the screen if the shared preferences change
 
-        String foregroundColor = sharedPreferences.getString(getString(R.string.pref_show_rpmms_key), "speedControl");
+        String chosenKey = sharedPreferences.getString(getString(R.string.pref_show_rpmms_key), "speedControl");
 
-        if (foregroundColor.equals("RPM")) {
+        if (chosenKey.equals("RPM")) {
             setShowRPM(true);
         } else
             setShowRPM(false);
 
 
-        if (key.equals(getString(R.string.pref_show_offline_key))) {
-            setOfflineMap(sharedPreferences.getBoolean(key, getResources().getBoolean(R.bool.pref_show_offline_default)));
-        } else if (key.equals(getString(R.string.pref_speed_key))) {
+        String chosenTileSource = sharedPreferences.getString(getString(R.string.pref_show_map_key), "MapTileSource");
+
+
+        if (chosenTileSource.equals("Offline")) {
+            setOfflineMap(true);
+        } else
+            setOfflineMap(false);
+
+
+        if (key.equals(getString(R.string.pref_speed_key))) {
             loadFromPrefs(sharedPreferences);
 
         } else if (key.equals(getString(R.string.pref_duration_key))) {
@@ -727,12 +720,12 @@ public class MainActivity extends AppCompatActivity
     public void init() {
 
         teleOperationButton.setOnClickListener(v -> {
-            if (imc.selectedvehicle == null) {
+            if (imc.selectedVehicle == null) {
                 warning();
             } else {
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
                 alertDialogBuilder
-                        .setMessage("Connect to " + imc.selectedvehicle + "?")
+                        .setMessage("Connect to " + imc.selectedVehicle + "?")
                         .setCancelable(true)
                         .setPositiveButton("Yes", (dialog, id) -> {
                             if (teleOperation == null)
@@ -773,7 +766,7 @@ public class MainActivity extends AppCompatActivity
                             pc.setOp(PlanControl.OP.START);
                             pc.setFlags(0);
                             pc.setRequestId(0);
-                            pc.setPlanId("SpearTeleoperation-" + imc.selectedvehicle);
+                            pc.setPlanId("SpearTeleoperation-" + imc.selectedVehicle);
                             imc.sendMessage(pc);
 
                         })
@@ -786,7 +779,7 @@ public class MainActivity extends AppCompatActivity
 
 
         startPlan.setOnClickListener(v -> {
-            if (imc.selectedvehicle == null) {
+            if (imc.selectedVehicle == null) {
                 warning();
             } else {
                 requestPlans();
@@ -795,7 +788,7 @@ public class MainActivity extends AppCompatActivity
 
 
         dive.setOnClickListener(v -> {
-            if (imc.selectedvehicle == null) {
+            if (imc.selectedVehicle == null) {
                 warning();
             } else {
                 dive();
@@ -803,7 +796,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         comeNear.setOnClickListener(v -> {
-            if (imc.selectedvehicle == null) {
+            if (imc.selectedVehicle == null) {
                 warning();
             } else {
                 near();
@@ -811,7 +804,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         stopPlan.setOnClickListener(v -> {
-            if (imc.selectedvehicle == null) {
+            if (imc.selectedVehicle == null) {
                 warning();
             } else {
                 stopPlan();
@@ -820,7 +813,7 @@ public class MainActivity extends AppCompatActivity
         });
 
         keepStation.setOnClickListener(v -> {
-            if (imc.selectedvehicle == null) {
+            if (imc.selectedVehicle == null) {
                 warning();
             } else {
                 keepStation();
@@ -869,10 +862,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         if (teleOperation != null) {
-            if (TeleOperation.teleop) {
+            if (TeleOperation.isTeleOpSelected) {
 
 
-                teleOperation.finish();
+                teleOperation.finishTeleOp();
                 getFragmentManager().popBackStack();
                 dive.setVisibility(View.VISIBLE);
                 teleOperationButton.setVisibility(View.VISIBLE);
@@ -891,7 +884,7 @@ public class MainActivity extends AppCompatActivity
                 joyRight.setVisibility(View.INVISIBLE);
                 joyLeft.setVisibility(View.INVISIBLE);
                 teleOperation = null;
-                TeleOperation.teleop = false;
+                TeleOperation.isTeleOpSelected = false;
             } else {
 
                 getFragmentManager().popBackStack();
@@ -1164,8 +1157,8 @@ public class MainActivity extends AppCompatActivity
                 zoomLevel = 12;
                 markerSMS = new Marker(map);
                 markerSMS.setPosition(coordSMS);
-                if (vehicleAnterior != null) {
-                    if (vehicle.equals(vehicleAnterior))
+                if (previousVehicle != null) {
+                    if (vehicle.equals(previousVehicle))
                         markerSMS.setIcon(nodeIcon);
                     else
                         markerSMS.setIcon(areaIcon);
@@ -1176,7 +1169,7 @@ public class MainActivity extends AppCompatActivity
                 map.getOverlays().add(markerSMS);
                 markerListSMS.add(markerSMS);
 
-                vehicleAnterior = vehicle;
+                previousVehicle = vehicle;
 
 
             }
@@ -1286,7 +1279,7 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.sysinter) {
             try {
                 Intent i = new Intent(this, SysInteractions.class);
-                i.putExtra("selected", imc.selectedvehicle);
+                i.putExtra("selected", imc.selectedVehicle);
                 startActivity(i);
 
             } catch (Exception e) {
@@ -1337,8 +1330,8 @@ public class MainActivity extends AppCompatActivity
         final String vname = state.getSourceName();
         if (imc.stillConnected() != null) {
 
-            if (imc.selectedvehicle != null) {
-                if (!(imc.stillConnected().contains(imc.selectedvehicle)))
+            if (imc.selectedVehicle != null) {
+                if (!(imc.stillConnected().contains(imc.selectedVehicle)))
                     runOnUiThread(() -> {
                         serviceBar.setText(" Lost Connection");
 
@@ -1411,7 +1404,7 @@ public class MainActivity extends AppCompatActivity
 
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
-                    depthString = df2.format(state.getDepth());
+
 
                     if (planBeingExecuted == null) {
                         planExecuting = "";
@@ -1427,9 +1420,9 @@ public class MainActivity extends AppCompatActivity
 
                             txtmap.setVisibility(View.INVISIBLE);
                             mainTV.setVisibility(View.VISIBLE);
-                            mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + " \n" + planExecuting);
+                            mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + connectedState + " \n" + planExecuting);
                             if (errorsList != null) {
-                                mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + getString(R.string.depthstring) + " " + depthString + "\n " + stateconnected + "\n" + errorsList.toString().replace(",", "\n").replace("[", "").replace("]", "") + "\n" + planExecuting + "\n");
+                                mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + connectedState + "\n" + errorsList.toString().replace(",", "\n").replace("[", "").replace("]", "") + "\n" + planExecuting + "\n");
 
                             }
                         });
@@ -1439,7 +1432,7 @@ public class MainActivity extends AppCompatActivity
                         runOnUiThread(() -> {
                             mainTV.setVisibility(View.INVISIBLE);
                             txtmap.setVisibility(View.VISIBLE);
-                            txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + getString(R.string.depthstring) + " " + depthString + " " + stateconnected);
+                            txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + " " + connectedState);
                         });
 
                     }
@@ -1470,8 +1463,8 @@ public class MainActivity extends AppCompatActivity
 
 
         for (VehicleState state : vehicleStateList) {
-            if (imc.selectedvehicle != null)
-                if (imc.selectedvehicle.equals(state.getSourceName())) {
+            if (imc.selectedVehicle != null)
+                if (imc.selectedVehicle.equals(state.getSourceName())) {
                     stateList.add(state.getOpModeStr());
                     errorsList.add(state.getErrorEnts());
                 }
@@ -1481,11 +1474,11 @@ public class MainActivity extends AppCompatActivity
         }
         if (stateList.size() != 0) {
             for (int i = 0; i < stateList.size(); i++) {
-                stateconnected = stateList.toString();
+                connectedState = stateList.toString();
 
                 if (!isStopPressed) {
                     //Se o veiculo entrar em service mode sem ser por parar o plano
-                    if ((previous != null) && !hasEnteredServiceMode && stateconnected.charAt(1) == 'S') {
+                    if ((previous != null) && !hasEnteredServiceMode && connectedState.charAt(1) == 'S') {
                         hasEnteredServiceMode = true;
                         followMeOn = false;
 
@@ -1532,7 +1525,7 @@ public class MainActivity extends AppCompatActivity
         if (detach) {
 
             if (!myPosSelected) {
-                if (imc.selectedvehicle != null)
+                if (imc.selectedVehicle != null)
                     mapController.setCenter(selectedVehiclePosition);
             } else {
                 if (localizacao() != null) {
@@ -1638,7 +1631,7 @@ public class MainActivity extends AppCompatActivity
                 map.getOverlays().add(markerListSMS.get(i));
         }
         if (!areNewWaypointsFromAreaUpdated) {
-            if (stateconnected != null && stateconnected.charAt(1) != 'S')
+            if (connectedState != null && connectedState.charAt(1) != 'S')
                 if (Area.sendmList() != null) {
 
                     updateWaypoints();
@@ -1715,7 +1708,7 @@ public class MainActivity extends AppCompatActivity
         dive.setRadius(radius);
         dive.setDuration(duration);
         dive.setBearing(0);
-        String planid = "SpearDive-" + imc.selectedvehicle;
+        String planid = "SpearDive-" + imc.selectedVehicle;
         startBehaviour(planid, dive);
     }
 
@@ -1738,14 +1731,14 @@ public class MainActivity extends AppCompatActivity
             stationKeepingmsg.setZ(altitude);
             stationKeepingmsg.setZUnits(ZUnits.ALTITUDE);
         }
-        String planid = " SpearStationKeeping-" + imc.selectedvehicle;
+        String planid = " SpearStationKeeping-" + imc.selectedVehicle;
         startBehaviour(planid, stationKeepingmsg);
 
 
     }
 
     public void followme() {
-        if (imc.selectedvehicle == null) {
+        if (imc.selectedVehicle == null) {
             Toast.makeText(this, "Select a vehicle first", Toast.LENGTH_SHORT).show();
 
         } else {
@@ -1755,7 +1748,7 @@ public class MainActivity extends AppCompatActivity
             go.setLoiterRadius(0);
             go.setTimeout(30);
 
-            String planid = "SpearFollowMe-" + imc.selectedvehicle;
+            String planid = "SpearFollowMe-" + imc.selectedVehicle;
             followMeOn = true;
             startReference();
 
@@ -1790,7 +1783,7 @@ public class MainActivity extends AppCompatActivity
         }
 
 
-        String planid = "SpearComeNear-" + imc.selectedvehicle;
+        String planid = "SpearComeNear-" + imc.selectedVehicle;
         startBehaviour(planid, comeNear);
 
 
@@ -1866,7 +1859,7 @@ public class MainActivity extends AppCompatActivity
         pc.setOp(PlanControl.OP.STOP);
         pc.setRequestId(1);
         pc.setFlags(0);
-        pc.setPlanId("stopPlan-" + imc.selectedvehicle);
+        pc.setPlanId("stopPlan-" + imc.selectedVehicle);
         imc.sendMessage(pc);
 
         MainActivity.previous = "S";
@@ -1890,7 +1883,7 @@ public class MainActivity extends AppCompatActivity
             planWaypointPolyline.setPoints(nullArray);
             map.getOverlays().remove(planWaypointPolyline);
         }
-        stateconnected = null;
+        connectedState = null;
 
 
         if (planWaypoints != null) {
@@ -2032,7 +2025,7 @@ public class MainActivity extends AppCompatActivity
 
 
     public void requestPlans() {
-        if (imc.selectedvehicle == null) {
+        if (imc.selectedVehicle == null) {
             warning();
 
         } else {
@@ -2109,7 +2102,7 @@ public class MainActivity extends AppCompatActivity
             pc.setRequestId(0);
             pc.setPlanId(item.toString());
             imc.sendMessage(pc);
-            wasPlanChanged = stateconnected.charAt(1) != 'S';
+            wasPlanChanged = connectedState.charAt(1) != 'S';
 
 
             final Handler handler = new Handler();
@@ -2136,7 +2129,7 @@ public class MainActivity extends AppCompatActivity
 
         }
         if (teleOperation != null) {
-            teleOperation.finish();
+            teleOperation.finishTeleOp();
         }
 
         return super.onContextItemSelected(item);

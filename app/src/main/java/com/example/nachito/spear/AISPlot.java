@@ -1,4 +1,5 @@
 package com.example.nachito.spear;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.location.Location;
@@ -7,7 +8,6 @@ import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,29 +17,17 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Created by pedro on 2/27/18.
+ * Created by Pedro Gonçalves on 2/27/18.
+ * http://github.com/pmfg/acm
  * LSTS - FEUP
  */
 
 class AISPlot {
 
-    static class SystemInfoAIS {
-        ArrayList<String> shipName = new ArrayList<>();
-        ArrayList<Location> shipLocation = new ArrayList<>();
-        ArrayList<Long> lastUpdateAisShip = new ArrayList<>();
-        ArrayList<Double> headingAisShip = new ArrayList<>();
-        ArrayList<Double> speedAisShip = new ArrayList<>();
-        ArrayList<Long> idMMSI = new ArrayList<>();
-        int systemSizeAIS;
-    }
-
-    private SystemInfoAIS systemInfoAIS;
-    private FirebaseAuth mAuth;
-    private Firebase myFirebaseRef;
     String message = "ships";
-
+    private SystemInfoAIS systemInfoAIS;
+    private Firebase myFirebaseRef;
     AISPlot(Context context) {
-        Context mContext = context;
         Firebase.setAndroidContext(context);
         String URlPath = "https://neptus.firebaseio.com/";
         myFirebaseRef = new Firebase(URlPath);
@@ -47,7 +35,7 @@ class AISPlot {
         systemInfoAIS.systemSizeAIS = 0;
     }
 
-    public void getAISInfo(){
+    public void getAISInfo() {
         myFirebaseRef.child(message).addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -79,7 +67,7 @@ class AISPlot {
         try {
             if (!shipName.equals("position") && !shipName.equals("type") && !shipName.equals("updated_at"))
                 getInfoOfShip(shipName, dataSnapshot);
-        }catch (Exception io){
+        } catch (Exception io) {
             io.printStackTrace();
         }
     }
@@ -137,18 +125,18 @@ class AISPlot {
                     systemInfoAIS.shipLocation.set(backID, back);
                 }
             }
-        }catch(Exception io){
+        } catch (Exception io) {
             io.printStackTrace();
         }
 
 
     }
 
-    public SystemInfoAIS GetDataAIS(){
+    public SystemInfoAIS GetDataAIS() {
         return systemInfoAIS;
     }
 
-    public int GetNumberShipsAIS(){
+    public int GetNumberShipsAIS() {
         return systemInfoAIS.systemSizeAIS;
         //return 0;
     }
@@ -167,11 +155,21 @@ class AISPlot {
             AISTime = formatter.parse(dateTimeString);
             androidTime = formatter.parse(currentDateTimeString);
             long diffSeconds = Math.abs(androidTime.getTime() - AISTime.getTime()) / 1000;
-            return "Last Up: " + String.format("%02dh %02dm %02ds", (diffSeconds/3600), (diffSeconds % 3600) / 60, diffSeconds % 60);
+            return "Last Up: " + String.format("%02dh %02dm %02ds", (diffSeconds / 3600), (diffSeconds % 3600) / 60, diffSeconds % 60);
         } catch (ParseException e) {
             e.printStackTrace();
             return "null";
         }
 
+    }
+
+    static class SystemInfoAIS {
+        ArrayList<String> shipName = new ArrayList<>();
+        ArrayList<Location> shipLocation = new ArrayList<>();
+        ArrayList<Long> lastUpdateAisShip = new ArrayList<>();
+        ArrayList<Double> headingAisShip = new ArrayList<>();
+        ArrayList<Double> speedAisShip = new ArrayList<>();
+        ArrayList<Long> idMMSI = new ArrayList<>();
+        int systemSizeAIS;
     }
 }

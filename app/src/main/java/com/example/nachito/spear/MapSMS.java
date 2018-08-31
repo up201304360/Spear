@@ -32,7 +32,6 @@ import static com.example.nachito.spear.MainActivity.zoomLevel;
 
 
 /**
- *
  * Created by ines on 10/9/17.
  */
 
@@ -48,9 +47,9 @@ public class MapSMS extends AppCompatActivity {
     int numPontos;
     Drawable nodeIcon;
     Marker startMarker;
-    ArrayList<GeoPoint> posicaoOutrosVeiculos;
-    GeoPoint centro;
-    final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centro);
+    ArrayList<GeoPoint> allVehiclesPosition;
+    GeoPoint centerGeopoint;
+    OverlayItem marker;
     com.example.nachito.spear.ScaleBarOverlay scaleBarOverlay;
 
     public static GeoPoint resultado() {
@@ -61,10 +60,10 @@ public class MapSMS extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sms);
-        map =  findViewById(R.id.mapSMS);
-        done =  findViewById(R.id.doneSMS);
+        map = findViewById(R.id.mapSMS);
+        done = findViewById(R.id.doneSMS);
         nodeIcon = getResources().getDrawable(R.drawable.orangeled);
-        eraseSMS =  findViewById(R.id.eraseSMS);
+        eraseSMS = findViewById(R.id.eraseSMS);
         List<Marker> markerListSMS = new ArrayList<>();
         map.setMultiTouchControls(true);
         scaleBarOverlay = new com.example.nachito.spear.ScaleBarOverlay(map);
@@ -83,9 +82,10 @@ public class MapSMS extends AppCompatActivity {
         }
         mapController = map.getController();
         mapController.setZoom(zoomLevel);
-        centro = MainActivity.getVariables();
-        if (centro != null)
-            mapController.setCenter(centro);
+        centerGeopoint = MainActivity.getVariables();
+        marker = new OverlayItem("markerTitle", "markerDescription", centerGeopoint);
+        if (centerGeopoint != null)
+            mapController.setCenter(centerGeopoint);
         else
             mapController.setCenter(localizacao());
         mapController = map.getController();
@@ -136,7 +136,6 @@ public class MapSMS extends AppCompatActivity {
                     drawGreen();
                     drawBlue();
                     drawRed();
-
 
 
                 });
@@ -204,12 +203,12 @@ public class MapSMS extends AppCompatActivity {
     }
 
     public void drawBlue() {
-        if (posicaoOutrosVeiculos != null) {
-            for (int i = 0; i < posicaoOutrosVeiculos.size(); i++) {
-                if (posicaoOutrosVeiculos.get(i) != centro) {
+        if (allVehiclesPosition != null) {
+            for (int i = 0; i < allVehiclesPosition.size(); i++) {
+                if (allVehiclesPosition.get(i) != centerGeopoint) {
                     final ArrayList<OverlayItem> itemsPoints = new ArrayList<>();
-                    OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", posicaoOutrosVeiculos.get(i));
-                    System.out.println(posicaoOutrosVeiculos.get(i));
+                    OverlayItem markerPoints = new OverlayItem("markerTitle", "markerDescription", allVehiclesPosition.get(i));
+                    System.out.println(allVehiclesPosition.get(i));
                     markerPoints.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
                     itemsPoints.add(markerPoints);
                     Resources resources = this.getResources();
@@ -231,9 +230,9 @@ public class MapSMS extends AppCompatActivity {
 
 
     public void drawGreen() {
-        if (centro != null) {
+        if (centerGeopoint != null) {
             final ArrayList<OverlayItem> items = new ArrayList<>();
-            final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centro);
+            final OverlayItem marker = new OverlayItem("markerTitle", "markerDescription", centerGeopoint);
             marker.setMarkerHotspot(OverlayItem.HotspotPlace.TOP_CENTER);
             items.add(marker);
             Bitmap newMarker;
@@ -281,6 +280,7 @@ public class MapSMS extends AppCompatActivity {
         super.onResume();
 
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();

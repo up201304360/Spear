@@ -49,7 +49,6 @@ import static com.example.nachito.spear.MainActivity.startBehaviour;
 import static com.example.nachito.spear.MainActivity.zoomLevel;
 
 /**
- *
  * Created by ines on 11/14/17.
  */
 
@@ -65,7 +64,6 @@ public class Line extends AppCompatActivity {
     static ArrayList<Maneuver> lineListManeuvers;
     IMapController mapController;
     Button done;
-    static ArrayList<GeoPoint> nullArray = new ArrayList<>();
     Button preview;
 
     MapView map;
@@ -498,7 +496,5 @@ public class Line extends AppCompatActivity {
     public void onResume() {
         super.onResume();
         mapController.setZoom(zoomLevel);
-
-
     }
 }

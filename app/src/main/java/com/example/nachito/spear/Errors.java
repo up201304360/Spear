@@ -34,7 +34,6 @@ public class Errors extends AppCompatActivity {
 
     public void fillError() {
 
-        System.out.println("22222222222222");
         for (Map.Entry<String, List<String>> entry : MainActivity.allErrorsList.entrySet()) {
             if (!entry.getValue().isEmpty()) {
                 String aux = errors.getText() + entry.toString().replace("=", "\n") + '\n';

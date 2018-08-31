@@ -1,5 +1,6 @@
 package com.example.nachito.spear;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
@@ -8,7 +9,6 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
- *
  * Created by ines on 5/18/17.
  */
 
@@ -34,6 +34,7 @@ public class StopTeleop extends View {
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         this.setBackgroundColor(pressed_color);

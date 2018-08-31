@@ -23,6 +23,7 @@
                 android:layout_alignParentTop="true"
                 android:layout_marginTop="0dp"
                 android:longClickable="true"
+                android:layout_alignParentLeft="true"
                 android:scrollbars="vertical" />
 
 

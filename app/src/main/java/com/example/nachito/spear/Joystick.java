@@ -1,5 +1,6 @@
 package com.example.nachito.spear;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -24,7 +25,6 @@ public class Joystick extends View {
     private JoystickMovedListener listener;
     private int sensitivity;
 
-    float initialX, initialY;
     // =========================================
     // Constructors
     // =========================================
@@ -124,6 +124,7 @@ public class Joystick extends View {
         canvas.save();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int actionType = event.getAction();

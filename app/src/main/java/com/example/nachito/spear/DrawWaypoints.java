@@ -1,7 +1,6 @@
 package com.example.nachito.spear;
 
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.overlay.Polyline;
 
 import java.util.List;
 
@@ -21,7 +20,6 @@ public class DrawWaypoints {
 
     public static void callWaypoint(List<Maneuver> maneuverList) {
         for (int i = 0; i < maneuverList.size(); i++) {
-            //para cada Maneuver chamar o waypoints
             wayPoints(maneuverList.get(i));
 
         }

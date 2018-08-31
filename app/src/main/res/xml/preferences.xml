@@ -3,12 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <CheckBoxPreference
-        android:defaultValue="@bool/pref_show_offline_default"
-        android:key="@string/pref_show_offline_key"
-        android:summaryOff="@string/pref_show_offfalse"
-        android:summaryOn="@string/pref_show_offtrue"
-        android:title="@string/pref_show_offline_label" />
+    <ListPreference
+        android:defaultValue="Online"
+        android:entries="@array/pref_map_names"
+        android:entryValues="@array/pref_map_values"
+        android:key="MapTileSource"
+        android:summary="Map tiles - Online/Offline"
+        android:title="@string/pref_show_map_key" />
+
 
     <ListPreference
         android:key="@string/pref_show_rpmms_key"

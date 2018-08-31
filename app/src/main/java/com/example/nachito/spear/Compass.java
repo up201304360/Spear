@@ -15,38 +15,37 @@ import android.widget.TextView;
 import java.text.DecimalFormat;
 
 public class Compass extends AppCompatActivity implements SensorEventListener {
+    TextView VehicleDirectTV;
+    float az;
+    TextView DistanceTV;
     // device sensor manager
     private SensorManager SensorManage;
     // define the compass picture that will be use
     private ImageView compassimage;
-    // record the angle turned of the compass picture
-    TextView DegreeTV;
-    TextView NameTV;
-    TextView VehicleDirectTV;
-    float az;
-    TextView DistanceTV;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.compass);
         //
-        compassimage =  findViewById(R.id.compass_image);
+        compassimage = findViewById(R.id.compass_image);
         // TextView that will display the degree
 
         VehicleDirectTV = findViewById(R.id.DirectionVehicleTV);
 
         // initialize your android device sensor capabilities
         SensorManage = (SensorManager) getSystemService(SENSOR_SERVICE);
-        DistanceTV =  findViewById(R.id.DirectionTV);
+        DistanceTV = findViewById(R.id.DirectionTV);
 
     }
+
     @Override
     protected void onPause() {
         super.onPause();
         // to stop the listener and save battery
         SensorManage.unregisterListener(this);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -54,6 +53,7 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         SensorManage.registerListener(this, SensorManage.getDefaultSensor(Sensor.TYPE_ORIENTATION),
                 SensorManager.SENSOR_DELAY_GAME);
     }
+
     @SuppressLint("SetTextI18n")
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -72,9 +72,6 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
 
 
         DistanceTV.setText("Distance: " + distFinal + " m");
-
-
-
 
 
         double angle = Math.atan2(Math.sin(MainActivity.lonVehicle - MainActivity.longitudeAndroid) * Math.cos(MainActivity.latVehicle), ((Math.cos(MainActivity.latitudeAndroid) * Math.sin(MainActivity.latVehicle)) - (Math.sin(MainActivity.latitudeAndroid) * Math.cos(MainActivity.latVehicle) * Math.cos((MainActivity.lonVehicle - MainActivity.longitudeAndroid)))));
@@ -106,6 +103,7 @@ public class Compass extends AppCompatActivity implements SensorEventListener {
         az = (float) angleMod;
 
     }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // not in use

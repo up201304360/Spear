@@ -1,17 +1,6 @@
 package com.example.nachito.spear;
 
 
-import java.lang.reflect.Field;
-import java.util.Locale;
-
-import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.library.R;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.util.constants.GeoConstants;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.Projection;
-import org.osmdroid.views.overlay.Overlay;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -22,6 +11,17 @@ import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.WindowManager;
+
+import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.library.R;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.util.constants.GeoConstants;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.Projection;
+import org.osmdroid.views.overlay.Overlay;
+
+import java.lang.reflect.Field;
+import java.util.Locale;
 
 public class ScaleBarOverlay extends Overlay implements GeoConstants {
 
@@ -59,6 +59,7 @@ public class ScaleBarOverlay extends Overlay implements GeoConstants {
     private boolean centred = false;
     private boolean adjustLength = false;
     private float maxLength;
+
     ScaleBarOverlay(final MapView mapView) {
         super();
         this.mMapView = mapView;

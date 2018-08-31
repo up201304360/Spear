@@ -8,7 +8,6 @@ import android.view.MotionEvent;
 import android.view.View;
 
 /**
- *
  * Created by nachito on 17/05/17.
  */
 
@@ -51,7 +50,7 @@ public class Decelerate extends View {
         if (actionType == MotionEvent.ACTION_UP) {
             release();
         }
-        switch (event.getAction()){
+        switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
                 performClick();
                 return true;
@@ -67,5 +66,5 @@ public class Decelerate extends View {
             listener.OnReleaseDec();
         }
     }
-    
+
 }
