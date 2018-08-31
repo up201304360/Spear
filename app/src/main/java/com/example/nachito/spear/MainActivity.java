@@ -49,8 +49,9 @@ import org.androidannotations.annotations.ViewById;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
+import org.osmdroid.tileprovider.cachemanager.CacheManager;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -340,9 +341,7 @@ public class MainActivity extends AppCompatActivity
 
 
             customHandlerAIS.postDelayed(this, timeoutAISPull * 1000);
-            //if(timeoutAISPull != 1) {
-            //    showError.showErrorLogcat("MEU", "size ais: "+ais.GetNumberShipsAIS());
-            //}
+
             timeoutAISPull = Integer.parseInt("12");
 
         }
@@ -432,7 +431,6 @@ public class MainActivity extends AppCompatActivity
         if ((!isStopPressed && planBeingExecuted != null && !PlanList.previousPlan.equals(".") && !PlanList.previousPlan.equals(planBeingExecuted)) || (!isStopPressed && planBeingExecuted != null && wasPlanChanged)) {
 //wasPlannedChanged -> selecting a new Plan pressing the StartPlan button without stopping the previous button
             cleanMap();
-            updateMap();
             wasPlanChanged = false;
         }
     }
@@ -661,13 +659,31 @@ public class MainActivity extends AppCompatActivity
         if (isOfflineSelected) {
 
 
-            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
+            map.setUseDataConnection(false);
 
 
         } else
-            map.setTileSource(TileSourceFactory.MAPNIK);
 
+            map.setTileSource(TileSourceFactory.MAPNIK);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @SuppressLint("ResourceType")
     @Override
@@ -799,7 +815,6 @@ public class MainActivity extends AppCompatActivity
                 warning();
             } else {
                 stopPlan();
-                updateMap();
                 otherVehiclesPositionList.clear();
             }
         });
@@ -974,10 +989,10 @@ public class MainActivity extends AppCompatActivity
             map.setTileSource(TileSourceFactory.MAPNIK);
             isOfflineSelected = false;
 
+
         } else
 
         {
-            map.setTileSource(new XYTileSource("4uMaps", 0, 18, 256, ".png", new String[]{}));
 
             isOfflineSelected = true;
         }
@@ -1065,8 +1080,6 @@ public class MainActivity extends AppCompatActivity
 
         nwLocation = appLocationService
                 .getLocation(LocationManager.NETWORK_PROVIDER);
-///--------------------------------------
-        getWindow().setBackgroundDrawable(null);
 
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
@@ -1299,6 +1312,19 @@ public class MainActivity extends AppCompatActivity
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+
+        } else if (id == R.id.downloadTiles) {
+            if (!isOfflineSelected) {
+                CacheManager cm = new CacheManager(map);
+
+                BoundingBox bbox = map.getBoundingBox();
+                cm.downloadAreaAsync(this, bbox, map.getZoomLevel() - 3, map.getZoomLevel() + 1);
+
+
+            } else {
+                Toast.makeText(this, "Go to Settings -> Online mode", Toast.LENGTH_SHORT).show();
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -1495,11 +1521,8 @@ public class MainActivity extends AppCompatActivity
         onLocationChanged(location);
 
         if (context == MainActivity.this) {
-            drawWifiSignal();
             drawCompass();
         }
-
-
         synchronized (estates) {
             for (EstimatedState state : estates.values()) {
                 paintState(state);
@@ -1623,7 +1646,6 @@ public class MainActivity extends AppCompatActivity
 
         }
     }
-
 
     public void drawCompass() {
         if (mCompassOverlay != null) {
@@ -1930,14 +1952,12 @@ public class MainActivity extends AppCompatActivity
 
         if (SendSms.pontoSMS() != null) {
             map.getOverlays().remove(markerSMS);
-            updateMap();
 
 
         }
         runOnUiThread(() -> {
             map.invalidate();
-            //map.getOverlays().clear();
-            updateMap();
+
         });
     }
 
@@ -1952,7 +1972,7 @@ public class MainActivity extends AppCompatActivity
         final boolean[] connectedWifi = {false};
 
         if (isWifiAvailable() || isNetworkAvailable()) {
-            new CountDownTimer(5000, 1000) {
+            new CountDownTimer(10000, 1000) {
                 public void onFinish() {
                     // When timer is finished
                     // Execute your code here
@@ -1990,6 +2010,7 @@ public class MainActivity extends AppCompatActivity
 
 
     //Set a timer to check if is connected to a Wifi Network
+    @Periodic(5000)
     public void drawWifiSignal() {
         // Check if is connected to a Wifi Network, if not popups a informative toast
         runOnUiThread(() -> {
@@ -2022,6 +2043,7 @@ public class MainActivity extends AppCompatActivity
             openContextMenu(startPlan);
         }
     }
+
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {

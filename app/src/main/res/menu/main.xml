@@ -37,4 +37,10 @@
         android:orderInCategory="100"
         android:title="@string/errors_list"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/downloadTiles"
+        android:orderInCategory="100"
+        android:title="@string/download_tiles"
+        app:showAsAction="never" />
 </menu>

@@ -86,8 +86,8 @@
     <string name="start_plan">Start Plan</string>
     <string name="preview">Preview</string>
     <string name="choose_vehicle">Tap here to choose a vehicle</string>
-    <string name="show_ais">Show AIS</string>
-    <string name="ripples_position">Ripples Position</string>
+    <string name="show_ais">AIS Positions</string>
+    <string name="ripples_position">Ripples Positions</string>
     <string name="compass">Compass</string>
     <string name="heading_0_0">Heading: 0.0</string>
     <string name="distance_0_0">Distance: 0.0</string>
@@ -104,4 +104,5 @@
     <string name="errors_list">Errors List</string>
     <string name="no_error">No Entities in Error</string>
     <string name="refresh">Refresh</string>
+    <string name="download_tiles">Download Tiles</string>
 </resources>
