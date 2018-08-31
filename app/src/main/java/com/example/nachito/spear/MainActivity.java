@@ -1075,18 +1075,17 @@ public class MainActivity extends AppCompatActivity
         unlock.setVisibility(View.INVISIBLE);
 
 
-        appLocationService = new AppLocationService(MainActivity.this);
-        gpsLocation = appLocationService.getLocation(LocationManager.GPS_PROVIDER);
-
-        nwLocation = appLocationService
-                .getLocation(LocationManager.NETWORK_PROVIDER);
-
         if (android.os.Build.VERSION.SDK_INT >= M) {
             checkLocationPermission();
 
         }
         try {
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            appLocationService = new AppLocationService(MainActivity.this);
+            gpsLocation = appLocationService.getLocation(LocationManager.GPS_PROVIDER);
+
+            nwLocation = appLocationService
+                    .getLocation(LocationManager.NETWORK_PROVIDER);
 
         } catch (Exception ignored) {
         }
