@@ -92,6 +92,7 @@ import pt.lsts.imc.Maneuver;
 import pt.lsts.imc.PlanControl;
 import pt.lsts.imc.PlanDB;
 import pt.lsts.imc.Reference;
+import pt.lsts.imc.Rpm;
 import pt.lsts.imc.StationKeeping;
 import pt.lsts.imc.Teleoperation;
 import pt.lsts.imc.VehicleState;
@@ -167,6 +168,8 @@ public class MainActivity extends AppCompatActivity
     static double latitudeAndroid;
     static double longitudeAndroid;
     final LinkedHashMap<String, EstimatedState> estates = new LinkedHashMap<>();
+    final LinkedHashMap<String, Rpm> rpmValues = new LinkedHashMap<>();
+
     protected PowerManager.WakeLock mWakeLock;
     Marker markerFromLine;
     String connectedState;
@@ -258,6 +261,8 @@ public class MainActivity extends AppCompatActivity
     Location gpsLocation;
     Location nwLocation;
     private Context context;
+    short vehicleRpm;
+    String distFinal;
     MapEventsReceiver mReceive = new MapEventsReceiver() {
         @Override
         public boolean singleTapConfirmedHelper(GeoPoint p) {
@@ -739,6 +744,7 @@ public class MainActivity extends AppCompatActivity
                             teleOperationButton.setVisibility(View.INVISIBLE);
                             startPlan.setVisibility(View.INVISIBLE);
                             comeNear.setVisibility(View.INVISIBLE);
+                            serviceBar.setVisibility(View.INVISIBLE);
                             keepStation.setVisibility(View.INVISIBLE);
                             accelerate.setVisibility(View.VISIBLE);
                             txt2.setVisibility(View.VISIBLE);
@@ -753,11 +759,9 @@ public class MainActivity extends AppCompatActivity
                             stopTeleop.setOnStop(teleOperation);
                             joystick.setVisibility(View.VISIBLE);
                             joyLeft.setVisibility(View.VISIBLE);
-                            joyLeft.setOnClickListener(b -> {
 
-
-                            });
                             joyRight.setVisibility(View.VISIBLE);
+
                             PlanControl pc = new PlanControl();
                             Teleoperation teleoperationMsg = new Teleoperation();
                             teleoperationMsg.setCustom("src=" + imc.getLocalId());
@@ -880,6 +884,8 @@ public class MainActivity extends AppCompatActivity
                 txt4.setVisibility(View.INVISIBLE);
                 txt5.setVisibility(View.INVISIBLE);
                 Joystick joystick = findViewById(R.id.joystick);
+                serviceBar.setVisibility(View.VISIBLE);
+
                 joystick.setVisibility(View.INVISIBLE);
                 joyRight.setVisibility(View.INVISIBLE);
                 joyLeft.setVisibility(View.INVISIBLE);
@@ -889,6 +895,7 @@ public class MainActivity extends AppCompatActivity
 
                 getFragmentManager().popBackStack();
                 dive.setVisibility(View.VISIBLE);
+                serviceBar.setVisibility(View.VISIBLE);
                 teleOperationButton.setVisibility(View.VISIBLE);
                 startPlan.setVisibility(View.VISIBLE);
                 comeNear.setVisibility(View.VISIBLE);
@@ -1200,6 +1207,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Background
+    @Consume
+    public void receiveRPM(final Rpm rpmValue) {
+        synchronized (rpmValues) {
+            rpmValues.put(rpmValue.getSourceName(), rpmValue);
+
+        }
+    }
+
+    @Background
     @Override
     public void onLocationChanged(Location location) {
 
@@ -1324,6 +1340,35 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    @Background
+    public void getRpmValue(final Rpm rpmValue) {
+        if (imc.stillConnected() != null) {
+
+            if (imc.selectedVehicle != null) {
+                if ((imc.stillConnected().contains(rpmValue.getSourceName())))
+                    if (imc.getSelectedvehicle().equals(rpmValue.getSourceName()))
+                        vehicleRpm = rpmValue.getValue();
+            }
+        }
+    }
+
+
+    public void calculateDistance() {
+
+        final int R = 6371; // Radius of the earth
+        double latDistance = latVehicle - (latitudeAndroid);
+        double lonDistance = lonVehicle - (longitudeAndroid);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos((latitudeAndroid)) * Math.cos(latVehicle)
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double distance = R * c * 1000; // convert to meters
+
+        DecimalFormat twoDForm = new DecimalFormat("#.##");
+        distFinal = (twoDForm.format(distance));
+
+    }
+
     @SuppressLint("SetTextI18n")
     @Background
     public void paintState(final EstimatedState state) {
@@ -1404,6 +1449,7 @@ public class MainActivity extends AppCompatActivity
 
                     DecimalFormat df2 = new DecimalFormat("#.##");
                     velocityString = df2.format(Math.sqrt((state.getVx() * state.getVx()) + (state.getVy() * state.getVy()) + (state.getVz() * state.getVz())));
+                    calculateDistance();
 
 
                     if (planBeingExecuted == null) {
@@ -1420,9 +1466,9 @@ public class MainActivity extends AppCompatActivity
 
                             txtmap.setVisibility(View.INVISIBLE);
                             mainTV.setVisibility(View.VISIBLE);
-                            mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + connectedState + " \n" + planExecuting);
+                            mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + " RPM: " + vehicleRpm + "\n" + connectedState + " \n" + planExecuting + "Dist: " + distFinal + " m");
                             if (errorsList != null) {
-                                mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + connectedState + "\n" + errorsList.toString().replace(",", "\n").replace("[", "").replace("]", "") + "\n" + planExecuting + "\n");
+                                mainTV.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + "\n" + " RPM: " + vehicleRpm + "\n" + connectedState + "\n" + errorsList.toString().replace(",", "\n").replace("[", "").replace("]", "") + "\n" + planExecuting + "\n" + "Dist: " + distFinal + " m");
 
                             }
                         });
@@ -1432,7 +1478,7 @@ public class MainActivity extends AppCompatActivity
                         runOnUiThread(() -> {
                             mainTV.setVisibility(View.INVISIBLE);
                             txtmap.setVisibility(View.VISIBLE);
-                            txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " " + " " + connectedState);
+                            txtmap.setText(getString(R.string.speedstring) + " " + velocityString + " " + getString(R.string.meterspersecond) + " RPM: " + vehicleRpm + " " + connectedState + "Dist: " + distFinal + " m");
                         });
 
                     }
@@ -1522,6 +1568,17 @@ public class MainActivity extends AppCompatActivity
             }
 
         }
+
+
+        synchronized (rpmValues) {
+            for (Rpm rpmValue : rpmValues.values()) {
+                getRpmValue(rpmValue);
+            }
+
+        }
+
+
+
         if (detach) {
 
             if (!myPosSelected) {
